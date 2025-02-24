@@ -1,13 +1,11 @@
 import React, { useEffect, useState, useContext } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { ThemeProvider, THEME_ID, createTheme } from "@mui/material/styles";
-import { Switch } from "@mui/material";
+import { FaBars } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
-import { FaBars } from "react-icons/fa";
-import { AppContent } from "../../context/AppContext";
 import axios from "axios";
+import { AppContent } from "../../context/AppContext";
 
 const navLinks = [
   { name: "Home", route: "/" },
@@ -17,17 +15,6 @@ const navLinks = [
   { name: "Shop", route: "/shop" },
 ];
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#ff0000",
-    },
-    secondary: {
-      main: "#00ff00",
-    },
-  },
-});
-
 const NavBar = () => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -36,9 +23,8 @@ const NavBar = () => {
   const [isHome, setIsHome] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
-  const [isFixed, setIsFixed] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [navBg, setNavBg] = useState("bg-[#15151580]");
+  const [isFixed, setIsFixed] = useState(false);
   const { backendUrl, userData, isLoggedin, setIsLoggedin, setUserData } =
     useContext(AppContent);
   const user = true;
@@ -46,16 +32,6 @@ const NavBar = () => {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
-
-  useEffect(() => {
-    const darkClass = "dark";
-    const root = window.document.documentElement;
-    if (isDarkMode) {
-      root.classList.add(darkClass);
-    } else {
-      root.classList.remove(darkClass);
-    }
-  }, [isDarkMode]);
 
   useEffect(() => {
     setIsHome(location.pathname === "/");
@@ -218,37 +194,6 @@ const NavBar = () => {
                 </li>
               )}
 
-              {user && (
-                <li>
-                  <NavLink
-                    to="/dashboard"
-                    className={({ isActive }) =>
-                      `font-bold ${
-                        isActive
-                          ? "text-secondary"
-                          : `${
-                              navBg.includes("bg-transparent")
-                                ? "text-white"
-                                : "text-black dark:text-white"
-                            }`
-                      } hover:text-secondary duration-300`
-                    }
-                  >
-                    Dashboard
-                  </NavLink>
-                </li>
-              )}
-
-              {/* {user && (
-                <li>
-                  <img
-                    src={user?.photoURL || "/images/savage.png"}
-                    alt=""
-                    className="h-[40px] rounded-full w-[40px]"
-                  />
-                </li>
-              )} */}
-
               {/* Conditionally Show Profile Icon or Log In Button */}
               <div className="flex items-center relative">
                 {isLoggedin ? (
@@ -288,16 +233,6 @@ const NavBar = () => {
                   </Link>
                 )}
               </div>
-
-              {/* color toggle */}
-              <li>
-                <ThemeProvider theme={theme}>
-                  <div className="flex flex-col justify-center items-center">
-                    <Switch onChange={() => setIsDarkMode(!isDarkMode)} />
-                    <h1 className="text-[8px]">Light/Dark</h1>
-                  </div>
-                </ThemeProvider>
-              </li>
             </ul>
           </div>
         </div>

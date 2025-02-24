@@ -5,7 +5,7 @@ import { RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "react-toastify/dist/ReactToastify.css";
 import Aos from "aos";
-import { router } from "./routes/router";
+import router from "./routes/router";
 import { AppContextProvider } from "./context/AppContext"; // Import AppContextProvider
 
 const queryClient = new QueryClient();
