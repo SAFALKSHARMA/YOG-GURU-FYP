@@ -1,0 +1,46 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MainLayout from "../layout/MainLayout";
+import Home from "../pages/Home/Home";
+import Instructors from "../pages/Instructors/Instructors";
+import Classes from "../pages/Classes/Classes";
+import Blog from "../pages/Blog/Blog";
+import Shop from "../pages/Shop/Shop";
+import Login from "../components/headers/Login";
+import Signup from "../components/headers/Signup";
+import EmailVerification from "../components/EmailVerification";
+import ForgetPassword from "../components/ForgetPassword";
+import Profile from "../components/headers/Profile";
+import InstructorApplicationForm from "../pages/Instructors/applyInstructor";
+import ManageInstructors from "../Admin/ManageInstructors";
+
+function AppRouter() {
+  return (
+    <Router>
+      <MainLayout />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/instructors" element={<Instructors />} />
+        <Route path="/classes" element={<Classes />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/email-verification" element={<EmailVerification />} />
+        <Route path="/forget-password" element={<ForgetPassword />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/applyInstructor"
+          element={<InstructorApplicationForm />}
+        />
+
+        <Route
+          path="/admin/manage-instructors"
+          element={<ManageInstructors />}
+        />
+      </Routes>
+      {/* </MainLayout> */}
+    </Router>
+  );
+}
+
+export default AppRouter;
