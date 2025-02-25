@@ -10,6 +10,7 @@ import Signup from "../components/headers/Signup";
 import EmailVerification from "../components/EmailVerification";
 import ForgetPassword from "../components/ForgetPassword";
 import Profile from "../components/headers/Profile";
+import InstructorApplicationForm from "../pages/Instructors/applyInstructor";
 
 export const router = createBrowserRouter([
   {
@@ -25,7 +26,8 @@ export const router = createBrowserRouter([
       { path: "signup", element: <Signup /> },
       { path: "email-verification", element: <EmailVerification /> },
       { path: "forget-password", element: <ForgetPassword /> },
-      { path: "profile", element: <Profile /> }, // Profile inside MainLayout
+      { path: "profile", element: <Profile /> },
+      { path: "applyInstructor", element: <InstructorApplicationForm /> },
     ],
   },
 ]);

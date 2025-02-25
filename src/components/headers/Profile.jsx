@@ -8,6 +8,7 @@ import {
   X,
   Menu,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Profile() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -42,9 +43,11 @@ export default function Profile() {
           <button className="flex items-center w-full px-4 py-2 rounded-lg hover:bg-gray-200">
             <History className="w-5 h-5 mr-2" /> Payment History
           </button>
-          <button className="flex items-center w-full px-4 py-2 rounded-lg hover:bg-gray-200">
-            <UserCheck className="w-5 h-5 mr-2" /> Apply for Instructor
-          </button>
+          <Link to="/applyInstructor">
+            <button className="flex items-center w-full px-4 py-2 rounded-lg hover:bg-gray-200">
+              <UserCheck className="w-5 h-5 mr-2" /> Apply for Instructor
+            </button>
+          </Link>
           <button className="flex items-center w-full px-4 py-2 rounded-lg hover:bg-gray-200">
             <Home className="w-5 h-5 mr-2" /> Main Home
           </button>

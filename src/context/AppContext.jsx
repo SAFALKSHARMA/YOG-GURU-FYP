@@ -6,7 +6,7 @@ import Cookies from "js-cookie";
 export const AppContent = createContext();
 
 export const AppContextProvider = (props) => {
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = "http://localhost:8000";
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [userData, setUserData] = useState(null); // Set default to null
 
