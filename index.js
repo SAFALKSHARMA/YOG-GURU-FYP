@@ -6,9 +6,10 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import instructorRoutes from "./routes/instructorRoutes.js";
 
 const app = express();
-const PORT = 5000;
+const PORT = 3000;
 
 // Connect to MongoDB
 connectDB();
@@ -46,6 +47,7 @@ app.get("/", (req, res) => {
 // Define routes
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/instructors", instructorRoutes);
 
 // Start the server
 app.listen(PORT, () => {
