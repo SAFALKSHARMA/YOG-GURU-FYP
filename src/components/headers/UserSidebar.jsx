@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Home, Users, Book, FileText, LogOut } from "lucide-react";
-import logo from "../../images/yoglogo.png";
-import { AppContent } from "../context/AppContext";
+import logo from "../../assets/dashboard/yoglogo.png";
+import { AppContent } from "../../context/AppContext";
 import { useContext } from "react";
 import { toast } from "react-toastify";
 import axios from "axios"; // Make sure axios is imported

@@ -17,9 +17,8 @@ const navLinks = [
 
 const NavBar = () => {
   const navigate = useNavigate();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
   const [isHome, setIsHome] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -49,23 +48,6 @@ const NavBar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      const response = await axios.post(backendUrl + "/api/auth/logout");
-      if (response.data.success) {
-        setIsLoggedin(false);
-        setUserData({});
-        Cookies.remove("token");
-        navigate("/login");
-        toast.success("Successfully logged out!");
-      } else {
-        toast.error("Logout failed. Please try again.");
-      }
-    } catch (error) {
-      toast.error("An error occurred during logout. Please try again.");
-    }
-  };
 
   return (
     <motion.nav
@@ -125,33 +107,22 @@ const NavBar = () => {
             ))}
 
             {/* User Profile or Login */}
-            <div className="flex items-center relative">
+            <div className="flex items-center">
               {isLoggedin ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300 text-lg font-semibold"
-                  >
+                // Check the user role and conditionally set the link
+                <Link
+                  to={
+                    userData?.role === "instructor"
+                      ? "/instructor/dashboard"
+                      : userData?.role === "admin"
+                      ? "/admin/dashboard"
+                      : "/profile"
+                  }
+                >
+                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300 text-lg font-semibold">
                     {userData?.name ? userData.name[0].toUpperCase() : "U"}
-                  </button>
-
-                  {dropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg overflow-hidden">
-                      <Link
-                        to="/profile"
-                        className="block px-4 py-2 text-black hover:bg-gray-100"
-                      >
-                        Profile
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
-                      >
-                        Log Out
-                      </button>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                </Link>
               ) : (
                 <Link to="/login">
                   <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition duration-300">

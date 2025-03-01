@@ -6,6 +6,7 @@ const ManageInstructors = () => {
   const [instructors, setInstructors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false); // For button disabling during processing
 
   useEffect(() => {
     const fetchInstructors = async () => {
@@ -17,7 +18,7 @@ const ManageInstructors = () => {
           throw new Error("Failed to fetch instructor applications");
         }
         const data = await response.json();
-        setInstructors(data); // Assuming API returns an array of instructors
+        setInstructors(data);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -27,6 +28,58 @@ const ManageInstructors = () => {
 
     fetchInstructors();
   }, []);
+
+  const handleApprove = async (instructorId) => {
+    setIsProcessing(true); // Disable buttons during processing
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/instructors/approve/${instructorId}`,
+        { method: "PUT" }
+      );
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || "Failed to approve instructor");
+      }
+      setInstructors((prev) =>
+        prev.map((instructor) =>
+          instructor._id === instructorId
+            ? { ...instructor, status: "Approved" }
+            : instructor
+        )
+      );
+    } catch (err) {
+      console.error("Error approving instructor:", err);
+      setError(err.message || "Failed to approve instructor");
+    } finally {
+      setIsProcessing(false); // Re-enable buttons after processing
+    }
+  };
+
+  const handleReject = async (instructorId) => {
+    setIsProcessing(true); // Disable buttons during processing
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/instructors/reject/${instructorId}`,
+        { method: "PUT" }
+      );
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || "Failed to reject instructor");
+      }
+      setInstructors((prev) =>
+        prev.map((instructor) =>
+          instructor._id === instructorId
+            ? { ...instructor, status: "Rejected" }
+            : instructor
+        )
+      );
+    } catch (err) {
+      console.error("Error rejecting instructor:", err);
+      setError(err.message || "Failed to reject instructor");
+    } finally {
+      setIsProcessing(false); // Re-enable buttons after processing
+    }
+  };
 
   return (
     <div className="flex h-screen bg-purple-50">
@@ -79,9 +132,9 @@ const ManageInstructors = () => {
                   <td className="p-3">
                     <span
                       className={`px-2 py-1 rounded-full text-white ${
-                        instructor.status === "approved"
+                        instructor.status === "Approved"
                           ? "bg-green-500"
-                          : instructor.status === "denied"
+                          : instructor.status === "Rejected"
                           ? "bg-red-500"
                           : "bg-yellow-500"
                       }`}
@@ -90,10 +143,22 @@ const ManageInstructors = () => {
                     </span>
                   </td>
                   <td className="p-3 flex items-center space-x-2">
-                    <button className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 flex items-center justify-center">
+                    <button
+                      onClick={() => handleApprove(instructor._id)}
+                      className={`p-2 bg-green-500 text-white rounded-full hover:bg-green-600 flex items-center justify-center ${
+                        isProcessing ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                      disabled={isProcessing} // Disable while processing
+                    >
                       <CheckCircle size={16} />
                     </button>
-                    <button className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
+                    <button
+                      onClick={() => handleReject(instructor._id)}
+                      className={`p-2 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center ${
+                        isProcessing ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                      disabled={isProcessing} // Disable while processing
+                    >
                       <XCircle size={16} />
                     </button>
                   </td>

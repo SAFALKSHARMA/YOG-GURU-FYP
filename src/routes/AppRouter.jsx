@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from "../layout/MainLayout";
 import Home from "../pages/Home/Home";
-import Instructors from "../pages/Instructors/Instructors";
+import Instructors from "../pages/Instructors/InstructorDashboard";
 import Classes from "../pages/Classes/Classes";
 import Blog from "../pages/Blog/Blog";
 import Shop from "../pages/Shop/Shop";
@@ -13,6 +13,8 @@ import Profile from "../components/headers/Profile";
 import InstructorApplicationForm from "../pages/Instructors/applyInstructor";
 import ManageInstructors from "../Admin/ManageInstructors";
 import ManageUsers from "../Admin/ManageUsers";
+import AdminDashboard from "../Admin/AdminDashboard";
+import InstructorDashboard from "../pages/Instructors/InstructorDashboard";
 
 function AppRouter() {
   return (
@@ -20,7 +22,6 @@ function AppRouter() {
       <MainLayout />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/instructors" element={<Instructors />} />
         <Route path="/classes" element={<Classes />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/shop" element={<Shop />} />
@@ -39,6 +40,8 @@ function AppRouter() {
           element={<ManageInstructors />}
         />
         <Route path="/admin/manage-users" element={<ManageUsers />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
       </Routes>
       {/* </MainLayout> */}
     </Router>
