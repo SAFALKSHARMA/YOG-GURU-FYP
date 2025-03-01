@@ -12,6 +12,7 @@ import ForgetPassword from "../components/ForgetPassword";
 import Profile from "../components/headers/Profile";
 import InstructorApplicationForm from "../pages/Instructors/applyInstructor";
 import ManageInstructors from "../Admin/ManageInstructors";
+import ManageUsers from "../Admin/ManageUsers";
 
 function AppRouter() {
   return (
@@ -37,6 +38,7 @@ function AppRouter() {
           path="/admin/manage-instructors"
           element={<ManageInstructors />}
         />
+        <Route path="/admin/manage-users" element={<ManageUsers />} />
       </Routes>
       {/* </MainLayout> */}
     </Router>
