@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema({
   resetOtp: { type: String, default: "" },
   resetOtpExpireAt: { type: Number, default: 0 },
   role: { type: String, default: "user" },
+  experience: { type: Number, default: 0 }, // Add this
+  phone: { type: String, default: "" }, // Add this
+  qualifications: { type: String, default: "" }, // Add this
+  bio: { type: String, default: "" }, // Add this
 });
 
 const userModel = mongoose.models.user || mongoose.model("user", userSchema);

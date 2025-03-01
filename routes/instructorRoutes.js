@@ -2,13 +2,16 @@ import express from "express";
 import {
   submitApplication,
   getApplications,
-  updateApplicationStatus,
+  approveInstructor,
+  rejectInstructor,
 } from "../controllers/instructorController.js";
 
 const router = express.Router();
 
 router.post("/apply", submitApplication); // Submit application
 router.get("/applications", getApplications); // Get all applications (for admin)
-router.put("/applications/:id", updateApplicationStatus); // Approve/reject application
+
+router.put("/approve/:instructorId", approveInstructor);
+router.put("/reject/:instructorId", rejectInstructor); // Ensure this route exists!
 
 export default router;

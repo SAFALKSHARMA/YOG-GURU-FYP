@@ -1,4 +1,5 @@
 import InstructorApplication from "../models/InstructorApplication.js";
+import userModel from "../models/userModel.js";
 
 // Submit a new instructor application
 export const submitApplication = async (req, res) => {
@@ -47,33 +48,102 @@ export const getApplications = async (req, res) => {
   }
 };
 
-// Approve or reject an application
-export const updateApplicationStatus = async (req, res) => {
+export const approveInstructor = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
+    const { instructorId } = req.params;
 
-    if (!["pending", "approved", "rejected"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status" });
+    // Find instructor application
+    const instructorApplication = await InstructorApplication.findById(
+      instructorId
+    );
+    if (!instructorApplication) {
+      return res
+        .status(404)
+        .json({ message: "Instructor application not found" });
     }
 
-    const updatedApplication = await InstructorApplication.findByIdAndUpdate(
-      id,
-      { status },
+    // Find and update user by email
+    const updatedUser = await userModel.findOneAndUpdate(
+      { email: instructorApplication.email }, // Find by email
+      {
+        $set: {
+          role: "instructor",
+          experience: instructorApplication.experience,
+          phone: instructorApplication.phone,
+          qualifications: instructorApplication.qualifications,
+          bio: instructorApplication.bio,
+        },
+      },
+      { new: true, runValidators: true } // Ensure validators run
+    );
+
+    if (!updatedUser) {
+      return res
+        .status(404)
+        .json({ message: "User not found in the database" });
+    }
+
+    // Update instructor application status
+    await InstructorApplication.findByIdAndUpdate(instructorId, {
+      status: "Approved",
+    });
+
+    res.status(200).json({
+      message: "Instructor approved successfully!",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error approving instructor:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+export const rejectInstructor = async (req, res) => {
+  try {
+    const { instructorId } = req.params;
+
+    // Find the instructor application
+    const instructorApplication = await InstructorApplication.findById(
+      instructorId
+    );
+    if (!instructorApplication) {
+      return res
+        .status(404)
+        .json({ message: "Instructor application not found" });
+    }
+
+    // Update the user's role back to "user"
+    const updatedUser = await userModel.findOneAndUpdate(
+      { email: instructorApplication.email },
+      {
+        $set: {
+          role: "user",
+          experience: "",
+          phone: "",
+          qualifications: "",
+          bio: "",
+        },
+      }, // Revert role to "user"
       { new: true }
     );
 
-    if (!updatedApplication) {
-      return res.status(404).json({ message: "Application not found" });
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
     }
 
+    // Update the instructor application status to "rejected"
+    instructorApplication.status = "Rejected";
+    await instructorApplication.save();
+
     res.status(200).json({
-      message: "Application status updated",
-      data: updatedApplication,
+      message: "Instructor rejected successfully!",
+      user: updatedUser,
+      instructor: instructorApplication,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error updating status", error: error.message });
+    console.error("Error rejecting instructor:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
