@@ -42,7 +42,7 @@ const Sidebar = () => {
         <h2 className="text-gray-600 font-semibold mb-2">MENU</h2>
 
         <NavLink
-          to="/admin/dashboard"
+          to=""
           className={({ isActive }) =>
             `flex items-center space-x-3 p-3 rounded-lg transition ${
               isActive
@@ -56,7 +56,7 @@ const Sidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/admin/manage-users"
+          to=""
           className={({ isActive }) =>
             `flex items-center space-x-3 p-3 rounded-lg transition ${
               isActive
@@ -66,11 +66,11 @@ const Sidebar = () => {
           }
         >
           <Users />
-          <span>Manage Users</span>
+          <span>History</span>
         </NavLink>
 
         <NavLink
-          to="/admin/manage-classes"
+          to=""
           className={({ isActive }) =>
             `flex items-center space-x-3 p-3 rounded-lg transition ${
               isActive
@@ -80,11 +80,11 @@ const Sidebar = () => {
           }
         >
           <Book />
-          <span>Manage Classes</span>
+          <span>My Classes</span>
         </NavLink>
 
         <NavLink
-          to="/admin/manage-instructors"
+          to="/applyInstructor"
           className={({ isActive }) =>
             `flex items-center space-x-3 p-3 rounded-lg transition ${
               isActive
@@ -94,7 +94,7 @@ const Sidebar = () => {
           }
         >
           <FileText />
-          <span>Applications</span>
+          <span>Apply for Instructor</span>
         </NavLink>
 
         {/* Account Section */}
