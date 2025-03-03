@@ -15,6 +15,7 @@ import ManageInstructors from "../Admin/ManageInstructors";
 import ManageUsers from "../Admin/ManageUsers";
 import AdminDashboard from "../Admin/AdminDashboard";
 import InstructorDashboard from "../pages/Instructors/InstructorDashboard";
+import ManageClass from "../Admin/manageClass";
 
 function AppRouter() {
   return (
@@ -30,6 +31,7 @@ function AppRouter() {
         <Route path="/email-verification" element={<EmailVerification />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
         <Route path="/profile" element={<Profile />} />
+
         <Route
           path="/applyInstructor"
           element={<InstructorApplicationForm />}
@@ -42,6 +44,7 @@ function AppRouter() {
         <Route path="/admin/manage-users" element={<ManageUsers />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
+        <Route path="/admin/manage-classes" element={<ManageClass />} />
       </Routes>
       {/* </MainLayout> */}
     </Router>
