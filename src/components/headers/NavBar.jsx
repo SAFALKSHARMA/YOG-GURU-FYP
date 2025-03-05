@@ -113,14 +113,18 @@ const NavBar = () => {
                 <Link
                   to={
                     userData?.role === "instructor"
-                      ? "/instructor/dashboard"
+                      ? "/profile"
                       : userData?.role === "admin"
-                      ? "/admin/dashboard"
+                      ? "/profile"
                       : "/profile"
                   }
                 >
                   <div className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300 text-lg font-semibold">
-                    {userData?.name ? userData.name[0].toUpperCase() : "U"}
+                    <img
+                      src={userData?.image}
+                      alt={userData?.name}
+                      className="rounded-full w-full h-full object-cover border-4 border-purple-100"
+                    />
                   </div>
                 </Link>
               ) : (

@@ -12,12 +12,12 @@ const ManageUsers = () => {
       try {
         const response = await fetch(
           "http://localhost:3000/api/user/all-users"
-        ); // Ensure backend URL matches
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch users data");
         }
         const data = await response.json();
-        setUsers(data.users || []); // Ensure it handles undefined gracefully
+        setUsers(data.users || []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -52,6 +52,7 @@ const ManageUsers = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-purple-100">
+                <th className="p-3">Image</th>
                 <th className="p-3">Full Name</th>
                 <th className="p-3">Email</th>
                 <th className="p-3">Role</th>
@@ -61,6 +62,13 @@ const ManageUsers = () => {
             <tbody>
               {users.map((user) => (
                 <tr key={user._id} className="border-b hover:bg-purple-50">
+                  <td className="p-3">
+                    <img
+                      src={user.image || "https://via.placeholder.com/50"}
+                      alt={user.name}
+                      className="w-10 h-10 rounded-full border"
+                    />
+                  </td>
                   <td className="p-3">{user.name}</td>
                   <td className="p-3">{user.email}</td>
                   <td className="p-3">{user.role || "User"}</td>

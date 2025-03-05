@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from "../layout/MainLayout";
 import Home from "../pages/Home/Home";
-import Instructors from "../pages/Instructors/InstructorDashboard";
 import Classes from "../pages/Classes/Classes";
 import Blog from "../pages/Blog/Blog";
 import Shop from "../pages/Shop/Shop";
@@ -9,8 +8,8 @@ import Login from "../components/headers/Login";
 import Signup from "../components/headers/Signup";
 import EmailVerification from "../components/EmailVerification";
 import ForgetPassword from "../components/ForgetPassword";
-import Profile from "../components/headers/Profile";
-import InstructorApplicationForm from "../pages/Instructors/applyInstructor";
+import Profile from "../profile/Profile";
+import InstructorApplicationForm from "../pages/Instructors/ApplyInstructor";
 import ManageInstructors from "../Admin/ManageInstructors";
 import ManageUsers from "../Admin/ManageUsers";
 import AdminDashboard from "../Admin/AdminDashboard";

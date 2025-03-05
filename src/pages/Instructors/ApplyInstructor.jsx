@@ -8,10 +8,10 @@ export default function InstructorApplicationForm() {
     experience: "",
     qualifications: "",
     bio: "",
+    image: null,
   });
 
   const [message, setMessage] = useState("");
-  //   const { backendUrl } = useContext(AppContent);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,8 +21,58 @@ export default function InstructorApplicationForm() {
     }));
   };
 
+  const handleImageChange = (e) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      image: e.target.files[0],
+    }));
+  };
+
+  const uploadImageToCloudinary = async (imageFile) => {
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("upload_preset", uploadPreset);
+
+    try {
+      console.log("Uploading image to Cloudinary...");
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const data = await response.json();
+      console.log("Image uploaded successfully:", data.secure_url);
+      return data.secure_url;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      return null;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    let imageUrl = "";
+    if (formData.image) {
+      imageUrl = await uploadImageToCloudinary(formData.image);
+      if (!imageUrl) {
+        setMessage("Error uploading image");
+        return;
+      }
+    }
+
+    const formDataToSend = {
+      ...formData,
+      image: imageUrl,
+    };
+    delete formDataToSend.imageFile;
+
+    console.log("Sending form data to backend:", formDataToSend);
 
     try {
       const response = await fetch(
@@ -32,11 +82,12 @@ export default function InstructorApplicationForm() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(formDataToSend),
         }
       );
 
       const data = await response.json();
+      console.log("Response from backend:", data);
 
       if (response.ok) {
         setMessage("Application submitted successfully!");
@@ -47,11 +98,13 @@ export default function InstructorApplicationForm() {
           experience: "",
           qualifications: "",
           bio: "",
+          image: null,
         });
       } else {
         setMessage(data.message || "Error submitting application");
       }
     } catch (error) {
+      console.error("Error submitting application:", error);
       setMessage("Error submitting application");
     }
   };
@@ -60,7 +113,11 @@ export default function InstructorApplicationForm() {
     <div className="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-4">Apply to be an Instructor</h2>
       {message && <p className="mb-4 text-red-500">{message}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+        encType="multipart/form-data"
+      >
         <input
           type="text"
           name="fullName"
@@ -111,6 +168,14 @@ export default function InstructorApplicationForm() {
           placeholder="Short Bio"
           value={formData.bio}
           onChange={handleChange}
+          className="w-full p-2 border rounded"
+          required
+        />
+        <input
+          type="file"
+          name="image"
+          accept="image/*"
+          onChange={handleImageChange}
           className="w-full p-2 border rounded"
           required
         />

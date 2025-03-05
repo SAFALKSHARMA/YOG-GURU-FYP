@@ -6,7 +6,7 @@ const ManageInstructors = () => {
   const [instructors, setInstructors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false); // For button disabling during processing
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchInstructors = async () => {
@@ -30,11 +30,13 @@ const ManageInstructors = () => {
   }, []);
 
   const handleApprove = async (instructorId) => {
-    setIsProcessing(true); // Disable buttons during processing
+    setIsProcessing(true);
     try {
       const response = await fetch(
         `http://localhost:3000/api/instructors/approve/${instructorId}`,
-        { method: "PUT" }
+        {
+          method: "PUT",
+        }
       );
       if (!response.ok) {
         const errData = await response.json();
@@ -48,19 +50,20 @@ const ManageInstructors = () => {
         )
       );
     } catch (err) {
-      console.error("Error approving instructor:", err);
       setError(err.message || "Failed to approve instructor");
     } finally {
-      setIsProcessing(false); // Re-enable buttons after processing
+      setIsProcessing(false);
     }
   };
 
   const handleReject = async (instructorId) => {
-    setIsProcessing(true); // Disable buttons during processing
+    setIsProcessing(true);
     try {
       const response = await fetch(
         `http://localhost:3000/api/instructors/reject/${instructorId}`,
-        { method: "PUT" }
+        {
+          method: "PUT",
+        }
       );
       if (!response.ok) {
         const errData = await response.json();
@@ -74,10 +77,9 @@ const ManageInstructors = () => {
         )
       );
     } catch (err) {
-      console.error("Error rejecting instructor:", err);
       setError(err.message || "Failed to reject instructor");
     } finally {
-      setIsProcessing(false); // Re-enable buttons after processing
+      setIsProcessing(false);
     }
   };
 
@@ -107,6 +109,7 @@ const ManageInstructors = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-purple-100">
+                <th className="p-3">Image</th>
                 <th className="p-3">Full Name</th>
                 <th className="p-3">Email</th>
                 <th className="p-3">Phone</th>
@@ -123,6 +126,13 @@ const ManageInstructors = () => {
                   key={instructor._id}
                   className="border-b hover:bg-purple-50"
                 >
+                  <td className="p-3">
+                    <img
+                      src={instructor.image || "https://via.placeholder.com/50"}
+                      alt={instructor.fullName}
+                      className="w-10 h-10 rounded-full border"
+                    />
+                  </td>
                   <td className="p-3">{instructor.fullName}</td>
                   <td className="p-3">{instructor.email}</td>
                   <td className="p-3">{instructor.phone}</td>
@@ -148,7 +158,7 @@ const ManageInstructors = () => {
                       className={`p-2 bg-green-500 text-white rounded-full hover:bg-green-600 flex items-center justify-center ${
                         isProcessing ? "opacity-50 cursor-not-allowed" : ""
                       }`}
-                      disabled={isProcessing} // Disable while processing
+                      disabled={isProcessing}
                     >
                       <CheckCircle size={16} />
                     </button>
@@ -157,7 +167,7 @@ const ManageInstructors = () => {
                       className={`p-2 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center ${
                         isProcessing ? "opacity-50 cursor-not-allowed" : ""
                       }`}
-                      disabled={isProcessing} // Disable while processing
+                      disabled={isProcessing}
                     >
                       <XCircle size={16} />
                     </button>
