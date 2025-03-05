@@ -4,7 +4,7 @@ import userModel from "../models/userModel.js";
 // Submit a new instructor application
 export const submitApplication = async (req, res) => {
   try {
-    const { fullName, email, phone, experience, qualifications, bio } =
+    const { fullName, email, phone, experience, qualifications, bio, image } =
       req.body;
 
     // Check if email already exists
@@ -22,6 +22,7 @@ export const submitApplication = async (req, res) => {
       experience,
       qualifications,
       bio,
+      image, // Save the image URL in the database
     });
 
     await newApplication.save();
@@ -72,6 +73,7 @@ export const approveInstructor = async (req, res) => {
           phone: instructorApplication.phone,
           qualifications: instructorApplication.qualifications,
           bio: instructorApplication.bio,
+          image: instructorApplication.image,
         },
       },
       { new: true, runValidators: true } // Ensure validators run
@@ -124,6 +126,8 @@ export const rejectInstructor = async (req, res) => {
           phone: "",
           qualifications: "",
           bio: "",
+          image:
+            "https://res.cloudinary.com/dp4gvijd6/image/upload/v1741167612/profile_ucyhch.png",
         },
       }, // Revert role to "user"
       { new: true }

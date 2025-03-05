@@ -23,7 +23,12 @@ export const getUserData = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        image: user.image,
         isAccountVerified: user.isAccountVerified,
+        qualifications: user.qualifications,
+        phone: user.phone,
+        experience: user.experience,
+        bio: user.bio,
       },
     });
   } catch (error) {
@@ -37,7 +42,7 @@ export const getAllUsers = async (req, res) => {
     // Fetch only verified users
     const users = await userModel.find(
       { isAccountVerified: true },
-      "name email role isAccountVerified"
+      "name email role isAccountVerified image qualifications experience phone bio"
     );
 
     // Return the filtered users' data
@@ -48,5 +53,42 @@ export const getAllUsers = async (req, res) => {
   } catch (error) {
     // Handle errors
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Update Profile Image Controller
+export const updateProfileImage = async (req, res) => {
+  try {
+    const { email, image } = req.body;
+
+    if (!email || !image) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email and image URL are required." });
+    }
+
+    // Find the user by email
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+
+    // Update user's profile image
+    user.image = image;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile image updated successfully.",
+      image: user.image,
+    });
+  } catch (error) {
+    console.error("Error updating profile image:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error. Please try again later.",
+    });
   }
 };

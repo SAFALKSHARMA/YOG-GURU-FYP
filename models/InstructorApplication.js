@@ -8,6 +8,7 @@ const instructorApplicationSchema = new mongoose.Schema(
     experience: { type: Number, required: true },
     qualifications: { type: String, required: true },
     bio: { type: String, required: true },
+    image: { type: String, required: true },
     status: {
       type: String,
       enum: ["Pending", "Approved", "Rejected"],

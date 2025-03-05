@@ -10,6 +10,11 @@ const userSchema = new mongoose.Schema({
   resetOtp: { type: String, default: "" },
   resetOtpExpireAt: { type: Number, default: 0 },
   role: { type: String, default: "user" },
+  image: {
+    type: String,
+    default:
+      "https://res.cloudinary.com/dp4gvijd6/image/upload/v1741167612/profile_ucyhch.png",
+  },
   experience: { type: Number, default: 0 }, // Add this
   phone: { type: String, default: "" }, // Add this
   qualifications: { type: String, default: "" }, // Add this

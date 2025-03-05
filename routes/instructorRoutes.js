@@ -5,10 +5,13 @@ import {
   approveInstructor,
   rejectInstructor,
 } from "../controllers/instructorController.js";
+import multer from "multer";
+import storage from "../config/cloudinary.js";
 
 const router = express.Router();
+const upload = multer({ storage }); // Use Cloudinary storage for multer
 
-router.post("/apply", submitApplication); // Submit application
+router.post("/apply", upload.single("image"), submitApplication); // Submit application
 router.get("/applications", getApplications); // Get all applications (for admin)
 
 router.put("/approve/:instructorId", approveInstructor);
