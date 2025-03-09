@@ -15,6 +15,10 @@ import ManageUsers from "../Admin/ManageUsers";
 import AdminDashboard from "../Admin/AdminDashboard";
 import InstructorDashboard from "../pages/Instructors/InstructorDashboard";
 import ManageClass from "../Admin/manageClass";
+import InstructorLayout from "../pages/Instructors/InstructorLayout";
+import AddClass from "../pages/Instructors/AddClass";
+import MyClasses from "../pages/Instructors/MyClasses";
+import StudentsList from "../pages/Instructors/StudentsList";
 
 function AppRouter() {
   return (
@@ -42,8 +46,14 @@ function AppRouter() {
         />
         <Route path="/admin/manage-users" element={<ManageUsers />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
         <Route path="/admin/manage-classes" element={<ManageClass />} />
+
+        <Route path="/instructor" element={<InstructorLayout />}>
+          <Route index element={<InstructorDashboard />} />
+          <Route path="/instructor/add-class" element={<AddClass />} />
+          <Route path="my-classes" element={<MyClasses />} />
+          <Route path="students" element={<StudentsList />} />
+        </Route>
       </Routes>
       {/* </MainLayout> */}
     </Router>

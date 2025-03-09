@@ -2,20 +2,20 @@
 import React from "react";
 import { Calendar } from "lucide-react";
 
-const Applications = ({ applications }) => {
+const Applications = ({ applications = [] }) => {
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
       <div className="px-6 py-5 border-b border-gray-200">
         <h3 className="text-lg font-medium leading-6 text-gray-900">
-          My Applications
+          My Class Applications
         </h3>
         <p className="mt-1 text-sm text-gray-500">
-          Track the status of your adoption applications.
+          Track the status of your yoga class enrollment applications.
         </p>
       </div>
 
       <div className="px-6 py-5">
-        {applications.length > 0 ? (
+        {Array.isArray(applications) && applications.length > 0 ? (
           <div className="overflow-hidden">
             <ul className="divide-y divide-gray-200">
               {applications.map((application) => (
@@ -23,14 +23,14 @@ const Applications = ({ applications }) => {
                   <div className="flex items-center space-x-4">
                     <div className="flex-shrink-0 h-16 w-16">
                       <img
-                        src={application.petImage}
-                        alt={application.petName}
+                        src={application.classImage}
+                        alt={application.className}
                         className="h-16 w-16 rounded-md object-cover"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {application.petName}
+                        {application.className}
                       </p>
                       <p className="text-sm text-gray-500">
                         Submitted on {application.submittedDate}
@@ -66,11 +66,11 @@ const Applications = ({ applications }) => {
               No applications yet
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              Start the adoption process by applying for a pet.
+              Start your yoga journey by applying for a class.
             </p>
             <div className="mt-6">
               <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
-                Browse Available Pets
+                Browse Classes
               </button>
             </div>
           </div>

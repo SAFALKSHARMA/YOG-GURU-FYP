@@ -1,89 +1,96 @@
 import React from "react";
-import { Users, BookOpen, DollarSign, Clock } from "lucide-react";
+import { Users, BookOpen, Clock, TrendingUp, Calendar } from "lucide-react";
 
 const InstructorDashboard = () => {
-  // Static data for now
-  const stats = {
-    users: 120,
-    classes: 15,
-    earnings: 4500,
-    pending: 4,
-  };
+  const stats = [
+    {
+      title: "Total Students",
+      value: "124",
+      icon: <Users className="text-purple-600" size={24} />,
+    },
+    {
+      title: "Active Classes",
+      value: "8",
+      icon: <BookOpen className="text-purple-600" size={24} />,
+    },
+    {
+      title: "Class Hours",
+      value: "32",
+      icon: <Clock className="text-purple-600" size={24} />,
+    },
+    {
+      title: "Growth",
+      value: "+12%",
+      icon: <TrendingUp className="text-purple-600" size={24} />,
+    },
+  ];
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      {/* <Sidebar /> */}
+    <div className="p-8">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
 
-      {/* Dashboard Content */}
-      <div className="flex-1 p-6 bg-white rounded-2xl shadow-lg m-4 overflow-y-auto">
-        <h1 className="text-3xl font-bold text-purple-700 mb-6">
-          Instructor Dashboard
-        </h1>
-
-        {/* Dashboard Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Total Users */}
-          <div className="p-6 bg-purple-100 rounded-lg flex items-center shadow-md">
-            <Users className="text-purple-700" size={36} />
-            <div className="ml-4">
-              <p className="text-gray-700 text-sm">Total Users</p>
-              <h2 className="text-xl font-bold text-purple-900">
-                {stats.users}
-              </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 bg-purple-50 rounded-lg">{stat.icon}</div>
             </div>
+            <h3 className="text-gray-600 text-sm">{stat.title}</h3>
+            <p className="text-2xl font-bold text-gray-800 mt-1">
+              {stat.value}
+            </p>
           </div>
+        ))}
+      </div>
 
-          {/* Active Classes */}
-          <div className="p-6 bg-blue-100 rounded-lg flex items-center shadow-md">
-            <BookOpen className="text-blue-700" size={36} />
-            <div className="ml-4">
-              <p className="text-gray-700 text-sm">Active Classes</p>
-              <h2 className="text-xl font-bold text-blue-900">
-                {stats.classes}
-              </h2>
-            </div>
-          </div>
-
-          {/* Total Earnings */}
-          <div className="p-6 bg-green-100 rounded-lg flex items-center shadow-md">
-            <DollarSign className="text-green-700" size={36} />
-            <div className="ml-4">
-              <p className="text-gray-700 text-sm">Total Earnings</p>
-              <h2 className="text-xl font-bold text-green-900">
-                ${stats.earnings}
-              </h2>
-            </div>
-          </div>
-
-          {/* Pending Approvals */}
-          <div className="p-6 bg-red-100 rounded-lg flex items-center shadow-md">
-            <Clock className="text-red-700" size={36} />
-            <div className="ml-4">
-              <p className="text-gray-700 text-sm">Pending Approvals</p>
-              <h2 className="text-xl font-bold text-red-900">
-                {stats.pending}
-              </h2>
-            </div>
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Upcoming Classes
+          </h2>
+          <div className="space-y-4">
+            {[1, 2, 3].map((_, index) => (
+              <div
+                key={index}
+                className="flex items-center p-4 bg-purple-50 rounded-lg"
+              >
+                <Calendar className="text-purple-600 mr-4" size={20} />
+                <div>
+                  <h4 className="font-medium text-gray-800">Vinyasa Flow</h4>
+                  <p className="text-sm text-gray-600">
+                    Today at 10:00 AM • 15 students
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Recent Activities */}
-        <div className="mt-8 p-6 bg-gray-50 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">
+        <div className="bg-white rounded-lg p-6 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
             Recent Activities
           </h2>
-          <ul className="space-y-3">
-            <li className="p-3 bg-white rounded-md shadow-sm hover:bg-gray-100 transition">
-              ✅ User **John Doe** was approved as an **Instructor**
-            </li>
-            <li className="p-3 bg-white rounded-md shadow-sm hover:bg-gray-100 transition">
-              📚 New Yoga Class **"Sunrise Meditation"** added
-            </li>
-            <li className="p-3 bg-white rounded-md shadow-sm hover:bg-gray-100 transition">
-              ⏳ **3 Instructor Applications** pending approval
-            </li>
-          </ul>
+          <div className="space-y-4">
+            {[1, 2, 3].map((_, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-4 p-4 border-b last:border-0"
+              >
+                <div className="w-2 h-2 rounded-full bg-purple-600"></div>
+                <div>
+                  <h4 className="font-medium text-gray-800">
+                    New student enrolled
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Sarah Johnson joined Meditation Basics
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

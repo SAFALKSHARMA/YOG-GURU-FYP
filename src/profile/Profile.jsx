@@ -93,7 +93,7 @@ const Profile = () => {
           {/* Main Content */}
           <div className="mt-8 lg:mt-0 lg:col-span-9">
             {activeTab === "profile" && <ProfileInfo user={user} />}
-            {activeTab === "adopted" && (
+            {activeTab === "enrolled" && (
               <EnrolledClasses adoptedPets={user.adoptedPets} />
             )}
             {activeTab === "favorites" && (

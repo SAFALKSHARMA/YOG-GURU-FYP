@@ -9,6 +9,7 @@ export const AppContextProvider = (props) => {
   const backendUrl = "http://localhost:3000";
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [userData, setUserData] = useState(null); // Set default to null
+  const [instructorData, setInstructorData] = useState(null);
 
   axios.defaults.withCredentials = true;
 
@@ -41,11 +42,12 @@ export const AppContextProvider = (props) => {
   const getUserData = async () => {
     try {
       const { data } = await axios.get(`${backendUrl}/api/user/data`, {
-        withCredentials: true, // ✅ Important! Ensures cookies (token) are sent
+        withCredentials: true,
       });
 
       if (data.success) {
         setUserData(data.userData);
+        setInstructorData(data.instructorData || null); // Ensure instructorData is set
         setIsLoggedin(true);
       } else {
         toast.error(data.message);
@@ -64,6 +66,8 @@ export const AppContextProvider = (props) => {
     setIsLoggedin,
     userData,
     setUserData,
+    instructorData, // ✅ Now available in context
+    setInstructorData,
     getUserData,
   };
 

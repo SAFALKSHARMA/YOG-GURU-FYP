@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useContext, useState, useEffect } from "react";
+import { AppContent } from "../../context/AppContext";
 
 export default function InstructorApplicationForm() {
+  const { userData } = useContext(AppContent);
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -12,6 +15,15 @@ export default function InstructorApplicationForm() {
   });
 
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (userData?.email) {
+      setFormData((prevData) => ({
+        ...prevData,
+        email: userData.email,
+      }));
+    }
+  }, [userData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,7 +49,6 @@ export default function InstructorApplicationForm() {
     formData.append("upload_preset", uploadPreset);
 
     try {
-      console.log("Uploading image to Cloudinary...");
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         {
@@ -46,7 +57,6 @@ export default function InstructorApplicationForm() {
         }
       );
       const data = await response.json();
-      console.log("Image uploaded successfully:", data.secure_url);
       return data.secure_url;
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -72,8 +82,6 @@ export default function InstructorApplicationForm() {
     };
     delete formDataToSend.imageFile;
 
-    console.log("Sending form data to backend:", formDataToSend);
-
     try {
       const response = await fetch(
         "http://localhost:3000/api/instructors/apply",
@@ -87,13 +95,11 @@ export default function InstructorApplicationForm() {
       );
 
       const data = await response.json();
-      console.log("Response from backend:", data);
-
       if (response.ok) {
         setMessage("Application submitted successfully!");
         setFormData({
           fullName: "",
-          email: "",
+          email: userData.email,
           phone: "",
           experience: "",
           qualifications: "",
@@ -130,10 +136,9 @@ export default function InstructorApplicationForm() {
         <input
           type="email"
           name="email"
-          placeholder="Email Address"
           value={formData.email}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
+          readOnly
           required
         />
         <input

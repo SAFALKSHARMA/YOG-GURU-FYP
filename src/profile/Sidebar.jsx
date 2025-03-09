@@ -95,7 +95,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
           <img
             src={userData?.image}
             alt={userData?.name}
-            className="rounded-full w-full h-full object-cover border-4 border-purple-100"
+            className="rounded-full w-full h-full object-cover border-4 border-purple-500"
           />
           <button
             onClick={handleEditClick}
@@ -207,7 +207,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
             </Link>
           )}
           {userData?.role === "instructor" && (
-            <Link to="/instructor-dashboard">
+            <Link to="/instructor">
               <button
                 className={`flex items-center px-6 py-3 text-sm font-medium ${
                   activeTab === "vendor-dashboard"

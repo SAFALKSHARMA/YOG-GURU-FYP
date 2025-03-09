@@ -123,7 +123,7 @@ const NavBar = () => {
                     <img
                       src={userData?.image}
                       alt={userData?.name}
-                      className="rounded-full w-full h-full object-cover border-4 border-purple-100"
+                      className="rounded-full w-full h-full object-cover border-2 border-purple-500"
                     />
                   </div>
                 </Link>

@@ -32,16 +32,30 @@ const ManageInstructors = () => {
   const handleApprove = async (instructorId) => {
     setIsProcessing(true);
     try {
+      // Ensure instructorId is valid
+      if (!instructorId) {
+        throw new Error("Instructor ID is required");
+      }
+
+      // Send the PUT request to approve the instructor
       const response = await fetch(
         `http://localhost:3000/api/instructors/approve/${instructorId}`,
         {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json", // Add header for consistency
+          },
         }
       );
+
+      // Check if the response is ok
       if (!response.ok) {
         const errData = await response.json();
+        console.error("Error data:", errData); // Log the error data for debugging
         throw new Error(errData.message || "Failed to approve instructor");
       }
+
+      // Update instructors state after successful approval
       setInstructors((prev) =>
         prev.map((instructor) =>
           instructor._id === instructorId
@@ -49,7 +63,12 @@ const ManageInstructors = () => {
             : instructor
         )
       );
+
+      // Optionally, handle any additional success behavior here
+      alert("Instructor approved successfully!");
     } catch (err) {
+      // Log the error message for debugging
+      console.error("Approval error:", err);
       setError(err.message || "Failed to approve instructor");
     } finally {
       setIsProcessing(false);
