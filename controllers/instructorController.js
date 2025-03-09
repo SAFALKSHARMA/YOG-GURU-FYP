@@ -1,11 +1,25 @@
 import InstructorApplication from "../models/InstructorApplication.js";
 import userModel from "../models/userModel.js";
+import Instructor from "../models/Instructor.js";
 
 // Submit a new instructor application
 export const submitApplication = async (req, res) => {
   try {
     const { fullName, email, phone, experience, qualifications, bio, image } =
       req.body;
+
+    // Validate required fields
+    if (
+      !fullName ||
+      !email ||
+      !phone ||
+      !experience ||
+      !qualifications ||
+      !bio ||
+      !image
+    ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
     // Check if email already exists
     const existingApplication = await InstructorApplication.findOne({ email });
@@ -49,6 +63,7 @@ export const getApplications = async (req, res) => {
   }
 };
 
+// Approve instructor
 export const approveInstructor = async (req, res) => {
   try {
     const { instructorId } = req.params;
@@ -63,20 +78,14 @@ export const approveInstructor = async (req, res) => {
         .json({ message: "Instructor application not found" });
     }
 
-    // Find and update user by email
+    // Log the instructor application data
+    console.log("Instructor Application:", instructorApplication);
+
+    // Update user role to "instructor" only
     const updatedUser = await userModel.findOneAndUpdate(
       { email: instructorApplication.email }, // Find by email
-      {
-        $set: {
-          role: "instructor",
-          experience: instructorApplication.experience,
-          phone: instructorApplication.phone,
-          qualifications: instructorApplication.qualifications,
-          bio: instructorApplication.bio,
-          image: instructorApplication.image,
-        },
-      },
-      { new: true, runValidators: true } // Ensure validators run
+      { $set: { role: "instructor", image: instructorApplication.image } }, // Only update the role
+      { new: true, runValidators: true }
     );
 
     if (!updatedUser) {
@@ -85,14 +94,44 @@ export const approveInstructor = async (req, res) => {
         .json({ message: "User not found in the database" });
     }
 
-    // Update instructor application status
+    // Log the updated user data
+    console.log("Updated User:", updatedUser);
+
+    // Ensure all required fields are provided before saving the Instructor
+    if (
+      !instructorApplication.fullName ||
+      !instructorApplication.email ||
+      !instructorApplication.image
+    ) {
+      return res.status(400).json({
+        message: "Missing required fields in the instructor application",
+      });
+    }
+
+    // Save instructor data in the Instructor schema
+    const newInstructor = new Instructor({
+      fullName: instructorApplication.fullName,
+      email: instructorApplication.email,
+      phone: instructorApplication.phone,
+      experience: instructorApplication.experience,
+      qualifications: instructorApplication.qualifications,
+      bio: instructorApplication.bio,
+      image: instructorApplication.image,
+      classes: [], // Initially, no classes
+    });
+
+    // Save the new instructor to the database
+    await newInstructor.save();
+
+    // Update instructor application status to "Approved"
     await InstructorApplication.findByIdAndUpdate(instructorId, {
       status: "Approved",
     });
 
     res.status(200).json({
-      message: "Instructor approved successfully!",
+      message: "Instructor approved and data saved successfully!",
       user: updatedUser,
+      instructor: newInstructor,
     });
   } catch (error) {
     console.error("Error approving instructor:", error);
@@ -102,6 +141,7 @@ export const approveInstructor = async (req, res) => {
   }
 };
 
+// Reject instructor
 export const rejectInstructor = async (req, res) => {
   try {
     const { instructorId } = req.params;
@@ -116,20 +156,10 @@ export const rejectInstructor = async (req, res) => {
         .json({ message: "Instructor application not found" });
     }
 
-    // Update the user's role back to "user"
+    // Update the user's role back to "user" (only role, no additional fields)
     const updatedUser = await userModel.findOneAndUpdate(
       { email: instructorApplication.email },
-      {
-        $set: {
-          role: "user",
-          experience: "",
-          phone: "",
-          qualifications: "",
-          bio: "",
-          image:
-            "https://res.cloudinary.com/dp4gvijd6/image/upload/v1741167612/profile_ucyhch.png",
-        },
-      }, // Revert role to "user"
+      { $set: { role: "user" } }, // Only revert the role to "user"
       { new: true }
     );
 
@@ -137,17 +167,22 @@ export const rejectInstructor = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Remove the instructor from the Instructor model
+    await Instructor.findOneAndDelete({ email: instructorApplication.email });
+
     // Update the instructor application status to "rejected"
     instructorApplication.status = "Rejected";
     await instructorApplication.save();
 
     res.status(200).json({
-      message: "Instructor rejected successfully!",
+      message: "Instructor rejected and removed successfully!",
       user: updatedUser,
       instructor: instructorApplication,
     });
   } catch (error) {
     console.error("Error rejecting instructor:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };

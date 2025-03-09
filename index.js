@@ -7,6 +7,8 @@ import cors from "cors";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import instructorRoutes from "./routes/instructorRoutes.js";
+import classRoutes from "./routes/classRoutes.js";
+import Instructor from "./models/Instructor.js";
 
 const app = express();
 const PORT = 3000;
@@ -48,6 +50,39 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/instructors", instructorRoutes);
+app.use("/api/classes", classRoutes);
+
+// Example backend route in Node.js (Express)
+app.get("/api/classes/instructor/:instructorId", async (req, res) => {
+  try {
+    const instructorId = req.params.instructorId;
+    const instructor = await Instructor.findById(instructorId).populate(
+      "classes"
+    );
+
+    if (!instructor) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Instructor not found" });
+    }
+
+    res.json({ success: true, classes: instructor.classes });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// Route to fetch all instructors
+app.get("/api/instructors/all-instructors", async (req, res) => {
+  try {
+    const instructors = await Instructor.find(); // Fetches all instructors
+    res.status(200).json(instructors);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching instructors" });
+  }
+});
 
 // Start the server
 app.listen(PORT, () => {

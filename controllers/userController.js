@@ -1,4 +1,5 @@
 import userModel from "../models/userModel.js";
+import Instructor from "../models/Instructor.js";
 
 export const getUserData = async (req, res) => {
   try {
@@ -16,7 +17,22 @@ export const getUserData = async (req, res) => {
       return res.json({ success: false, message: "User not found" });
     }
 
-    // Return the user data
+    // Initialize instructorData as null
+    let instructorData = null;
+
+    // If the user's role is "instructor", fetch instructor details using the user's email
+    if (user.role === "instructor") {
+      instructorData = await Instructor.findOne({ email: user.email });
+
+      if (!instructorData) {
+        return res.json({
+          success: false,
+          message: "Instructor details not found",
+        });
+      }
+    }
+
+    // Return the user data along with instructor data (if applicable)
     res.json({
       success: true,
       userData: {
@@ -30,6 +46,7 @@ export const getUserData = async (req, res) => {
         experience: user.experience,
         bio: user.bio,
       },
+      instructorData: instructorData, // Include instructor data if role is "instructor"
     });
   } catch (error) {
     // Return the error message in the response
