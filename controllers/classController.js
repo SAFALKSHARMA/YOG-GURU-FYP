@@ -65,3 +65,57 @@ export const createClass = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+// Controller to fetch all classes of all instructors with 'Approved' status
+export const getAllClasses = async (req, res) => {
+  try {
+    // Fetch instructors and their classes
+    const instructors = await Instructor.find({}, "classes");
+
+    // Filter the classes to only include those with 'Approved' status
+    const allClasses = instructors
+      .flatMap((instructor) => instructor.classes)
+      .filter((classItem) => classItem.status === "Approved");
+
+    res.status(200).json(allClasses);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching classes", error: error.message });
+  }
+};
+
+// Controller function to update class status
+// Function to update class status
+export const updateClassStatus = async (req, res) => {
+  const { classId, newStatus } = req.body;
+
+  try {
+    const instructor = await Instructor.findOne({
+      "classes._id": classId, // Find the instructor with the class
+    });
+
+    if (!instructor) {
+      return res.status(404).json({ message: "Instructor or class not found" });
+    }
+
+    // Find the class to update
+    const classToUpdate = instructor.classes.find(
+      (classItem) => classItem._id.toString() === classId
+    );
+
+    if (!classToUpdate) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    // Update the class status
+    classToUpdate.status = newStatus;
+
+    // Save the updated instructor
+    await instructor.save();
+
+    res.status(200).json({ message: "Class status updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

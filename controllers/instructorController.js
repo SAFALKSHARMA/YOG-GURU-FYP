@@ -186,3 +186,14 @@ export const rejectInstructor = async (req, res) => {
       .json({ message: "Internal server error", error: error.message });
   }
 };
+
+export const getAllInstructors = async (req, res) => {
+  try {
+    const instructors = await Instructor.find({}); // Fetch all instructors including their classes
+    res.status(200).json(instructors);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching instructors", error: error.message });
+  }
+};
