@@ -3,8 +3,6 @@ import { NavLink, Link } from "react-router-dom";
 import { FaBars, FaSearch } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { toast } from "react-toastify";
-import axios from "axios";
 import { AppContent } from "../../context/AppContext";
 
 const navLinks = [

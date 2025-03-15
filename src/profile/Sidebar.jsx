@@ -207,7 +207,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
             </Link>
           )}
           {userData?.role === "instructor" && (
-            <Link to="/instructor">
+            <Link to="/instructor/dashboard">
               <button
                 className={`flex items-center px-6 py-3 text-sm font-medium ${
                   activeTab === "vendor-dashboard"

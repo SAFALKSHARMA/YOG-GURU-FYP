@@ -15,10 +15,10 @@ import ManageUsers from "../Admin/ManageUsers";
 import AdminDashboard from "../Admin/AdminDashboard";
 import InstructorDashboard from "../pages/Instructors/InstructorDashboard";
 import ManageClass from "../Admin/manageClass";
-import InstructorLayout from "../pages/Instructors/InstructorLayout";
 import AddClass from "../pages/Instructors/AddClass";
 import MyClasses from "../pages/Instructors/MyClasses";
 import StudentsList from "../pages/Instructors/StudentsList";
+import InstructorsList from "../pages/Instructors/InstructorList";
 
 function AppRouter() {
   return (
@@ -40,6 +40,7 @@ function AppRouter() {
           element={<InstructorApplicationForm />}
         />
 
+        {/* Admin Routes */}
         <Route
           path="/admin/manage-instructors"
           element={<ManageInstructors />}
@@ -48,14 +49,13 @@ function AppRouter() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/manage-classes" element={<ManageClass />} />
 
-        <Route path="/instructor" element={<InstructorLayout />}>
-          <Route index element={<InstructorDashboard />} />
-          <Route path="/instructor/add-class" element={<AddClass />} />
-          <Route path="my-classes" element={<MyClasses />} />
-          <Route path="students" element={<StudentsList />} />
-        </Route>
+        {/* Instructor Routes (Not Nested) */}
+        <Route path="/instructors" element={<InstructorsList />} />
+        <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
+        <Route path="/instructor/add-class" element={<AddClass />} />
+        <Route path="/instructor/my-classes" element={<MyClasses />} />
+        <Route path="/instructor/students" element={<StudentsList />} />
       </Routes>
-      {/* </MainLayout> */}
     </Router>
   );
 }

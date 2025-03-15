@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { CheckCircle, XCircle } from "lucide-react";
 import Sidebar from "./Sidebar";
+import ClassDetailsModal from "./classModal";
 
 const ManageClass = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedClass, setSelectedClass] = useState(null); // Track selected class for modal
+  const [selectedClass, setSelectedClass] = useState(null);
 
-  // Fetching users data from API
+  // Fetch classes data from API
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchClasses = async () => {
       try {
         const response = await fetch(
           "http://localhost:3000/api/instructors/all-instructors"
         );
         if (!response.ok) {
-          throw new Error("Failed to fetch instructors data");
+          throw new Error("Failed to fetch classes data");
         }
         const data = await response.json();
-        setUsers(data || []); // Ensure it handles undefined gracefully
+        setUsers(data || []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -27,31 +28,52 @@ const ManageClass = () => {
       }
     };
 
-    fetchUsers();
+    fetchClasses();
   }, []);
 
   // Function to handle opening the class modal
   const handleViewClassDetails = (classItem) => {
-    setSelectedClass(classItem); // Set the selected class to show in the modal
+    setSelectedClass(classItem);
   };
 
   // Function to close the modal
   const handleCloseModal = () => {
-    setSelectedClass(null); // Close the modal by clearing selected class
+    setSelectedClass(null);
   };
 
   // Function to handle updating the status of the class
-  const handleStatusChange = (classId, newStatus) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => ({
-        ...user,
-        classes: user.classes.map((classItem) =>
-          classItem._id === classId
-            ? { ...classItem, status: newStatus }
-            : classItem
-        ),
-      }))
-    );
+  const handleStatusChange = async (classId, newStatus) => {
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/classes/update-status",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ classId, newStatus }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update status");
+      }
+
+      // Update the local state after successful status update
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => ({
+          ...user,
+          classes: user.classes.map((classItem) =>
+            classItem._id === classId
+              ? { ...classItem, status: newStatus }
+              : classItem
+          ),
+        }))
+      );
+    } catch (err) {
+      console.error("Error updating class status:", err);
+      setError("Error updating class status");
+    }
   };
 
   return (
@@ -66,12 +88,12 @@ const ManageClass = () => {
         </h1>
 
         {loading && (
-          <p className="text-center text-gray-500">Loading instructors...</p>
+          <p className="text-center text-gray-500">Loading classes...</p>
         )}
         {error && <p className="text-center text-red-500">{error}</p>}
 
         {!loading && !error && users.length === 0 && (
-          <p className="text-center text-gray-500">No instructors found.</p>
+          <p className="text-center text-gray-500">No classes found.</p>
         )}
 
         {!loading && !error && users.length > 0 && (
@@ -90,7 +112,7 @@ const ManageClass = () => {
             </thead>
             <tbody>
               {users.map((user) =>
-                user.classes.map((classItem) => (
+                user.classes?.map((classItem) => (
                   <tr
                     key={classItem._id}
                     className="border-b hover:bg-purple-50"
@@ -124,27 +146,24 @@ const ManageClass = () => {
                     </td>
                     <td className="p-3 flex items-center space-x-2">
                       <button
-                        className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 flex items-center justify-center"
-                        onClick={() => handleViewClassDetails(classItem)} // Open modal with selected class data
-                        title="View Details"
+                        className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                        onClick={() => handleViewClassDetails(classItem)}
                       >
                         View
                       </button>
                       <button
-                        className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 flex items-center justify-center"
+                        className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600"
                         onClick={() =>
                           handleStatusChange(classItem._id, "Approved")
-                        } // Approve the class
-                        title="Approve"
+                        }
                       >
                         <CheckCircle size={16} />
                       </button>
                       <button
-                        className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center"
+                        className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
                         onClick={() =>
                           handleStatusChange(classItem._id, "Rejected")
-                        } // Deny the class
-                        title="Reject"
+                        }
                       >
                         <XCircle size={16} />
                       </button>
@@ -156,57 +175,10 @@ const ManageClass = () => {
           </table>
         )}
 
-        {/* Modal for viewing class details */}
-        {selectedClass && (
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-xl max-w-lg w-full shadow-lg">
-              <h2 className="text-2xl font-bold text-purple-700 mb-4">
-                Class Details
-              </h2>
-              <div>
-                <p>
-                  <strong>Class Name:</strong> {selectedClass.className}
-                </p>
-                <p>
-                  <strong>Description:</strong> {selectedClass.description}
-                </p>
-                <p>
-                  <strong>Date:</strong>{" "}
-                  {new Date(selectedClass.date).toLocaleDateString()}
-                </p>
-                <p>
-                  <strong>Time:</strong> {selectedClass.time}
-                </p>
-                <p>
-                  <strong>Duration:</strong> {selectedClass.duration} minutes
-                </p>
-                <p>
-                  <strong>Capacity:</strong> {selectedClass.capacity} seats
-                </p>
-                <p>
-                  <strong>Total Duration:</strong> {selectedClass.totalDuration}
-                </p>
-                <p>
-                  <strong>Price:</strong> Rs. {selectedClass.price}
-                </p>
-                <p>
-                  <strong>Class Link:</strong> {selectedClass.classLink}
-                </p>
-                <img
-                  src={selectedClass.image}
-                  alt={selectedClass.className}
-                  className="w-32 h-32 object-cover"
-                />
-              </div>
-              <button
-                className="mt-4 p-2 bg-gray-600 text-white rounded-full hover:bg-gray-700"
-                onClick={handleCloseModal}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
+        <ClassDetailsModal
+          selectedClass={selectedClass}
+          handleCloseModal={handleCloseModal}
+        />
       </div>
     </div>
   );
