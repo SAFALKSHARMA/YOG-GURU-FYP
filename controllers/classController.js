@@ -85,7 +85,6 @@ export const getAllClasses = async (req, res) => {
   }
 };
 
-// Controller function to update class status
 // Function to update class status
 export const updateClassStatus = async (req, res) => {
   const { classId, newStatus } = req.body;
@@ -115,6 +114,37 @@ export const updateClassStatus = async (req, res) => {
     await instructor.save();
 
     res.status(200).json({ message: "Class status updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Fetch class details by classId
+export const getClassDetails = async (req, res) => {
+  try {
+    const { classId } = req.params;
+
+    // Find an instructor that has the class
+    const instructor = await Instructor.findOne({ "classes._id": classId });
+
+    if (!instructor) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    // Find the specific class by ID
+    const classDetails = instructor.classes.id(classId);
+
+    if (!classDetails) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    // Include instructor's full name
+    const response = {
+      ...classDetails.toObject(),
+      instructorFullName: instructor.fullName,
+    };
+
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
