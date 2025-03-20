@@ -19,14 +19,19 @@ import AddClass from "../pages/Instructors/AddClass";
 import MyClasses from "../pages/Instructors/MyClasses";
 import StudentsList from "../pages/Instructors/StudentsList";
 import InstructorsList from "../pages/Instructors/InstructorList";
+import ClassDetails from "../pages/Classes/ClassDetails";
+import NavBar from "../components/headers/NavBar";
+import Footer from "../components/headers/Footer";
 
 function AppRouter() {
   return (
     <Router>
+      <NavBar />
       <MainLayout />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/classes" element={<Classes />} />
+        <Route path="/class-details/:classId" element={<ClassDetails />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/login" element={<Login />} />
@@ -56,6 +61,7 @@ function AppRouter() {
         <Route path="/instructor/my-classes" element={<MyClasses />} />
         <Route path="/instructor/students" element={<StudentsList />} />
       </Routes>
+      <Footer />
     </Router>
   );
 }

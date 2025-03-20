@@ -4,7 +4,7 @@ import NavBar from "../components/headers/NavBar";
 const MainLayout = () => {
   return (
     <div>
-      <NavBar />
+      {/* <NavBar /> */}
       <div className="mt-16">
         {" "}
         {/* Add margin-top for spacing */}

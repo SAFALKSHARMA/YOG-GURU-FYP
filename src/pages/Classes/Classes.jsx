@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Clock, MapPin, Users, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Classes = () => {
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -16,6 +18,7 @@ const Classes = () => {
           throw new Error("Failed to fetch classes");
         }
         const data = await response.json();
+        console.log("Fetched Classes:", data);
         setClasses(data);
       } catch (err) {
         setError(err.message);
@@ -29,6 +32,11 @@ const Classes = () => {
 
   if (loading) return <p className="text-center">Loading classes...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
+
+  const handleClick = (yogaClass) => {
+    console.log("Selected Class:", yogaClass);
+    navigate(`/class-details/${yogaClass._id}`);
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
@@ -73,7 +81,10 @@ const Classes = () => {
                 </div>
               </div>
 
-              <button className="w-full bg-purple-50 text-purple-600 hover:bg-purple-100 py-1.5 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-colors duration-200">
+              <button
+                onClick={() => handleClick(yogaClass)}
+                className="w-full bg-purple-50 text-purple-600 hover:bg-purple-100 py-1.5 px-3 rounded-md text-sm font-medium flex items-center justify-center transition-colors duration-200"
+              >
                 Book Class
                 <ChevronRight className="h-3.5 w-3.5 ml-1" />
               </button>
