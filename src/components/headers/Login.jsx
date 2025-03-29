@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import { AppContent } from "../../context/AppContext";
 // import "../components/styles.css";
 import Button from "../../ui/button";
+import Loading from "../../ui/Loading";
+import icon from "../../assets/meditation.gif";
 
 const Login = () => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -128,6 +130,12 @@ const Login = () => {
           </p>
         </div>
       </div>
+
+      <Loading
+        isOpen={isLoading}
+        text="Logging in..."
+        icon={<img src={icon} alt="Loading" className="w-16 h-16" />}
+      />
       <ToastComponent />
     </>
   );

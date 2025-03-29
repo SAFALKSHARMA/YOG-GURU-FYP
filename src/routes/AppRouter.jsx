@@ -22,6 +22,7 @@ import InstructorsList from "../pages/Instructors/InstructorList";
 import ClassDetails from "../pages/Classes/ClassDetails";
 import NavBar from "../components/headers/NavBar";
 import Footer from "../components/headers/Footer";
+import InstructorDetails from "../pages/Instructors/InstructorDetails";
 
 function AppRouter() {
   return (
@@ -56,6 +57,10 @@ function AppRouter() {
 
         {/* Instructor Routes (Not Nested) */}
         <Route path="/instructors" element={<InstructorsList />} />
+        <Route
+          path="/instructor-details/:instructorId"
+          element={<InstructorDetails />}
+        />
         <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
         <Route path="/instructor/add-class" element={<AddClass />} />
         <Route path="/instructor/my-classes" element={<MyClasses />} />

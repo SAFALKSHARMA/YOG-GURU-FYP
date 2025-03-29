@@ -12,6 +12,7 @@ export default function InstructorApplicationForm() {
     qualifications: "",
     bio: "",
     image: null,
+    serviceType: [],
   });
 
   const [message, setMessage] = useState("");
@@ -38,6 +39,16 @@ export default function InstructorApplicationForm() {
       ...prevData,
       image: e.target.files[0],
     }));
+  };
+
+  const handleServiceTypeChange = (e) => {
+    const { value, checked } = e.target;
+    setFormData((prevData) => {
+      const updatedServices = checked
+        ? [...prevData.serviceType, value]
+        : prevData.serviceType.filter((service) => service !== value);
+      return { ...prevData, serviceType: updatedServices };
+    });
   };
 
   const uploadImageToCloudinary = async (imageFile) => {
@@ -105,6 +116,7 @@ export default function InstructorApplicationForm() {
           qualifications: "",
           bio: "",
           image: null,
+          serviceType: [],
         });
       } else {
         setMessage(data.message || "Error submitting application");
@@ -176,6 +188,22 @@ export default function InstructorApplicationForm() {
           className="w-full p-2 border rounded"
           required
         />
+        <div className="space-y-2">
+          <label className="block font-semibold">Service Type:</label>
+          {["Online Yoga", "Customer Home", "Instructor Home"].map(
+            (service) => (
+              <div key={service} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  value={service}
+                  checked={formData.serviceType.includes(service)}
+                  onChange={handleServiceTypeChange}
+                />
+                <span>{service}</span>
+              </div>
+            )
+          )}
+        </div>
         <input
           type="file"
           name="image"

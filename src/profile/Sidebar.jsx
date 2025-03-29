@@ -1,8 +1,9 @@
+// Sidebar.js
 import React, { useContext, useRef, useState } from "react";
 import { AppContent } from "../context/AppContext";
 import {
   User,
-  PawPrint,
+  BookOpen,
   Heart,
   Calendar,
   Settings,
@@ -14,16 +15,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import axios from "axios";
 import Cookies from "js-cookie";
-import { use } from "react";
 
-const Sidebar = ({ activeTab, setActiveTab, user }) => {
+const Sidebar = ({ activeTab, setActiveTab }) => {
   const { userData, setUserData, setIsLoggedin, backendUrl } =
     useContext(AppContent);
-
-  const navigate = useNavigate(); // Hook for navigation
-
-  const fileInputRef = useRef(null); // Reference for file input
-  const [isUploading, setIsUploading] = useState(false); // Track upload state
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -45,7 +43,6 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
     }
   };
 
-  // Function to trigger file input
   const handleEditClick = () => {
     fileInputRef.current.click();
   };
@@ -56,26 +53,22 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", uploadPreset); // Cloudinary preset
+    formData.append("upload_preset", uploadPreset);
 
     setIsUploading(true);
     try {
       const uploadResponse = await axios.post(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         formData,
-        {
-          withCredentials: false, // Explicitly disable credentials
-        }
+        { withCredentials: false }
       );
 
       const imageUrl = uploadResponse.data.secure_url;
-      console.log("Image URL:", imageUrl);
 
-      // Update backend
       await axios.put(
         `${backendUrl}/api/user/update-profile-img`,
         { email: userData?.email, image: imageUrl },
-        { withCredentials: true } // Only send credentials for your own backend
+        { withCredentials: true }
       );
 
       setUserData((prevData) => ({ ...prevData, image: imageUrl }));
@@ -104,7 +97,6 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
           >
             {isUploading ? "..." : <Edit className="h-4 w-4" />}
           </button>
-          {/* Hidden file input */}
           <input
             type="file"
             ref={fileInputRef}
@@ -116,9 +108,14 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
 
         <h2 className="text-xl font-bold text-gray-900">{userData?.name}</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Member since {user.joinDate}
+          Member since{" "}
+          {new Date(userData?.createdAt).toLocaleDateString("en-US", {
+            month: "long",
+            year: "numeric",
+          })}
         </p>
       </div>
+
       {/* Navigation Menu */}
       <div className="border-t border-gray-200 mt-4">
         <nav className="flex flex-col">
@@ -135,17 +132,17 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
           </button>
 
           <button
-            onClick={() => setActiveTab("adopted")}
+            onClick={() => setActiveTab("enrolled")}
             className={`flex items-center px-6 py-3 text-sm font-medium ${
-              activeTab === "adopted"
+              activeTab === "enrolled"
                 ? "bg-purple-50 text-purple-700 border-l-4 border-purple-600"
                 : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
             }`}
           >
-            <PawPrint className="mr-3 h-5 w-5" />
+            <BookOpen className="mr-3 h-5 w-5" />
             My Enrolled Classes
             <span className="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-              {user.adoptedPets.length}
+              {userData?.enrolledClasses?.length || 0}
             </span>
           </button>
 
@@ -160,7 +157,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
             <Heart className="mr-3 h-5 w-5" />
             Favorite Classes
             <span className="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-              {user.favoritePets.length}
+              {userData?.favoriteClasses?.length || 0}
             </span>
           </button>
 
@@ -175,7 +172,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
             <Calendar className="mr-3 h-5 w-5" />
             My Applications
             <span className="ml-auto bg-gray-100 text-gray-600 py-0.5 px-2 rounded-full text-xs">
-              {user.applications.length}
+              {userData?.applications?.length || 0}
             </span>
           </button>
 
@@ -191,7 +188,6 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
             Account Settings
           </button>
 
-          {/* Admin Dashboard Link */}
           {userData?.role === "admin" && (
             <Link to="/admin/dashboard">
               <button
@@ -210,7 +206,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
             <Link to="/instructor/dashboard">
               <button
                 className={`flex items-center px-6 py-3 text-sm font-medium ${
-                  activeTab === "vendor-dashboard"
+                  activeTab === "instructor-dashboard"
                     ? "bg-purple-50 text-purple-700 border-l-4 border-purple-600"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
@@ -224,7 +220,7 @@ const Sidebar = ({ activeTab, setActiveTab, user }) => {
             <Link to="/applyInstructor">
               <button
                 className={`flex items-center px-6 py-3 text-sm font-medium ${
-                  activeTab === "vendor-dashboard"
+                  activeTab === "apply-instructor"
                     ? "bg-purple-50 text-purple-700 border-l-4 border-purple-600"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}

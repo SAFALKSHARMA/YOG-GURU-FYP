@@ -1,8 +1,126 @@
-// FavoriteYogaClasses.js
-import React from "react";
-import { Heart } from "lucide-react";
+import React, { useContext, useEffect, useState } from "react";
+import { Heart, Loader2 } from "lucide-react";
+import { AppContent } from "../context/AppContext";
+import ClassCard from "../ui/ClassCard";
+import { useNavigate } from "react-router-dom";
 
-const FavoriteClasses = ({ favoriteClasses = [] }) => {
+// API endpoints
+const FAVORITES_API_URL = "http://localhost:3000/api/classes";
+const CLASS_DETAILS_API_URL = "http://localhost:3000/api/classes"; // Base URL for fetching class details
+
+const FavoriteClasses = () => {
+  const { userData } = useContext(AppContent);
+  const [favoriteClassIds, setFavoriteClassIds] = useState([]);
+  const [favoriteClasses, setFavoriteClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  // Fetch favorite class IDs
+  useEffect(() => {
+    const fetchFavoriteClassIds = async () => {
+      try {
+        const userId = userData?.userId;
+        console.log("Fetching favorites for userId:", userId);
+
+        if (!userId) {
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(
+          `${FAVORITES_API_URL}/${userId}/favorites`
+        );
+        console.log("API Response Status:", response.status);
+
+        if (!response.ok) {
+          throw new Error(
+            response.status === 404
+              ? "User not found"
+              : "Failed to fetch favorites"
+          );
+        }
+
+        const data = await response.json();
+        console.log("API Response Data:", data);
+
+        if (!data.success) {
+          throw new Error(data.message || "Error fetching favorites");
+        }
+
+        console.log("Favorite class IDs received:", data.favoriteClassIds);
+        setFavoriteClassIds(data.favoriteClassIds || []);
+      } catch (error) {
+        console.error("Error fetching favorite class IDs:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFavoriteClassIds();
+  }, [userData]);
+
+  // Fetch class details using the IDs
+  useEffect(() => {
+    const fetchClassDetails = async () => {
+      try {
+        setLoading(true);
+        const classDetailsPromises = favoriteClassIds.map(async (classId) => {
+          const response = await fetch(`${CLASS_DETAILS_API_URL}/${classId}`);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch class details for ${classId}`);
+          }
+          return response.json();
+        });
+
+        const classDetails = await Promise.all(classDetailsPromises);
+        console.log("Fetched class details:", classDetails);
+        setFavoriteClasses(classDetails);
+      } catch (error) {
+        console.error("Error fetching class details:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (favoriteClassIds.length > 0) {
+      fetchClassDetails();
+    }
+  }, [favoriteClassIds]);
+
+  const handleBrowseClasses = () => {
+    navigate("/classes");
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="animate-spin h-12 w-12 text-amber-600" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white shadow rounded-lg overflow-hidden p-6 text-center">
+        <div className="text-red-500 mb-4">{error}</div>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  console.log("Rendering favorite classes with details:", favoriteClasses);
+
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
       <div className="px-6 py-5 border-b border-gray-200">
@@ -15,49 +133,14 @@ const FavoriteClasses = ({ favoriteClasses = [] }) => {
       </div>
 
       <div className="px-6 py-5">
-        {Array.isArray(favoriteClasses) && favoriteClasses.length > 0 ? (
+        {favoriteClasses.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {favoriteClasses.map((yogaClass) => (
-              <div
-                key={yogaClass.id}
-                className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="h-48 w-full relative">
-                  <img
-                    src={yogaClass.image}
-                    alt={yogaClass.name}
-                    className="h-full w-full object-cover"
-                  />
-                  <button className="absolute top-3 right-3 p-1.5 rounded-full bg-white text-red-500 hover:bg-red-50">
-                    <Heart className="h-5 w-5 fill-current" />
-                  </button>
-                </div>
-                <div className="p-4">
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-lg font-semibold text-gray-900">
-                      {yogaClass.name}
-                    </h4>
-                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                      {yogaClass.status}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-center text-sm text-gray-500">
-                    <span className="mr-2">{yogaClass.instructor}</span>
-                    <span>•</span>
-                    <span className="mx-2">{yogaClass.level}</span>
-                    <span>•</span>
-                    <span className="ml-2">{yogaClass.type}</span>
-                  </div>
-                  <div className="mt-4 flex space-x-3">
-                    <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700">
-                      View Details
-                    </button>
-                    <button className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
-                      Enroll Now
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ClassCard
+                key={yogaClass._id}
+                yogaClass={yogaClass}
+                showFavoriteButton={false} // Assuming your ClassCard has this prop
+              />
             ))}
           </div>
         ) : (
@@ -70,7 +153,10 @@ const FavoriteClasses = ({ favoriteClasses = [] }) => {
               Save yoga classes you're interested in to your favorites list.
             </p>
             <div className="mt-6">
-              <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700">
+              <button
+                onClick={handleBrowseClasses}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700"
+              >
                 Browse Classes
               </button>
             </div>

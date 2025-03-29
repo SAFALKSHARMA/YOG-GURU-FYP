@@ -7,6 +7,8 @@ import { AppContent } from "../../context/AppContext";
 import { toast } from "react-toastify";
 import ToastComponent from "../../ui/ToastComponent";
 import Button from "../../ui/button";
+import Loading from "../../ui/Loading";
+import icon from "../../assets/meditation.gif";
 
 const Signup = () => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -168,7 +170,12 @@ const Signup = () => {
           </p>
         </div>
       </div>
-
+      {/* Loading Modal */}
+      <Loading
+        isOpen={isLoading}
+        text="Signing you up..."
+        icon={<img src={icon} alt="Loading" className="w-16 h-16" />}
+      />
       {/* Use ToastComponent for toast notifications */}
       <ToastComponent />
     </>

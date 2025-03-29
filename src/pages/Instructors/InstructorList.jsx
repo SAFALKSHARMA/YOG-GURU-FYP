@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Star, Award, Calendar, Users, Mail, Phone } from "lucide-react";
+import Button from "../../ui/button";
+import { Link } from "react-router-dom"; // Ensure Link is imported from react-router-dom
 
 const InstructorsList = () => {
   const [instructors, setInstructors] = useState([]);
@@ -37,14 +39,6 @@ const InstructorsList = () => {
         <h2 className="text-2xl font-bold text-gray-900">
           Our Expert Instructors
         </h2>
-        <div className="flex gap-2">
-          <select className="text-sm border-gray-300 rounded-md focus:ring-purple-500 focus:border-purple-500">
-            <option>All Specialties</option>
-            <option>Vinyasa Flow</option>
-            <option>Power Yoga</option>
-            <option>Restorative Yoga</option>
-          </select>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -62,7 +56,6 @@ const InstructorsList = () => {
                 />
                 <div className="absolute -bottom-2 -right-2 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
                   <Star className="w-3 h-3 mr-1" fill="currentColor" />
-                  {/* You might need to add a default rating */}
                   {instructor.rating || "N/A"}
                 </div>
               </div>
@@ -87,9 +80,10 @@ const InstructorsList = () => {
                       ))}
                   </div>
                 </div>
-                <button className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors duration-200">
-                  Book Session
-                </button>
+                {/* Update Link to include the instructor's ID */}
+                <Link to={`/instructor-details/${instructor._id}`}>
+                  <Button text="Book Session" />
+                </Link>
               </div>
 
               <p className="text-sm text-gray-600 mb-3">{instructor.bio}</p>
@@ -104,6 +98,25 @@ const InstructorsList = () => {
                   {instructor.classes.length} classes offered
                 </div>
               </div>
+
+              {/* Service Types Section */}
+              {instructor.serviceTypes.length > 0 && (
+                <div className="mb-3">
+                  <h4 className="text-sm font-semibold text-gray-900">
+                    Service Types
+                  </h4>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {instructor.serviceTypes.map((service, index) => (
+                      <span
+                        key={index}
+                        className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full"
+                      >
+                        {service}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="border-t border-gray-200 pt-3 mt-3">
                 <div className="flex gap-4">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   Clock,
@@ -7,18 +7,19 @@ import {
   Timer,
   ChevronLeft,
   ArrowRight,
-  ExternalLink,
   User,
-  Info,
-  MapPin,
 } from "lucide-react";
+import { AppContent } from "../../context/AppContext";
 
 function ClassDetails() {
   const { classId } = useParams();
   const [classData, setClassData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { userData } = useContext(AppContent); // User data context
+  const [enrollmentError, setEnrollmentError] = useState("");
 
+  // Fetch class details
   useEffect(() => {
     const fetchClassDetails = async () => {
       try {
@@ -39,6 +40,40 @@ function ClassDetails() {
 
     fetchClassDetails();
   }, [classId]);
+
+  // Enroll user in class
+  const handleEnroll = async () => {
+    if (!userData) {
+      setError("User not found. Please login first.");
+      return;
+    }
+
+    // Log userId and classId
+    console.log("User ID:", userData?.userId);
+    console.log("Class ID:", classId);
+
+    try {
+      const response = await fetch("http://localhost:3000/api/classes/enroll", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userData?.userId, // User ID
+          classId: classId, // Class ID
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to enroll in the class");
+      }
+
+      const result = await response.json();
+      alert("Successfully enrolled in the class!");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   if (loading) return <p className="text-center">Loading class details...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
@@ -153,7 +188,16 @@ function ClassDetails() {
                     </div>
                   </div>
 
-                  <button className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center group">
+                  {enrollmentError && (
+                    <p className="text-red-500 text-center">
+                      {enrollmentError}
+                    </p>
+                  )}
+
+                  <button
+                    onClick={handleEnroll}
+                    className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center group"
+                  >
                     Enroll Now
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </button>
