@@ -5,6 +5,7 @@ import {
   approveInstructor,
   rejectInstructor,
   getAllInstructors,
+  getInstructorById,
 } from "../controllers/instructorController.js";
 import multer from "multer";
 import storage from "../config/cloudinary.js";
@@ -20,5 +21,5 @@ router.put("/reject/:instructorId", rejectInstructor); // Ensure this route exis
 
 // Route to fetch all instructors (including their classes)
 router.get("/all-instructors", getAllInstructors);
-
+router.get("/:instructorId", getInstructorById);
 export default router;

@@ -1,4 +1,6 @@
 import Instructor from "../models/Instructor.js";
+import userModel from "../models/userModel.js";
+import mongoose from "mongoose";
 
 export const createClass = async (req, res) => {
   try {
@@ -147,5 +149,144 @@ export const getClassDetails = async (req, res) => {
     res.status(200).json(response);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const toggleFavorite = async (req, res) => {
+  try {
+    const { userId, classId } = req.body;
+
+    if (!userId || !classId) {
+      return res
+        .status(400)
+        .json({ message: "User ID and Class ID are required" });
+    }
+
+    // Find the user
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if class is already in favorites
+    const isFavorite = user.favoriteClasses.some(
+      (fav) => fav.classId.toString() === classId
+    );
+
+    if (isFavorite) {
+      // Remove from favorites
+      user.favoriteClasses = user.favoriteClasses.filter(
+        (fav) => fav.classId.toString() !== classId
+      );
+    } else {
+      // Add to favorites
+      user.favoriteClasses.push({ classId });
+    }
+
+    await user.save();
+
+    res.json({
+      isFavorite: !isFavorite,
+      message: isFavorite ? "Removed from favorites" : "Added to favorites",
+    });
+  } catch (error) {
+    console.error("Error toggling favorite:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getFavoriteClasses = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Find user
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // Extract and return only class IDs
+    const favoriteClassIds = user.favoriteClasses.map((fav) => fav.classId);
+
+    res.json({ success: true, favoriteClassIds });
+  } catch (error) {
+    console.error("Error fetching favorite class IDs:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export const enrollUserInClass = async (req, res) => {
+  const { userId, classId } = req.body;
+
+  if (!userId || !classId) {
+    return res
+      .status(400)
+      .json({ message: "User ID and Class ID are required" });
+  }
+
+  try {
+    // Find the user by userId
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the classId is already in the enrolledClasses array
+    if (
+      user.enrolledClasses.some(
+        (enrolledClass) => enrolledClass.classId.toString() === classId
+      )
+    ) {
+      return res
+        .status(400)
+        .json({ message: "You are already enrolled in this class" });
+    }
+
+    // Add the classId to the enrolledClasses array
+    user.enrolledClasses.push({ classId });
+
+    // Save the updated user data
+    await user.save();
+
+    // Respond with success
+    res.status(200).json({ message: "Successfully enrolled in the class" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while enrolling the user" });
+  }
+};
+
+export const getEnrolledClasses = async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
+
+  try {
+    // Find the user by userId and only return the enrolledClasses field
+    const user = await userModel.findById(userId, "enrolledClasses");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Extract only classIds from enrolledClasses
+    const classIds = user.enrolledClasses.map(
+      (enrolledClass) => enrolledClass.classId
+    );
+
+    // Respond with classIds as an array
+    res.status(200).json(classIds); // Returning an array of classIds
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "An error occurred while fetching enrolled classes" });
   }
 };

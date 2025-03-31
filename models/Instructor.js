@@ -14,6 +14,7 @@ const studentSchema = new Schema({
 const classSchema = new Schema({
   className: { type: String, required: true },
   description: { type: String, required: true },
+  category: { type: String, required: false }, // Class category (e.g., Yoga, Meditation)
   date: { type: Date, required: true },
   time: { type: String, required: true },
   duration: { type: Number, required: true }, // in minutes
@@ -21,14 +22,20 @@ const classSchema = new Schema({
   totalDuration: { type: String, required: true },
   price: { type: Number, required: true },
   classLink: { type: String, required: true },
+  location: { type: String, required: false }, // Optional physical location
   image: { type: String, required: true }, // Image field for class (Cloudinary URL)
   difficultyLevel: { type: String, required: true },
+  instructorId: {
+    type: Schema.Types.ObjectId,
+    ref: "Instructor",
+    required: false,
+  }, // Reference instructor
   status: {
     type: String,
     enum: ["Pending", "Approved", "Rejected"],
     default: "Pending",
   },
-  students: [studentSchema], // list of students
+  students: [studentSchema], // List of students
 });
 
 // Instructor schema
@@ -40,7 +47,12 @@ const instructorSchema = new Schema({
   qualifications: { type: String, required: true },
   bio: { type: String, required: true },
   image: { type: String, required: true },
-  classes: [classSchema], // list of classes
+  serviceTypes: {
+    type: [String], // List of service types (e.g., Online Yoga, Home Visit)
+    enum: ["Online Yoga", "Customer Home", "Instructor Home"],
+    required: true,
+  },
+  classes: [classSchema], // List of classes assigned
 });
 
 const Instructor = model("Instructor", instructorSchema);

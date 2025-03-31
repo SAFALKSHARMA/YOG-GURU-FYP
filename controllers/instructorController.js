@@ -5,8 +5,16 @@ import Instructor from "../models/Instructor.js";
 // Submit a new instructor application
 export const submitApplication = async (req, res) => {
   try {
-    const { fullName, email, phone, experience, qualifications, bio, image } =
-      req.body;
+    const {
+      fullName,
+      email,
+      phone,
+      experience,
+      qualifications,
+      bio,
+      image,
+      serviceType,
+    } = req.body;
 
     // Validate required fields
     if (
@@ -16,9 +24,13 @@ export const submitApplication = async (req, res) => {
       !experience ||
       !qualifications ||
       !bio ||
-      !image
+      !image ||
+      !serviceType ||
+      !serviceType.length
     ) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res
+        .status(400)
+        .json({ message: "All fields, including service type, are required" });
     }
 
     // Check if email already exists
@@ -37,6 +49,7 @@ export const submitApplication = async (req, res) => {
       qualifications,
       bio,
       image, // Save the image URL in the database
+      serviceType, // Store the selected service types
     });
 
     await newApplication.save();
@@ -78,13 +91,17 @@ export const approveInstructor = async (req, res) => {
         .json({ message: "Instructor application not found" });
     }
 
-    // Log the instructor application data
     console.log("Instructor Application:", instructorApplication);
 
-    // Update user role to "instructor" only
+    // Update user role to "instructor"
     const updatedUser = await userModel.findOneAndUpdate(
       { email: instructorApplication.email }, // Find by email
-      { $set: { role: "instructor", image: instructorApplication.image } }, // Only update the role
+      {
+        $set: {
+          role: "instructor",
+          image: instructorApplication.image,
+        },
+      },
       { new: true, runValidators: true }
     );
 
@@ -94,14 +111,14 @@ export const approveInstructor = async (req, res) => {
         .json({ message: "User not found in the database" });
     }
 
-    // Log the updated user data
     console.log("Updated User:", updatedUser);
 
-    // Ensure all required fields are provided before saving the Instructor
+    // Validate all required fields
     if (
       !instructorApplication.fullName ||
       !instructorApplication.email ||
-      !instructorApplication.image
+      !instructorApplication.image ||
+      !instructorApplication.serviceType
     ) {
       return res.status(400).json({
         message: "Missing required fields in the instructor application",
@@ -117,6 +134,7 @@ export const approveInstructor = async (req, res) => {
       qualifications: instructorApplication.qualifications,
       bio: instructorApplication.bio,
       image: instructorApplication.image,
+      serviceTypes: instructorApplication.serviceType, // Add service types
       classes: [], // Initially, no classes
     });
 
@@ -195,5 +213,25 @@ export const getAllInstructors = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching instructors", error: error.message });
+  }
+};
+
+// Controller function to get an instructor by ID
+export const getInstructorById = async (req, res) => {
+  const { instructorId } = req.params;
+
+  try {
+    // Find the instructor by their unique ID
+    const instructor = await Instructor.findById(instructorId);
+
+    if (!instructor) {
+      return res.status(404).json({ message: "Instructor not found" });
+    }
+
+    // Send the instructor data back in the response
+    res.status(200).json(instructor);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
