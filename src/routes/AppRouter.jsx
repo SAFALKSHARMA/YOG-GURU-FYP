@@ -22,7 +22,7 @@ import InstructorsList from "../pages/Instructors/InstructorList";
 import ClassDetails from "../pages/Classes/ClassDetails";
 import NavBar from "../components/headers/NavBar";
 import Footer from "../components/headers/Footer";
-import InstructorDetails from "../pages/Instructors/InstructorDetails";
+import InstructorDetails from "../pages/Instructors/InstructorDetails/InstructorDetails";
 
 function AppRouter() {
   return (

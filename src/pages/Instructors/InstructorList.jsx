@@ -80,8 +80,10 @@ const InstructorsList = () => {
                       ))}
                   </div>
                 </div>
-                {/* Update Link to include the instructor's ID */}
-                <Link to={`/instructor-details/${instructor._id}`}>
+                <Link
+                  to={`/instructor-details/${instructor._id}`}
+                  onClick={() => console.log("Instructor Details:", instructor)}
+                >
                   <Button text="Book Session" />
                 </Link>
               </div>
