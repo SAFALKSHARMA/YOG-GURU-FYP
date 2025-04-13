@@ -1,13 +1,43 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FolderPlus, Library, Users } from "lucide-react";
+import {
+  LayoutDashboard,
+  FolderPlus,
+  Library,
+  Users,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 const Sidebar = () => {
   const location = useLocation();
+  const [isOpen, setIsOpen] = useState(window.innerWidth >= 1024);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+  // Handle responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+
+      // Auto-close sidebar on mobile if it's open
+      if (mobile && isOpen) {
+        setIsOpen(false);
+      }
+      // Auto-open sidebar on desktop if it's closed
+      if (!mobile && !isOpen) {
+        setIsOpen(true);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isOpen]);
 
   const menuItems = [
     {
-      path: "/instructor",
+      path: "/instructor/dashboard",
       icon: <LayoutDashboard size={20} />,
       label: "Dashboard",
     },
@@ -28,30 +58,90 @@ const Sidebar = () => {
     },
   ];
 
-  return (
-    <div className="h-screen w-64 bg-white border-r border-gray-200 fixed left-0 top-0">
-      <div className="p-6">
-        <h2 className="text-2xl font-bold text-purple-800">Yoga Tutor</h2>
-        <p className="text-sm text-gray-600">Instructor Panel</p>
-      </div>
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
 
-      <nav className="mt-6">
-        {menuItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`flex items-center px-6 py-3 text-gray-700 hover:bg-purple-50 transition-colors ${
-              location.pathname === item.path
-                ? "bg-purple-100 border-r-4 border-purple-600"
-                : ""
-            }`}
-          >
-            <span className="text-purple-700">{item.icon}</span>
-            <span className="ml-3">{item.label}</span>
-          </Link>
-        ))}
-      </nav>
-    </div>
+  return (
+    <>
+      {/* Mobile Toggle Button - Fixed position */}
+      <button
+        onClick={toggleSidebar}
+        className="lg:hidden fixed top-20 left-4 z-30 bg-purple-600 text-white p-2 rounded-md" // Increased top to 20
+        aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
+      >
+        {isOpen ? <X size={20} /> : <ChevronRight size={20} />}
+      </button>
+
+      {/* Overlay for mobile when sidebar is open */}
+      {isMobile && isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 mt-20" // Increased mt to 20
+          onClick={toggleSidebar}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div
+        className={`
+          h-[calc(100vh-5rem)] bg-white border-r border-gray-200 overflow-y-auto z-20
+          transition-all duration-300 ease-in-out
+          ${
+            isMobile ? "fixed top-20 left-0" : "sticky top-20"
+          } // Increased top to 20
+          ${isOpen ? (isMobile ? "w-64" : "w-64") : "w-16"}
+          ${isMobile && !isOpen ? "-translate-x-full" : "translate-x-0"}
+        `}
+      >
+        {/* Header Section */}
+        <div
+          className={`p-4 flex ${
+            isOpen ? "justify-between" : "justify-center"
+          } items-center border-b border-gray-200`}
+        >
+          {isOpen && (
+            <div>
+              <h2 className="text-xl font-bold text-purple-800">Yoga Tutor</h2>
+              <p className="text-xs text-gray-600">Instructor Panel</p>
+            </div>
+          )}
+
+          {!isMobile && (
+            <button
+              onClick={toggleSidebar}
+              className="text-gray-500 hover:text-purple-600 transition-colors"
+              aria-label="Toggle sidebar"
+            >
+              {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+            </button>
+          )}
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="mt-2 pb-20">
+          {menuItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`
+                flex items-center py-3 text-gray-700 hover:bg-purple-50 transition-colors
+                ${isOpen ? "px-6 justify-start" : "px-0 justify-center"}
+                ${
+                  location.pathname === item.path
+                    ? "bg-purple-100 border-r-4 border-purple-600"
+                    : ""
+                }
+              `}
+              onClick={() => isMobile && setIsOpen(false)}
+              title={!isOpen ? item.label : ""}
+            >
+              <span className="text-purple-700">{item.icon}</span>
+              {isOpen && <span className="ml-3">{item.label}</span>}
+            </Link>
+          ))}
+        </nav>
+      </div>
+    </>
   );
 };
 

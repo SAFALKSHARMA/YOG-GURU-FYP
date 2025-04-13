@@ -20,53 +20,58 @@ import MyClasses from "../pages/Instructors/MyClasses";
 import StudentsList from "../pages/Instructors/StudentsList";
 import InstructorsList from "../pages/Instructors/InstructorList";
 import ClassDetails from "../pages/Classes/ClassDetails";
-import NavBar from "../components/headers/NavBar";
-import Footer from "../components/headers/Footer";
 import InstructorDetails from "../pages/Instructors/InstructorDetails/InstructorDetails";
+import AdminShop from "../Admin/AdminShop";
 
 function AppRouter() {
   return (
     <Router>
-      <NavBar />
-      <MainLayout />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/classes" element={<Classes />} />
-        <Route path="/class-details/:classId" element={<ClassDetails />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/shop" element={<Shop />} />
+        {/* All pages wrapped inside MainLayout which includes NavBar and Footer */}
+        <Route element={<MainLayout />}>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/classes" element={<Classes />} />
+          <Route path="/class-details/:classId" element={<ClassDetails />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/profile" element={<Profile />} />
+
+          {/* Instructor Routes */}
+          <Route
+            path="/applyInstructor"
+            element={<InstructorApplicationForm />}
+          />
+          <Route path="/instructors" element={<InstructorsList />} />
+          <Route
+            path="/instructor-details/:instructorId"
+            element={<InstructorDetails />}
+          />
+          <Route
+            path="/instructor/dashboard"
+            element={<InstructorDashboard />}
+          />
+          <Route path="/instructor/add-class" element={<AddClass />} />
+          <Route path="/instructor/my-classes" element={<MyClasses />} />
+          <Route path="/instructor/students" element={<StudentsList />} />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin/manage-instructors"
+            element={<ManageInstructors />}
+          />
+          <Route path="/admin/manage-users" element={<ManageUsers />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/manage-classes" element={<ManageClass />} />
+          <Route path="/admin/manage-shop" element={<AdminShop />} />
+        </Route>
+
+        {/* Auth Routes (No Layout) */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/email-verification" element={<EmailVerification />} />
         <Route path="/forget-password" element={<ForgetPassword />} />
-        <Route path="/profile" element={<Profile />} />
-
-        <Route
-          path="/applyInstructor"
-          element={<InstructorApplicationForm />}
-        />
-
-        {/* Admin Routes */}
-        <Route
-          path="/admin/manage-instructors"
-          element={<ManageInstructors />}
-        />
-        <Route path="/admin/manage-users" element={<ManageUsers />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/manage-classes" element={<ManageClass />} />
-
-        {/* Instructor Routes (Not Nested) */}
-        <Route path="/instructors" element={<InstructorsList />} />
-        <Route
-          path="/instructor-details/:instructorId"
-          element={<InstructorDetails />}
-        />
-        <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
-        <Route path="/instructor/add-class" element={<AddClass />} />
-        <Route path="/instructor/my-classes" element={<MyClasses />} />
-        <Route path="/instructor/students" element={<StudentsList />} />
       </Routes>
-      <Footer />
     </Router>
   );
 }

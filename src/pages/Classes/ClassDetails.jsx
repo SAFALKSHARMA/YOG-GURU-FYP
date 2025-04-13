@@ -1,14 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import {
-  Clock,
-  Calendar,
-  Users,
-  Timer,
-  ChevronLeft,
-  ArrowRight,
-  User,
-} from "lucide-react";
+import { Clock, Calendar, Users, Timer, ChevronLeft, User } from "lucide-react";
 import { AppContent } from "../../context/AppContext";
 
 function ClassDetails() {
@@ -41,16 +33,14 @@ function ClassDetails() {
     fetchClassDetails();
   }, [classId]);
 
+  console.log(classData);
+
   // Enroll user in class
   const handleEnroll = async () => {
     if (!userData) {
-      setError("User not found. Please login first.");
+      setEnrollmentError("Please login to enroll in a class.");
       return;
     }
-
-    // Log userId and classId
-    console.log("User ID:", userData?.userId);
-    console.log("Class ID:", classId);
 
     try {
       const response = await fetch("http://localhost:3000/api/classes/enroll", {
@@ -59,19 +49,24 @@ function ClassDetails() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: userData?.userId, // User ID
-          classId: classId, // Class ID
+          userId: userData.userId,
+          fullName: userData.name,
+          email: userData.email,
+          image: userData.image,
+          classId: classId,
+          instructorId: classData.instructorId, // Add instructorId from classData
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to enroll in the class");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to enroll in the class");
       }
 
       const result = await response.json();
       alert("Successfully enrolled in the class!");
     } catch (err) {
-      setError(err.message);
+      setEnrollmentError(err.message);
     }
   };
 
@@ -93,13 +88,13 @@ function ClassDetails() {
         {/* Main Content */}
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div className="grid md:grid-cols-2">
+            {/* Left Column - Image */}
             <div className="relative">
               <img
                 src={classData.image}
                 alt={classData.className}
                 className="w-full h-full object-cover"
               />
-
               <div className="absolute bottom-5 left-0 right-0 p-2 backdrop-blur-sm bg-white/50 shadow-lg">
                 <div className="flex text-black text-sm font-medium mb-2 justify-center">
                   {classData.difficultyLevel} Level
@@ -149,6 +144,7 @@ function ClassDetails() {
                       </div>
                     </div>
                   </div>
+
                   <div className="space-y-6">
                     <div className="flex items-center gap-3">
                       <Timer className="w-5 h-5 text-purple-500" />
@@ -189,7 +185,7 @@ function ClassDetails() {
                   </div>
 
                   {enrollmentError && (
-                    <p className="text-red-500 text-center">
+                    <p className="text-red-500 text-center mb-4">
                       {enrollmentError}
                     </p>
                   )}
@@ -199,7 +195,6 @@ function ClassDetails() {
                     className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center group"
                   >
                     Enroll Now
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
               </div>

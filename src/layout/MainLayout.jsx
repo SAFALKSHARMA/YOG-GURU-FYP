@@ -1,17 +1,18 @@
 import { Outlet } from "react-router-dom";
 import NavBar from "../components/headers/NavBar";
+import Footer from "../components/headers/Footer";
 
-const MainLayout = () => {
+function MainLayout() {
   return (
-    <div>
-      {/* <NavBar /> */}
-      <div className="mt-16">
-        {" "}
-        {/* Add margin-top for spacing */}
+    <>
+      <NavBar />
+      <main style={{ minHeight: "80vh", marginTop: "80px" }}>
+        {/* This renders the current page */}
         <Outlet />
-      </div>
-    </div>
+      </main>
+      <Footer />
+    </>
   );
-};
+}
 
 export default MainLayout;

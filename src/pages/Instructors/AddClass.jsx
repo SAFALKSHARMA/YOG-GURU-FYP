@@ -4,6 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import InputField from "../../ui/InputField";
 import { AppContent } from "../../context/AppContext";
 import ToastComponent from "../../ui/ToastComponent";
+import Sidebar from "./Sidebar";
 
 const AddClass = () => {
   const { instructorData } = useContext(AppContent);
@@ -35,8 +36,8 @@ const AddClass = () => {
   const uploadImageToCloudinary = async (imageFile) => {
     const formData = new FormData();
     formData.append("file", imageFile);
-    formData.append("upload_preset", uploadPreset); // Replace with your Cloudinary preset
-    formData.append("cloud_name", cloudName); // Replace with your Cloudinary cloud name
+    formData.append("upload_preset", uploadPreset);
+    formData.append("cloud_name", cloudName);
 
     try {
       const response = await fetch(
@@ -48,7 +49,7 @@ const AddClass = () => {
       );
 
       const data = await response.json();
-      return data.secure_url; // Get the Cloudinary image URL
+      return data.secure_url;
     } catch (error) {
       console.error("Cloudinary upload error:", error);
       toast.error("Image upload failed! Try again.");
@@ -67,36 +68,30 @@ const AddClass = () => {
     let imageUrl = "";
     if (formData.image) {
       toast.info("Uploading image...");
-      console.log("Uploading image:", formData.image); // Log the image being uploaded
       imageUrl = await uploadImageToCloudinary(formData.image);
-      if (!imageUrl) return; // Stop if image upload fails
-      console.log("Image URL after upload:", imageUrl); // Log the image URL received
+      if (!imageUrl) return;
     }
 
-    // Convert 24-hour time format to 12-hour with AM/PM
     const [hours, minutes] = formData.time.split(":");
-    const formattedHours = hours % 12 || 12; // Convert 24-hour to 12-hour format
+    const formattedHours = hours % 12 || 12;
     const period = hours >= 12 ? "PM" : "AM";
     const formattedTime = `${formattedHours}:${minutes} ${period}`;
 
     const submissionData = {
       ...formData,
       time: formattedTime,
-      image: imageUrl, // Cloudinary image URL
+      image: imageUrl,
       instructorId: instructorData._id,
     };
-
-    console.log("Final submission data:", submissionData); // Log the entire data being sent
 
     try {
       const response = await fetch("http://localhost:3000/api/classes/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(submissionData), // Send imageUrl and other form data
+        body: JSON.stringify(submissionData),
       });
 
       const result = await response.json();
-      console.log("API Response:", result); // Log the response from the API
 
       if (result.success) {
         toast.success("Class added successfully!");
@@ -114,7 +109,7 @@ const AddClass = () => {
           image: null,
         });
       } else {
-        toast.error("Failed to add class. Please try again.");
+        toast.error(result.message || "Failed to add class. Please try again.");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -123,119 +118,157 @@ const AddClass = () => {
   };
 
   return (
-    <>
-      <div className="p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Add New Class</h1>
-        <div className="bg-white rounded-lg p-6 shadow-sm max-w-2xl">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <InputField
-              label="Class Name"
-              type="text"
-              name="className"
-              placeholder="Enter class name"
-              onChange={handleChange}
-            />
-            <InputField
-              label="Description"
-              type="textarea"
-              name="description"
-              placeholder="Enter class description"
-              onChange={handleChange}
-            />
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
+      {/* Sidebar - will handle its own responsive behavior */}
+      <Sidebar />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Main Content Area */}
+      <main className="flex-1 p-4 lg:p-8 lg:ml-8">
+        {" "}
+        {/* ml-16 accounts for collapsed sidebar */}
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 md:mb-8">
+            Add New Class
+          </h1>
+
+          <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm">
+            <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
               <InputField
-                label="Date"
-                type="date"
-                name="date"
+                label="Class Name"
+                type="text"
+                name="className"
+                placeholder="Enter class name"
+                value={formData.className}
                 onChange={handleChange}
+                required
               />
-              <div className="w-full">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Time
-                </label>
-                <input
-                  type="time"
-                  name="time"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  step="60"
+
+              <InputField
+                label="Description"
+                type="textarea"
+                name="description"
+                placeholder="Enter class description"
+                value={formData.description}
+                onChange={handleChange}
+                required
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <InputField
+                  label="Date"
+                  type="date"
+                  name="date"
+                  value={formData.date}
                   onChange={handleChange}
+                  required
+                />
+
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1 md:mb-2">
+                    Time
+                  </label>
+                  <input
+                    type="time"
+                    name="time"
+                    className="w-full px-3 py-2 md:px-4 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    step="60"
+                    value={formData.time}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <InputField
+                  label="Duration (minutes)"
+                  type="number"
+                  name="duration"
+                  placeholder="60"
+                  value={formData.duration}
+                  onChange={handleChange}
+                  required
+                />
+
+                <InputField
+                  label="Capacity"
+                  type="number"
+                  name="capacity"
+                  placeholder="20"
+                  value={formData.capacity}
+                  onChange={handleChange}
+                  required
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <InputField
-                label="Duration (minutes)"
-                type="number"
-                name="duration"
-                placeholder="60"
+                label="Total Duration"
+                type="text"
+                name="totalDuration"
+                placeholder="e.g., 1 month, 2 months"
+                value={formData.totalDuration}
                 onChange={handleChange}
+                required
               />
+
               <InputField
-                label="Capacity"
+                label="Price"
                 type="number"
-                name="capacity"
-                placeholder="20"
+                name="price"
+                placeholder="Enter price"
+                value={formData.price}
                 onChange={handleChange}
+                required
               />
-            </div>
 
-            <InputField
-              label="Total Duration"
-              type="text"
-              name="totalDuration"
-              placeholder="e.g., 1 month, 2 months"
-              onChange={handleChange}
-            />
-            <InputField
-              label="Price"
-              type="number"
-              name="price"
-              placeholder="Enter price"
-              onChange={handleChange}
-            />
-            <InputField
-              label="Class Link"
-              type="url"
-              name="classLink"
-              placeholder="Enter class link"
-              onChange={handleChange}
-            />
-            <InputField
-              label="Upload Image"
-              type="file"
-              name="image"
-              onChange={handleChange}
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Difficulty Level
-              </label>
-              <select
-                name="difficultyLevel"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              <InputField
+                label="Class Link"
+                type="url"
+                name="classLink"
+                placeholder="Enter class link"
+                value={formData.classLink}
                 onChange={handleChange}
+                required
+              />
+
+              <InputField
+                label="Upload Image"
+                type="file"
+                name="image"
+                onChange={handleChange}
+                accept="image/*"
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 md:mb-2">
+                  Difficulty Level
+                </label>
+                <select
+                  name="difficultyLevel"
+                  className="w-full px-3 py-2 md:px-4 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  value={formData.difficultyLevel}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
               >
-                <option>Beginner</option>
-                <option>Intermediate</option>
-                <option>Advanced</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              Create Class
-            </button>
-          </form>
+                Create Class
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
+      </main>
 
       <ToastComponent />
-    </>
+    </div>
   );
 };
 

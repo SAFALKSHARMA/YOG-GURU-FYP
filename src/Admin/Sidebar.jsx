@@ -1,16 +1,16 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, Users, Book, FileText, LogOut } from "lucide-react";
+import { Home, Users, Book, FileText, LogOut, PlusCircle } from "lucide-react";
 import logo from "../../images/yoglogo.png";
 import { AppContent } from "../context/AppContext";
 import { useContext } from "react";
 import { toast } from "react-toastify";
-import axios from "axios"; // Make sure axios is imported
-import Cookies from "js-cookie"; // Make sure Cookies is imported
+import axios from "axios";
+import Cookies from "js-cookie";
 
 const Sidebar = () => {
   const { backendUrl, userData, isLoggedin, setIsLoggedin, setUserData } =
     useContext(AppContent);
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
@@ -19,7 +19,7 @@ const Sidebar = () => {
         setIsLoggedin(false);
         setUserData({});
         Cookies.remove("token");
-        navigate("/login"); // Programmatic navigation after logout
+        navigate("/login");
         toast.success("Successfully logged out!");
       } else {
         toast.error("Logout failed. Please try again.");
@@ -97,14 +97,29 @@ const Sidebar = () => {
           <span>Applications</span>
         </NavLink>
 
+        {/* Add Accessories Button */}
+        <NavLink
+          to="/admin/manage-shop"
+          className={({ isActive }) =>
+            `flex items-center space-x-3 p-3 rounded-lg transition ${
+              isActive
+                ? "bg-purple-300 text-black font-semibold"
+                : "hover:bg-purple-200 text-black"
+            }`
+          }
+        >
+          <PlusCircle />
+          <span>Add Accessories</span>
+        </NavLink>
+
         {/* Account Section */}
         <h2 className="text-gray-600 font-semibold mt-6 mb-2">ACCOUNT</h2>
 
         <NavLink
           to="/logout"
           onClick={(e) => {
-            e.preventDefault(); // Prevent default NavLink behavior
-            handleLogout(); // Call the handleLogout function
+            e.preventDefault();
+            handleLogout();
           }}
           className={({ isActive }) =>
             `flex items-center space-x-3 p-3 rounded-lg transition ${

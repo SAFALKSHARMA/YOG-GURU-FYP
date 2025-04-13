@@ -1,8 +1,8 @@
 import React from "react";
 import HeroContainer from "./HeroContainer";
 import Gallary from "./Gallary/Gallary";
-// import PopularClasses from "./Popular Classes/PopularClasses";
-// import PopularTeacher from "./PopularTeacher/PopularTeacher";
+import PopularClasses from "./PopularClasses";
+import PopularInstructor from "./PopularInstructor";
 
 function Home() {
   return (
@@ -10,8 +10,8 @@ function Home() {
       <HeroContainer />
       <div className="max-w-screen-xl mx-auto">
         <Gallary />
-        {/* <PopularClasses /> */}
-        {/* <PopularTeacher /> */}
+        <PopularClasses />
+        <PopularInstructor />
       </div>
     </section>
   );
