@@ -37,6 +37,11 @@ function AppRouter() {
           <Route path="/shop" element={<Shop />} />
           <Route path="/profile" element={<Profile />} />
 
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/email-verification" element={<EmailVerification />} />
+          <Route path="/forget-password" element={<ForgetPassword />} />
+
           {/* Instructor Routes */}
           <Route
             path="/applyInstructor"
@@ -67,10 +72,6 @@ function AppRouter() {
         </Route>
 
         {/* Auth Routes (No Layout) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/email-verification" element={<EmailVerification />} />
-        <Route path="/forget-password" element={<ForgetPassword />} />
       </Routes>
     </Router>
   );

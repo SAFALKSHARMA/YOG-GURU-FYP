@@ -1,7 +1,6 @@
 // src/components/Signup.jsx
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
 import InputField from "../../ui/InputField";
 import { AppContent } from "../../context/AppContext";
 import { toast } from "react-toastify";

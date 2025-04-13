@@ -1,11 +1,9 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-// import Navbar from "./Navbar";
 import InputField from "../../ui/InputField";
 import ToastComponent from "../../ui/ToastComponent";
 import { toast } from "react-toastify";
 import { AppContent } from "../../context/AppContext";
-// import "../components/styles.css";
 import Button from "../../ui/button";
 import Loading from "../../ui/Loading";
 import icon from "../../assets/meditation.gif";
