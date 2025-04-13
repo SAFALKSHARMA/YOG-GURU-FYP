@@ -1,6 +1,6 @@
-// config/cloudinary.js
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+import multer from "multer";
 
 // Configure Cloudinary
 cloudinary.config({
@@ -10,7 +10,7 @@ cloudinary.config({
 });
 
 // Set up Cloudinary storage for multer
-export const storage = new CloudinaryStorage({
+const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "profile_images", // Folder name in Cloudinary
@@ -19,4 +19,8 @@ export const storage = new CloudinaryStorage({
   },
 });
 
+// Set up multer with the CloudinaryStorage
+const upload = multer({ storage });
+
+export { upload }; // Export upload middleware
 export default cloudinary;

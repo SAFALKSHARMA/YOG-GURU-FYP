@@ -5,7 +5,6 @@ const { Schema } = mongoose;
 const studentSchema = new Schema({
   fullName: { type: String, required: true },
   email: { type: String, required: true },
-  phone: { type: String, required: true },
   enrolledDate: { type: Date, default: Date.now },
   image: { type: String, required: true }, // Image field for student
 });

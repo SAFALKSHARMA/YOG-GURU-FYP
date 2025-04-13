@@ -8,7 +8,10 @@ import {
   toggleFavorite,
   enrollUserInClass,
   getEnrolledClasses,
+  updateClass,
+  deleteClass,
 } from "../controllers/classController.js";
+import { upload } from "../config/cloudinary.js";
 
 const router = express.Router();
 
@@ -21,5 +24,7 @@ router.post("/toggle-favorites", toggleFavorite);
 router.get("/:userId/favorites", getFavoriteClasses);
 router.post("/enroll", enrollUserInClass);
 router.get("/:userId/enrolled-classes", getEnrolledClasses);
+router.put("/:_id", upload.single("image"), updateClass);
+router.delete("/delete-class", deleteClass);
 
 export default router;

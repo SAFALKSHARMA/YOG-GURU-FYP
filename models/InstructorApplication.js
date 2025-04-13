@@ -10,6 +10,8 @@ const instructorApplicationSchema = new mongoose.Schema(
     bio: { type: String, required: true },
     image: { type: String, required: true },
     serviceType: { type: [String], required: true }, // Array to store multiple service types
+    documents: [{ type: String, required: true }],
+    certificates: [{ type: String, required: true }],
     status: {
       type: String,
       enum: ["Pending", "Approved", "Rejected"],

@@ -2,7 +2,6 @@ import InstructorApplication from "../models/InstructorApplication.js";
 import userModel from "../models/userModel.js";
 import Instructor from "../models/Instructor.js";
 
-// Submit a new instructor application
 export const submitApplication = async (req, res) => {
   try {
     const {
@@ -12,35 +11,63 @@ export const submitApplication = async (req, res) => {
       experience,
       qualifications,
       bio,
-      image,
       serviceType,
     } = req.body;
 
-    // Validate required fields
-    if (
-      !fullName ||
-      !email ||
-      !phone ||
-      !experience ||
-      !qualifications ||
-      !bio ||
-      !image ||
-      !serviceType ||
-      !serviceType.length
-    ) {
-      return res
-        .status(400)
-        .json({ message: "All fields, including service type, are required" });
-    }
-
-    // Check if email already exists
+    // Check if application with this email already exists
     const existingApplication = await InstructorApplication.findOne({ email });
     if (existingApplication) {
-      return res
-        .status(400)
-        .json({ message: "Application with this email already exists" });
+      return res.status(409).json({
+        message: "Application with this email already exists",
+      });
     }
 
+    // Validate required fields
+    const requiredFields = {
+      fullName,
+      email,
+      phone,
+      experience,
+      qualifications,
+      bio,
+      serviceType,
+    };
+
+    for (const [field, value] of Object.entries(requiredFields)) {
+      if (!value || (Array.isArray(value) && value.length === 0)) {
+        return res.status(400).json({
+          message: `${
+            field.charAt(0).toUpperCase() + field.slice(1)
+          } is required`,
+        });
+      }
+    }
+
+    // Validate file uploads
+    if (!req.files?.image || req.files.image.length === 0) {
+      return res.status(400).json({
+        message: "Profile image is required",
+      });
+    }
+
+    if (!req.files?.documents || req.files.documents.length === 0) {
+      return res.status(400).json({
+        message: "At least one document is required",
+      });
+    }
+
+    if (!req.files?.certificates || req.files.certificates.length === 0) {
+      return res.status(400).json({
+        message: "At least one certificate is required",
+      });
+    }
+
+    // Extract URLs directly from multer (already uploaded to Cloudinary)
+    const imageUrl = req.files.image[0].path;
+    const documents = req.files.documents.map((file) => file.path);
+    const certificates = req.files.certificates.map((file) => file.path);
+
+    // Create new application
     const newApplication = new InstructorApplication({
       fullName,
       email,
@@ -48,19 +75,28 @@ export const submitApplication = async (req, res) => {
       experience,
       qualifications,
       bio,
-      image, // Save the image URL in the database
-      serviceType, // Store the selected service types
+      serviceType,
+      image: imageUrl,
+      documents,
+      certificates,
     });
 
     await newApplication.save();
+
     res.status(201).json({
-      message: "Application submitted successfully",
-      data: newApplication,
+      message: "Application submitted successfully!",
+      application: {
+        id: newApplication._id,
+        fullName: newApplication.fullName,
+        email: newApplication.email,
+        status: newApplication.status,
+      },
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error submitting application", error: error.message });
+    console.error("Error submitting application:", error);
+    res.status(500).json({
+      message: "Something went wrong, please try again.",
+    });
   }
 };
 

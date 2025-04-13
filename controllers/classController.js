@@ -144,6 +144,7 @@ export const getClassDetails = async (req, res) => {
     const response = {
       ...classDetails.toObject(),
       instructorFullName: instructor.fullName,
+      instructorId: instructor._id,
     };
 
     res.status(200).json(response);
@@ -218,41 +219,71 @@ export const getFavoriteClasses = async (req, res) => {
 };
 
 export const enrollUserInClass = async (req, res) => {
-  const { userId, classId } = req.body;
+  const { userId, classId, instructorId, email, image, fullName } = req.body;
 
-  if (!userId || !classId) {
-    return res
-      .status(400)
-      .json({ message: "User ID and Class ID are required" });
+  if (!userId || !classId || !instructorId || !email || !fullName) {
+    return res.status(400).json({
+      message:
+        "User ID, Class ID, Instructor ID, Email, and Full Name are required",
+    });
   }
 
   try {
-    // Find the user by userId
-    const user = await userModel.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    // Find the instructor by instructorId
+    const instructor = await Instructor.findById(instructorId);
+    if (!instructor) {
+      return res.status(404).json({ message: "Instructor not found" });
     }
 
-    // Check if the classId is already in the enrolledClasses array
-    if (
-      user.enrolledClasses.some(
-        (enrolledClass) => enrolledClass.classId.toString() === classId
-      )
-    ) {
+    // Find the specific class in the instructor's classes
+    const classToEnroll = instructor.classes.find(
+      (cls) => cls._id.toString() === classId
+    );
+    if (!classToEnroll) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    // Check if class has available capacity
+    if (classToEnroll.capacity <= 0) {
+      return res.status(400).json({ message: "Class is already full" });
+    }
+
+    // Check if user is already in the class's students list by email
+    const isAlreadyInClass = classToEnroll.students.some(
+      (student) => student.email === email
+    );
+    if (isAlreadyInClass) {
       return res
         .status(400)
         .json({ message: "You are already enrolled in this class" });
     }
 
-    // Add the classId to the enrolledClasses array
-    user.enrolledClasses.push({ classId });
+    // Add user to the class's students list
+    classToEnroll.students.push({
+      fullName,
+      email,
+      image: image || "",
+      enrolledDate: new Date(),
+    });
 
-    // Save the updated user data
-    await user.save();
+    // Decrease the class capacity by 1
+    classToEnroll.capacity -= 1;
+
+    // Find and update user (if you still want to track enrollments in user document)
+    const user = await userModel.findByIdAndUpdate(
+      userId,
+      { $addToSet: { enrolledClasses: { classId } } },
+      { new: true }
+    );
+
+    // Save the instructor document
+    await instructor.save();
 
     // Respond with success
-    res.status(200).json({ message: "Successfully enrolled in the class" });
+    res.status(200).json({
+      message: "Successfully enrolled in the class",
+      remainingCapacity: classToEnroll.capacity,
+    });
   } catch (error) {
     console.error(error);
     res
@@ -288,5 +319,108 @@ export const getEnrolledClasses = async (req, res) => {
     res
       .status(500)
       .json({ message: "An error occurred while fetching enrolled classes" });
+  }
+};
+
+export const updateClass = async (req, res) => {
+  const { _id } = req.params; // Class _id from URL
+  const {
+    className,
+    description,
+    date,
+    time,
+    duration,
+    capacity,
+    totalDuration,
+    price,
+    classLink,
+    difficultyLevel,
+    status,
+    students,
+    instructorId,
+  } = req.body; // Data from the request body
+
+  try {
+    let imageUrl = null;
+
+    // Check if an image was uploaded by multer
+    if (req.file) {
+      imageUrl = req.file.path; // Multer + Cloudinary gives you the URL here
+      console.log("Image uploaded successfully:", imageUrl);
+    }
+
+    // Find the instructor by instructorId
+    const instructor = await Instructor.findById(instructorId);
+    if (!instructor) {
+      return res.status(404).json({ message: "Instructor not found" });
+    }
+
+    // Find the class in the instructor's classes list using _id
+    const classToUpdate = instructor.classes.id(_id);
+    if (!classToUpdate) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    // Update the class properties
+    classToUpdate.className = className || classToUpdate.className;
+    classToUpdate.description = description || classToUpdate.description;
+    classToUpdate.date = date || classToUpdate.date;
+    classToUpdate.time = time || classToUpdate.time;
+    classToUpdate.duration = duration || classToUpdate.duration;
+    classToUpdate.capacity = capacity || classToUpdate.capacity;
+    classToUpdate.totalDuration = totalDuration || classToUpdate.totalDuration;
+    classToUpdate.price = price || classToUpdate.price;
+    classToUpdate.classLink = classLink || classToUpdate.classLink;
+    classToUpdate.difficultyLevel =
+      difficultyLevel || classToUpdate.difficultyLevel;
+    classToUpdate.status = status || classToUpdate.status;
+
+    // Update image if uploaded
+    if (imageUrl) {
+      classToUpdate.image = imageUrl;
+    }
+
+    // Optional: Update students list if you need
+    // classToUpdate.students = students || classToUpdate.students;
+
+    // Save the updated instructor document
+    await instructor.save();
+
+    res.status(200).json({
+      message: "Class updated successfully",
+      updatedClass: classToUpdate,
+    });
+  } catch (err) {
+    console.error("Error updating class:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+export const deleteClass = async (req, res) => {
+  try {
+    const { instructorId, classId } = req.body;
+
+    if (!instructorId || !classId) {
+      return res
+        .status(400)
+        .json({ message: "Instructor Id or class Id is empty" });
+    }
+
+    // Find the instructor
+    const instructor = await Instructor.findById(instructorId);
+    if (!instructorId) {
+      return res.status(400).json({ message: "Instructor not found" });
+    }
+
+    // Remove the class from the instructor's classes array
+    instructor.classes = instructor.classes.filter(
+      (cls) => cls._id.toString() !== classId
+    );
+
+    await instructor.save();
+    res.status(200).json({ message: "Class deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting class:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
