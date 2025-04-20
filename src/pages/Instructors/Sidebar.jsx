@@ -52,9 +52,9 @@ const Sidebar = () => {
       label: "My Classes",
     },
     {
-      path: "/instructor/students",
+      path: "/instructor/bookings",
       icon: <Users size={20} />,
-      label: "Students List",
+      label: "Booking",
     },
   ];
 

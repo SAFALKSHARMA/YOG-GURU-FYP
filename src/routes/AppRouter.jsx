@@ -22,6 +22,10 @@ import InstructorsList from "../pages/Instructors/InstructorList";
 import ClassDetails from "../pages/Classes/ClassDetails";
 import InstructorDetails from "../pages/Instructors/InstructorDetails/InstructorDetails";
 import AdminShop from "../Admin/AdminShop";
+import AdminShopList from "../Admin/AdminShopList";
+import BookingManagement from "../pages/Instructors/BookingManagement";
+import ProductDetail from "../pages/Shop/ProductDetail";
+import MyCart from "../pages/Shop/MyCart";
 
 function AppRouter() {
   return (
@@ -35,6 +39,8 @@ function AppRouter() {
           <Route path="/class-details/:classId" element={<ClassDetails />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/shop" element={<Shop />} />
+          <Route path="/shop/:id" element={<ProductDetail />} />
+          <Route path="/cart" element={<MyCart />} />
           <Route path="/profile" element={<Profile />} />
 
           <Route path="/login" element={<Login />} />
@@ -59,6 +65,7 @@ function AppRouter() {
           <Route path="/instructor/add-class" element={<AddClass />} />
           <Route path="/instructor/my-classes" element={<MyClasses />} />
           <Route path="/instructor/students" element={<StudentsList />} />
+          <Route path="/instructor/bookings" element={<BookingManagement />} />
 
           {/* Admin Routes */}
           <Route
@@ -69,6 +76,7 @@ function AppRouter() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/manage-classes" element={<ManageClass />} />
           <Route path="/admin/manage-shop" element={<AdminShop />} />
+          <Route path="/admin/shopList" element={<AdminShopList />} />
         </Route>
 
         {/* Auth Routes (No Layout) */}

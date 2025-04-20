@@ -109,7 +109,22 @@ const Sidebar = () => {
           }
         >
           <PlusCircle />
-          <span>Add Accessories</span>
+          <span>Add Shop</span>
+        </NavLink>
+
+        {/* Manage Accessories Button */}
+        <NavLink
+          to="/admin/shopList"
+          className={({ isActive }) =>
+            `flex items-center space-x-3 p-3 rounded-lg transition ${
+              isActive
+                ? "bg-purple-300 text-black font-semibold"
+                : "hover:bg-purple-200 text-black"
+            }`
+          }
+        >
+          <PlusCircle />
+          <span>Manage Shop</span>
         </NavLink>
 
         {/* Account Section */}

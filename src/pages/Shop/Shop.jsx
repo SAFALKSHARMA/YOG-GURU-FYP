@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Heart, Search, Filter, SlidersHorizontal, Eye, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Shop() {
   const [items, setItems] = useState([]);
@@ -205,6 +206,12 @@ export default function Shop() {
 
 function ItemCard({ item }) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const navigate = useNavigate();
+
+  const handleViewProduct = () => {
+    console.log("Viewing product:", item);
+    navigate(`/shop/${item._id}`);
+  };
 
   return (
     <div className="group relative rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
@@ -242,7 +249,10 @@ function ItemCard({ item }) {
 
         {/* Sliding View Product Button */}
         <div className="absolute inset-0 flex items-center">
-          <button className="flex items-center gap-2 bg-white/90 text-purple-700 py-3 px-6 rounded-r-full font-medium -translate-x-full group-hover:translate-x-0 transition-transform duration-300">
+          <button
+            onClick={handleViewProduct}
+            className="flex items-center gap-2 bg-white/90 text-purple-700 py-3 px-6 rounded-r-full font-medium -translate-x-full group-hover:translate-x-0 transition-transform duration-300"
+          >
             <Eye size={18} />
             <span>View Product</span>
           </button>

@@ -1,7 +1,7 @@
 // NavBar.jsx
 import React, { useEffect, useState, useContext } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaShoppingCart } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { AppContent } from "../../context/AppContext";
 
@@ -19,6 +19,8 @@ const NavBar = () => {
   const location = useLocation();
   const [navBg, setNavBg] = useState("bg-white text-black");
   const { userData, isLoggedin } = useContext(AppContent);
+  // Add a state for cart items count (this would normally come from your cart context)
+  const [cartItemsCount, setCartItemsCount] = useState(3);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,7 +40,7 @@ const NavBar = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`fixed top-0 left-0 w-full z-30 ${navBg} transition-colors duration-500 rounded-b-2xl`} // Increased z-index to 30
+        className={`fixed top-0 left-0 w-full z-30 ${navBg} transition-colors duration-500 rounded-b-2xl`}
       >
         <div className="relative max-w-[95%] mx-auto px-4 py-4 flex items-center justify-between">
           {/* Logo */}
@@ -73,8 +75,20 @@ const NavBar = () => {
             ))}
           </ul>
 
-          {/* Profile or Login */}
+          {/* Profile, Cart, and Login */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Cart Button with Notification */}
+            <Link to="/cart" className="relative">
+              <button className="p-2 text-black hover:text-secondary transition duration-300">
+                <FaShoppingCart className="h-6 w-6" />
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartItemsCount}
+                  </span>
+                )}
+              </button>
+            </Link>
+
             {isLoggedin ? (
               <Link to="/profile">
                 <div className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 transition duration-300">
@@ -94,8 +108,20 @@ const NavBar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
+          {/* Mobile Menu Button with Cart */}
+          <div className="md:hidden flex items-center space-x-4">
+            {/* Mobile Cart Button */}
+            <Link to="/cart" className="relative">
+              <button className="p-1 text-black hover:text-secondary transition duration-300">
+                <FaShoppingCart className="h-5 w-5" />
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    {cartItemsCount}
+                  </span>
+                )}
+              </button>
+            </Link>
+
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-black"
@@ -130,6 +156,21 @@ const NavBar = () => {
               {link.name}
             </NavLink>
           ))}
+
+          {/* Cart Link in Mobile Menu */}
+          <NavLink
+            to="/cart"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="text-lg font-semibold text-black hover:text-secondary duration-300 flex items-center gap-2"
+          >
+            <span>Cart</span>
+            {cartItemsCount > 0 && (
+              <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {cartItemsCount}
+              </span>
+            )}
+          </NavLink>
+
           <div className="mt-6">
             {isLoggedin ? (
               <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>

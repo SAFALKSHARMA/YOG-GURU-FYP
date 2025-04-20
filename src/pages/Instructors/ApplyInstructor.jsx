@@ -21,6 +21,7 @@ export default function InstructorApplicationForm() {
   const [certificates, setCertificates] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (userData?.email) {
@@ -228,198 +229,253 @@ export default function InstructorApplicationForm() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
-      <h2 className="text-2xl font-bold mb-4">Apply to be an Instructor</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <input
-              type="text"
-              name="fullName"
-              placeholder="Full Name"
-              value={formData.fullName}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
-            {errors.fullName && (
-              <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>
-            )}
-          </div>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            readOnly
-            className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <input
-              type="tel"
-              name="phone"
-              placeholder="Phone Number"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
-            {errors.phone && (
-              <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
-            )}
-          </div>
-          <div>
-            <input
-              type="number"
-              name="experience"
-              placeholder="Years of Experience"
-              value={formData.experience}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
-            {errors.experience && (
-              <p className="text-red-500 text-xs mt-1">{errors.experience}</p>
-            )}
-          </div>
-        </div>
-
-        <input
-          type="text"
-          name="qualifications"
-          placeholder="Specialized Yoga"
-          value={formData.qualifications}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
-        {errors.qualifications && (
-          <p className="text-red-500 text-xs mt-1">{errors.qualifications}</p>
-        )}
+      )}
 
-        <textarea
-          name="bio"
-          placeholder="Short Bio"
-          value={formData.bio}
-          onChange={handleChange}
-          className="w-full p-2 border rounded h-24"
-        />
-        {errors.bio && (
-          <p className="text-red-500 text-xs mt-1">{errors.bio}</p>
-        )}
-
-        <div>
-          <label className="block font-semibold">Service Type:</label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {["Online Yoga", "Customer Home", "Instructor Home"].map(
-              (service) => (
-                <div key={service} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    value={service}
-                    checked={formData.serviceType.includes(service)}
-                    onChange={handleServiceTypeChange}
-                    id={`service-${service}`}
-                  />
-                  <label htmlFor={`service-${service}`}>{service}</label>
-                </div>
-              )
-            )}
-          </div>
-          {errors.serviceType && (
-            <p className="text-red-500 text-xs mt-1">{errors.serviceType}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block font-semibold">Profile Image:</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="w-full p-2 border rounded"
-            required={!image}
-          />
-          {imagePreview && (
-            <div className="mt-2 flex items-center gap-4">
-              <img
-                src={imagePreview}
-                className="h-24 w-24 object-cover rounded-full border-2"
-                alt="Preview"
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        {/* Mobile header with menu button */}
+        <div className="md:hidden bg-white shadow-sm p-4 flex items-center">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="text-gray-500 hover:text-gray-600"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
               />
+            </svg>
+          </button>
+          <h1 className="ml-4 text-xl font-semibold">Instructor Application</h1>
+        </div>
+
+        {/* Form Content */}
+        <div className="p-4 md:p-6">
+          <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow">
+            <h2 className="text-2xl font-bold mb-4">
+              Apply to be an Instructor
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <input
+                    type="text"
+                    name="fullName"
+                    placeholder="Full Name"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded"
+                  />
+                  {errors.fullName && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.fullName}
+                    </p>
+                  )}
+                </div>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  readOnly
+                  className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="Phone Number"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded"
+                  />
+                  {errors.phone && (
+                    <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                  )}
+                </div>
+                <div>
+                  <input
+                    type="number"
+                    name="experience"
+                    placeholder="Years of Experience"
+                    value={formData.experience}
+                    onChange={handleChange}
+                    className="w-full p-2 border rounded"
+                  />
+                  {errors.experience && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.experience}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <input
+                type="text"
+                name="qualifications"
+                placeholder="Specialized Yoga"
+                value={formData.qualifications}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+              />
+              {errors.qualifications && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.qualifications}
+                </p>
+              )}
+
+              <textarea
+                name="bio"
+                placeholder="Short Bio"
+                value={formData.bio}
+                onChange={handleChange}
+                className="w-full p-2 border rounded h-24"
+              />
+              {errors.bio && (
+                <p className="text-red-500 text-xs mt-1">{errors.bio}</p>
+              )}
+
+              <div>
+                <label className="block font-semibold">Service Type:</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  {["Online Yoga", "Customer Home", "Instructor Home"].map(
+                    (service) => (
+                      <div key={service} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          value={service}
+                          checked={formData.serviceType.includes(service)}
+                          onChange={handleServiceTypeChange}
+                          id={`service-${service}`}
+                        />
+                        <label htmlFor={`service-${service}`}>{service}</label>
+                      </div>
+                    )
+                  )}
+                </div>
+                {errors.serviceType && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.serviceType}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block font-semibold">Profile Image:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full p-2 border rounded"
+                  required={!image}
+                />
+                {imagePreview && (
+                  <div className="mt-2 flex items-center gap-4">
+                    <img
+                      src={imagePreview}
+                      className="h-24 w-24 object-cover rounded-full border-2"
+                      alt="Preview"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="text-red-500"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block font-semibold">Upload Documents:</label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) =>
+                    handleFilesChange(e, setDocuments, documents)
+                  }
+                  className="w-full p-2 border rounded"
+                />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                  {documents.map((doc, index) => (
+                    <div key={index} className="relative">
+                      {getFileTypeIndicator(doc.preview, doc.name)}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleRemoveFile(index, documents, setDocuments)
+                        }
+                        className="absolute top-0 right-0 bg-red-500 text-white w-6 h-6 rounded-full"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold">
+                  Upload Certificates:
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) =>
+                    handleFilesChange(e, setCertificates, certificates)
+                  }
+                  className="w-full p-2 border rounded"
+                />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                  {certificates.map((cert, index) => (
+                    <div key={index} className="relative">
+                      {getFileTypeIndicator(cert.preview, cert.name)}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleRemoveFile(index, certificates, setCertificates)
+                        }
+                        className="absolute top-0 right-0 bg-red-500 text-white w-6 h-6 rounded-full"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <button
-                type="button"
-                onClick={handleRemoveImage}
-                className="text-red-500"
+                type="submit"
+                className={`w-full bg-blue-500 text-white py-2 rounded ${
+                  isSubmitting
+                    ? "opacity-70 cursor-not-allowed"
+                    : "hover:bg-blue-600"
+                }`}
+                disabled={isSubmitting}
               >
-                Remove
+                {isSubmitting ? "Submitting..." : "Submit Application"}
               </button>
-            </div>
-          )}
-        </div>
-
-        <div>
-          <label className="block font-semibold">Upload Documents:</label>
-          <input
-            type="file"
-            multiple
-            onChange={(e) => handleFilesChange(e, setDocuments, documents)}
-            className="w-full p-2 border rounded"
-          />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-            {documents.map((doc, index) => (
-              <div key={index} className="relative">
-                {getFileTypeIndicator(doc.preview, doc.name)}
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleRemoveFile(index, documents, setDocuments)
-                  }
-                  className="absolute top-0 right-0 bg-red-500 text-white w-6 h-6 rounded-full"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
+            </form>
           </div>
         </div>
-
-        <div>
-          <label className="block font-semibold">Upload Certificates:</label>
-          <input
-            type="file"
-            multiple
-            onChange={(e) =>
-              handleFilesChange(e, setCertificates, certificates)
-            }
-            className="w-full p-2 border rounded"
-          />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-            {certificates.map((cert, index) => (
-              <div key={index} className="relative">
-                {getFileTypeIndicator(cert.preview, cert.name)}
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleRemoveFile(index, certificates, setCertificates)
-                  }
-                  className="absolute top-0 right-0 bg-red-500 text-white w-6 h-6 rounded-full"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className={`w-full bg-blue-500 text-white py-2 rounded ${
-            isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-600"
-          }`}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Submitting..." : "Submit Application"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

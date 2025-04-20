@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { AppContent } from "../../../context/AppContext";
 
-const YogaBookingModal = ({ isOpen, setIsOpen }) => {
+const YogaBookingModal = ({ isOpen, setIsOpen, instructorId }) => {
   const { userData } = useContext(AppContent);
   const [location, setLocation] = useState("");
   const [formData, setFormData] = useState({
@@ -27,6 +27,8 @@ const YogaBookingModal = ({ isOpen, setIsOpen }) => {
     zipCode: "",
     yogaType: "",
     remarks: "",
+    userId: userData?.userId || "", // Add userId from userData
+    instructorId: instructorId, // Add instructorId from props
   });
 
   useEffect(() => {
@@ -35,9 +37,12 @@ const YogaBookingModal = ({ isOpen, setIsOpen }) => {
         ...prev,
         fullName: userData.name || "",
         email: userData.email || "",
+        userId: userData.userId || "", // Ensure userId is set
       }));
     }
   }, [userData]);
+
+  const today = new Date().toISOString().split("T")[0];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,10 +53,54 @@ const YogaBookingModal = ({ isOpen, setIsOpen }) => {
     if (name === "sessionLocation") setLocation(value);
   };
 
-  const handleSubmit = (e) => {
+  const formatTimeToAMPM = (time24) => {
+    if (!time24) return "";
+    const [hour, minute] = time24.split(":");
+    const h = parseInt(hour);
+    const period = h >= 12 ? "PM" : "AM";
+    const formattedHour = h % 12 === 0 ? 12 : h % 12;
+    return `${formattedHour}:${minute} ${period}`;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    setIsOpen(false);
+
+    const formattedData = {
+      ...formData,
+      formattedDate: formData.preferredDate
+        ? new Date(formData.preferredDate).toLocaleDateString()
+        : "",
+      formattedTime: formatTimeToAMPM(formData.preferredTime),
+      userId: userData?.userId, // Ensure userId is included
+      instructorId: instructorId, // Ensure instructorId is included
+    };
+
+    console.log("✅ Sending form data to backend...");
+    console.table(formattedData);
+
+    try {
+      const response = await fetch(
+        "http://localhost:3000/api/bookings/yoga-booking",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formattedData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ Booking submitted successfully:", result);
+
+      setIsOpen(false); // Close modal
+    } catch (error) {
+      console.error("❌ Error submitting booking:", error.message);
+    }
   };
 
   if (!isOpen) return null;
@@ -73,6 +122,7 @@ const YogaBookingModal = ({ isOpen, setIsOpen }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Full Name */}
             <div className="space-y-1">
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <User size={16} /> <span className="ml-2">Full Name</span>
@@ -83,10 +133,12 @@ const YogaBookingModal = ({ isOpen, setIsOpen }) => {
                 required
                 value={formData.fullName}
                 readOnly
+                placeholder="Your full name"
                 className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed text-gray-700"
               />
             </div>
 
+            {/* Email */}
             <div className="space-y-1">
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <Mail size={16} /> <span className="ml-2">Email</span>
@@ -97,51 +149,78 @@ const YogaBookingModal = ({ isOpen, setIsOpen }) => {
                 required
                 value={formData.email}
                 readOnly
+                placeholder="Your email address"
                 className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed text-gray-700"
               />
             </div>
 
-            {[
-              {
-                label: "Phone Number",
-                name: "phoneNumber",
-                type: "tel",
-                icon: <Phone size={16} />,
-              },
-              {
-                label: "Preferred Date",
-                name: "preferredDate",
-                type: "date",
-                icon: <Calendar size={16} />,
-              },
-              {
-                label: "Preferred Time",
-                name: "preferredTime",
-                type: "time",
-                icon: <Clock size={16} />,
-              },
-              {
-                label: "Yoga Type",
-                name: "yogaType",
-                type: "text",
-                icon: <Calendar size={16} />,
-              },
-            ].map(({ label, name, type, icon }) => (
-              <div key={name} className="space-y-1">
-                <label className="flex items-center text-sm font-medium text-gray-700">
-                  {icon} <span className="ml-2">{label}</span>
-                </label>
-                <input
-                  type={type}
-                  name={name}
-                  required
-                  value={formData[name]}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            ))}
+            {/* Phone */}
+            <div className="space-y-1">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <Phone size={16} /> <span className="ml-2">Phone Number</span>
+              </label>
+              <input
+                type="tel"
+                name="phoneNumber"
+                required
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                placeholder="Your phone number"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+              />
+            </div>
 
+            {/* Preferred Date */}
+            <div className="space-y-1">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <Calendar size={16} />
+                <span className="ml-2">Preferred Date</span>
+              </label>
+              <input
+                type="date"
+                name="preferredDate"
+                required
+                min={today}
+                value={formData.preferredDate}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+              />
+            </div>
+
+            {/* Preferred Time */}
+            <div className="space-y-1">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <Clock size={16} />
+                <span className="ml-2">Preferred Time</span>
+              </label>
+              <input
+                type="time"
+                name="preferredTime"
+                required
+                value={formData.preferredTime}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+              />
+            </div>
+
+            {/* Yoga Type */}
+            <div className="space-y-1">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <Calendar size={16} />
+                <span className="ml-2">Yoga Type</span>
+              </label>
+              <input
+                type="text"
+                name="yogaType"
+                required
+                value={formData.yogaType}
+                onChange={handleChange}
+                placeholder="E.g., Hatha, Vinyasa, etc."
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+              />
+            </div>
+
+            {/* Duration */}
             <div className="space-y-1">
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <Clock size={16} className="mr-2" /> Session Duration
@@ -151,15 +230,18 @@ const YogaBookingModal = ({ isOpen, setIsOpen }) => {
                 required
                 value={formData.sessionDuration}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
               >
-                <option value="">Select Duration</option>
+                <option value="" disabled>
+                  Select Duration
+                </option>
                 <option value="30">30 min</option>
                 <option value="60">60 min</option>
                 <option value="90">90 min</option>
               </select>
             </div>
 
+            {/* Location */}
             <div className="space-y-1">
               <label className="flex items-center text-sm font-medium text-gray-700">
                 <MapPin size={16} className="mr-2" /> Session Location
@@ -169,14 +251,17 @@ const YogaBookingModal = ({ isOpen, setIsOpen }) => {
                 required
                 value={formData.sessionLocation}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
               >
-                <option value="">Select Location</option>
+                <option value="" disabled>
+                  Select Location
+                </option>
                 <option value="instructor">Instructor's Home</option>
                 <option value="customer">Customer's Home</option>
               </select>
             </div>
 
+            {/* Address Fields (only if "customer" selected) */}
             {location === "customer" && (
               <div className="border-t border-gray-200 pt-4 space-y-4">
                 {[
@@ -184,14 +269,21 @@ const YogaBookingModal = ({ isOpen, setIsOpen }) => {
                     label: "Street Address",
                     name: "streetAddress",
                     icon: <Home size={16} />,
+                    placeholder: "Your street address",
                   },
-                  { label: "City", name: "city", icon: <MapPin size={16} /> },
+                  {
+                    label: "City",
+                    name: "city",
+                    icon: <MapPin size={16} />,
+                    placeholder: "Your city",
+                  },
                   {
                     label: "Zip Code",
                     name: "zipCode",
                     icon: <MapPin size={16} />,
+                    placeholder: "Your zip/postal code",
                   },
-                ].map(({ label, name, icon }) => (
+                ].map(({ label, name, icon, placeholder }) => (
                   <div key={name} className="space-y-1">
                     <label className="flex items-center text-sm font-medium text-gray-700">
                       {icon} <span className="ml-2">{label}</span>
@@ -202,13 +294,29 @@ const YogaBookingModal = ({ isOpen, setIsOpen }) => {
                       required
                       value={formData[name]}
                       onChange={handleChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder={placeholder}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                     />
                   </div>
                 ))}
               </div>
             )}
 
+            {/* Additional Remarks */}
+            <div className="space-y-1">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <FileText size={16} className="mr-2" /> Additional Remarks
+              </label>
+              <textarea
+                name="remarks"
+                value={formData.remarks}
+                onChange={handleChange}
+                placeholder="Any special requests or notes"
+                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black min-h-[100px]"
+              />
+            </div>
+
+            {/* Submit Button */}
             <div className="pt-4">
               <button
                 type="submit"

@@ -3,14 +3,13 @@ import { useParams } from "react-router-dom";
 import InstructorHeader from "./InstructorHeader";
 import InstructorClasses from "./InstructorClasses";
 import InstructorAbout from "./InstructorAbout";
-import InstructorReviews from "./InstructorReviews";
 
 function InstructorDetails() {
   const { instructorId } = useParams();
   const [instructor, setInstructor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("classes");
+  const [activeTab, setActiveTab] = useState("about");
   const [favorite, setFavorite] = useState(false);
 
   useEffect(() => {
@@ -97,6 +96,7 @@ function InstructorDetails() {
         setFavorite={setFavorite}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        instructorId={instructorId} // Add this line
       />
 
       {/* Content Area */}

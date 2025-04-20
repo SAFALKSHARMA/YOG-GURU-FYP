@@ -8,6 +8,7 @@ import {
   Share2,
   Star,
   Calendar,
+  ServerIcon,
 } from "lucide-react";
 import YogaBookingModal from "./YogaBookingModal"; // Import the YogaBookingModal component
 
@@ -17,6 +18,7 @@ function InstructorHeader({
   setFavorite,
   activeTab,
   setActiveTab,
+  instructorId,
 }) {
   // Add state to control the booking modal
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -91,10 +93,21 @@ function InstructorHeader({
               </div>
             </div>
 
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+              <div className="flex items-start">
+                <ServerIcon className="w-4 h-4 mr-2 mt-1 text-purple-300" />
+                <div>
+                  <p className="text-sm font-medium mb-1">Services Offered:</p>
+                  <ul className="text-sm list-disc list-inside space-y-1">
+                    {instructor.serviceTypes.map((service, index) => (
+                      <li key={index}>{service}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
-              <button className="bg-white text-purple-700 px-8 py-3 rounded-xl text-lg font-semibold hover:bg-purple-50 transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-purple-200">
-                Book a Class
-              </button>
               <button
                 onClick={openBookingModal}
                 className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-xl text-lg font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-pink-200/50 flex items-center gap-2"
@@ -134,16 +147,6 @@ function InstructorHeader({
           >
             About
           </button>
-          <button
-            onClick={() => setActiveTab("reviews")}
-            className={`flex-1 px-4 py-3 rounded-lg font-medium text-sm ${
-              activeTab === "reviews"
-                ? "bg-white text-purple-700"
-                : "text-white/90 hover:bg-white/10"
-            }`}
-          >
-            Reviews
-          </button>
         </div>
       </div>
 
@@ -151,6 +154,7 @@ function InstructorHeader({
       <YogaBookingModal
         isOpen={isBookingModalOpen}
         setIsOpen={setIsBookingModalOpen}
+        instructorId={instructorId} // Add this line
       />
     </div>
   );
