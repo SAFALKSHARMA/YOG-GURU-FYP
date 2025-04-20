@@ -252,3 +252,100 @@ export const resetPassword = async (req, res) => {
     return res.json({ success: false, message: error.message });
   }
 };
+
+export const google = async (req, res, next) => {
+  try {
+    const { name, email, photo } = req.body;
+
+    // Validate required fields
+    if (!name || !email) {
+      console.error("Missing required fields - Name:", name, "Email:", email);
+      return res.status(400).json({
+        success: false,
+        message: "Name and Email are required",
+      });
+    }
+
+    // Check if user exists
+    const existingUser = await userModel.findOne({ email });
+
+    if (existingUser) {
+      // User exists - generate token and respond
+      const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
+
+      const userData = existingUser.toObject();
+      delete userData.password;
+
+      return res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        })
+        .status(200)
+        .json({
+          success: true,
+          user: userData,
+        });
+    }
+
+    // Create new user
+    const generatedPassword =
+      Math.random().toString(36).slice(-8) +
+      Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+
+    const newUser = new userModel({
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+      image: photo || undefined, // Use schema default if photo not provided
+      isAccountVerified: true, // Mark Google users as verified
+    });
+
+    await newUser.save();
+
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    const userData = newUser.toObject();
+    delete userData.password;
+
+    return res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .status(201)
+      .json({
+        success: true,
+        user: userData,
+      });
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+
+    // Handle duplicate key error (unique email)
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "Email already exists",
+      });
+    }
+
+    // Handle validation errors
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: Object.values(error.errors).map((val) => val.message),
+      });
+    }
+
+    next(error);
+  }
+};

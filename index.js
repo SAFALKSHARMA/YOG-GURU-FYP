@@ -10,6 +10,7 @@ import instructorRoutes from "./routes/instructorRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
 import Instructor from "./models/Instructor.js";
 import shopRoutes from "./routes/shopRoutes.js";
+import yogaBookingRoutes from "./routes/bookingRoutes.js";
 
 const app = express();
 const PORT = 3000;
@@ -53,6 +54,7 @@ app.use("/api/user", userRouter);
 app.use("/api/instructors", instructorRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/shop", shopRoutes);
+app.use("/api/bookings", yogaBookingRoutes);
 
 // Example backend route in Node.js (Express)
 app.get("/api/classes/instructor/:instructorId", async (req, res) => {

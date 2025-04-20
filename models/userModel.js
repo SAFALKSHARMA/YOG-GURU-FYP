@@ -31,6 +31,26 @@ const userSchema = new mongoose.Schema({
       classId: { type: mongoose.Schema.Types.ObjectId },
     },
   ],
+
+  cartItems: [
+    {
+      product: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "YogaAccessory",
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        default: 1,
+        min: 1,
+      },
+      addedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
 });
 
 const userModel = mongoose.models.user || mongoose.model("user", userSchema);
