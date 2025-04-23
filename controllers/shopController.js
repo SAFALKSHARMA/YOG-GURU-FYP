@@ -193,9 +193,16 @@ export const getCartItems = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+    // Calculate the total count of items in the cart
+    const totalCount = user.cartItems.reduce(
+      (acc, item) => acc + item.quantity,
+      0
+    );
+
     res.status(200).json({
       success: true,
       cartItems: user.cartItems,
+      count: totalCount,
     });
   } catch (error) {
     console.error("Error fetching cart items:", error);

@@ -1,59 +1,34 @@
-import mongoose, { model } from "mongoose";
+import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-// Student schema for nested students list with image field
-const studentSchema = new Schema({
-  fullName: { type: String, required: true },
-  email: { type: String, required: true },
-  enrolledDate: { type: Date, default: Date.now },
-  image: { type: String, required: true }, // Image field for student
-});
-
-// Class schema
-const classSchema = new Schema({
-  className: { type: String, required: true },
-  description: { type: String, required: true },
-  category: { type: String, required: false }, // Class category (e.g., Yoga, Meditation)
-  date: { type: Date, required: true },
-  time: { type: String, required: true },
-  duration: { type: Number, required: true }, // in minutes
-  capacity: { type: Number, required: true },
-  totalDuration: { type: String, required: true },
-  price: { type: Number, required: true },
-  classLink: { type: String, required: true },
-  location: { type: String, required: false }, // Optional physical location
-  image: { type: String, required: true }, // Image field for class (Cloudinary URL)
-  difficultyLevel: { type: String, required: true },
-  instructorId: {
-    type: Schema.Types.ObjectId,
-    ref: "Instructor",
-    required: false,
-  }, // Reference instructor
-  status: {
-    type: String,
-    enum: ["Pending", "Approved", "Rejected"],
-    default: "Pending",
+const instructorSchema = new Schema(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    fullName: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    phone: { type: String, required: true },
+    experience: { type: Number, required: true },
+    qualifications: { type: String, required: true },
+    bio: { type: String, required: true },
+    image: { type: String, required: true },
+    serviceTypes: {
+      type: [String],
+      enum: ["Online Yoga", "Customer Home", "Instructor Home"],
+      required: true,
+    },
+    classes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Class",
+      },
+    ],
   },
-  students: [studentSchema], // List of students
-});
+  { timestamps: true }
+);
 
-// Instructor schema
-const instructorSchema = new Schema({
-  fullName: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  phone: { type: String, required: true },
-  experience: { type: Number, required: true },
-  qualifications: { type: String, required: true },
-  bio: { type: String, required: true },
-  image: { type: String, required: true },
-  serviceTypes: {
-    type: [String], // List of service types (e.g., Online Yoga, Home Visit)
-    enum: ["Online Yoga", "Customer Home", "Instructor Home"],
-    required: true,
-  },
-  classes: [classSchema], // List of classes assigned
-});
-
-const Instructor = model("Instructor", instructorSchema);
-
-export default Instructor;
+export default mongoose.models.Instructor ||
+  mongoose.model("Instructor", instructorSchema);

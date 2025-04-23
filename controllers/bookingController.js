@@ -123,7 +123,7 @@ export const updateBookingStatus = async (req, res) => {
       _id: bookingId,
       instructorId: instructorId,
     })
-      .populate("userId", "email n  ame")
+      .populate("userId", "email name")
       .populate("instructorId", "fullName email");
 
     if (!booking) {

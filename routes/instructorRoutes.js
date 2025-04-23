@@ -24,8 +24,8 @@ router.post(
 
 router.get("/applications", getApplications); // Get all applications (for admin)
 
-router.put("/approve/:instructorId", approveInstructor);
-router.put("/reject/:instructorId", rejectInstructor); // Ensure this route exists!
+router.put("/approve/:applicationId", approveInstructor);
+router.put("/reject/:applicationId", rejectInstructor); // Ensure this route exists!
 
 // Route to fetch all instructors (including their classes)
 router.get("/all-instructors", getAllInstructors);

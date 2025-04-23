@@ -11,6 +11,8 @@ import classRoutes from "./routes/classRoutes.js";
 import Instructor from "./models/Instructor.js";
 import shopRoutes from "./routes/shopRoutes.js";
 import yogaBookingRoutes from "./routes/bookingRoutes.js";
+import trackRoutes from "./routes/trackRoutes.js";
+import statsRoutes from "./routes/statsRoutes.js";
 
 const app = express();
 const PORT = 3000;
@@ -30,20 +32,6 @@ app.use(
   })
 );
 
-// // Session setup
-// app.use(
-//   session({
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false, // Only create session if authenticated
-//     cookie: {
-//       secure: process.env.NODE_ENV === "production", // Only set cookie over HTTPS in production
-//       httpOnly: true, // Ensures the cookie can't be accessed via JavaScript
-//       maxAge: 24 * 60 * 60 * 1000, // Cookie expiration time (24 hours)
-//     },
-//   })
-// );
-
 app.get("/", (req, res) => {
   res.send("API Working");
 });
@@ -55,6 +43,8 @@ app.use("/api/instructors", instructorRoutes);
 app.use("/api/classes", classRoutes);
 app.use("/api/shop", shopRoutes);
 app.use("/api/bookings", yogaBookingRoutes);
+app.use("/api/track", trackRoutes);
+app.use("/api/stats", statsRoutes);
 
 // Example backend route in Node.js (Express)
 app.get("/api/classes/instructor/:instructorId", async (req, res) => {

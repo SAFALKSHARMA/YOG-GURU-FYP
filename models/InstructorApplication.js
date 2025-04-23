@@ -1,7 +1,13 @@
 import mongoose from "mongoose";
+const { Schema } = mongoose;
 
-const instructorApplicationSchema = new mongoose.Schema(
+const instructorApplicationSchema = new Schema(
   {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     fullName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     phone: { type: String, required: true },
@@ -9,7 +15,7 @@ const instructorApplicationSchema = new mongoose.Schema(
     qualifications: { type: String, required: true },
     bio: { type: String, required: true },
     image: { type: String, required: true },
-    serviceType: { type: [String], required: true }, // Array to store multiple service types
+    serviceType: { type: [String], required: true },
     documents: [{ type: String, required: true }],
     certificates: [{ type: String, required: true }],
     status: {
@@ -21,7 +27,5 @@ const instructorApplicationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model(
-  "InstructorApplication",
-  instructorApplicationSchema
-);
+export default mongoose.models.InstructorApplication ||
+  mongoose.model("InstructorApplication", instructorApplicationSchema);

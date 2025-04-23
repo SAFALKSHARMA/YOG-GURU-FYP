@@ -46,24 +46,22 @@ export const getUserData = async (req, res) => {
         phone: user.phone,
         experience: user.experience,
         bio: user.bio,
+        address: user.address,
+        createdAt: user.createdAt, // ✅ Include createdAt
       },
-      instructorData: instructorData, // Include instructor data if role is "instructor"
+      instructorData: instructorData,
     });
   } catch (error) {
-    // Return the error message in the response
     res.json({ success: false, message: error.message });
   }
 };
 
 export const getAllUsers = async (req, res) => {
   try {
-    // Fetch only verified users
-    const users = await userModel.find(
-      { isAccountVerified: true },
-      "name email role isAccountVerified image qualifications experience phone bio"
-    );
+    // Fetch all users without filtering or limiting fields
+    const users = await userModel.find();
 
-    // Return the filtered users' data
+    // Return all user data
     res.json({
       success: true,
       users,
@@ -107,6 +105,130 @@ export const updateProfileImage = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server error. Please try again later.",
+    });
+  }
+};
+
+// DELETE USER CONTROLLER
+export const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+
+    await userModel.findByIdAndDelete(userId);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "User deleted successfully." });
+  } catch (error) {
+    console.error("Delete User Error:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
+export const banUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { reason } = req.body;
+
+    if (!reason) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Ban reason is required." });
+    }
+
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+
+    user.banInfo = {
+      isBanned: true,
+      banReason: reason,
+    };
+
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "User banned successfully." });
+  } catch (error) {
+    console.error("Ban User Error:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
+export const unbanUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+
+    user.banInfo = {
+      isBanned: false,
+      banReason: "",
+    };
+
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "User unbanned successfully." });
+  } catch (error) {
+    console.error("Unban User Error:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
+// Update user profile (excluding email & password)
+export const updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { name, phone, address, bio } = req.body;
+
+    // Validate if user exists
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Update allowed fields
+    user.name = name || user.name;
+    user.phone = phone || user.phone;
+    user.address = address || user.address;
+    user.bio = bio || user.bio;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user, // Optionally return updated user info
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while updating profile",
     });
   }
 };

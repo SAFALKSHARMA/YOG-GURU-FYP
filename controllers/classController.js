@@ -1,5 +1,6 @@
 import Instructor from "../models/Instructor.js";
-import userModel from "../models/userModel.js";
+import User from "../models/userModel.js";
+import Class from "../models/class.model.js";
 import mongoose from "mongoose";
 
 export const createClass = async (req, res) => {
@@ -8,6 +9,7 @@ export const createClass = async (req, res) => {
       instructorId,
       className,
       description,
+      category,
       date,
       time,
       duration,
@@ -15,30 +17,33 @@ export const createClass = async (req, res) => {
       totalDuration,
       price,
       classLink,
-      image, // Make sure this is passed from the request body
+      location,
       difficultyLevel,
+      image,
     } = req.body;
 
-    // Ensure required fields are provided
-    if (!instructorId || !className || !date || !time || !image) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing required fields." });
+    // Validate required fields
+    if (!instructorId || !className || !date || !time) {
+      return res.status(400).json({
+        success: false,
+        message: "Instructor ID, class name, date, and time are required.",
+      });
     }
 
-    // Find the instructor in the database
+    // Check if instructor exists
     const instructor = await Instructor.findById(instructorId);
-
     if (!instructor) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Instructor not found." });
+      return res.status(404).json({
+        success: false,
+        message: "Instructor not found.",
+      });
     }
 
-    // Create the new class object
-    const newClass = {
+    // Create new class
+    const newClass = new Class({
       className,
       description,
+      category,
       date,
       time,
       duration,
@@ -46,110 +51,157 @@ export const createClass = async (req, res) => {
       totalDuration,
       price,
       classLink,
-      image, // Cloudinary image URL
+      location,
+      image,
       difficultyLevel,
-      students: [], // Default empty student list
-    };
+      instructor: instructor._id,
+      status: "Pending", // Default status
+    });
 
-    // Add the class to the instructor's `classes` array
-    instructor.classes.push(newClass);
+    await newClass.save();
 
-    // Save the updated instructor document
+    // Add class reference to instructor
+    instructor.classes.push(newClass._id);
     await instructor.save();
 
     res.status(201).json({
       success: true,
-      message: "Class added successfully!",
+      message: "Class created successfully!",
       class: newClass,
     });
   } catch (error) {
     console.error("Error creating class:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 };
 
-// Controller to fetch all classes of all instructors with 'Approved' status
 export const getAllClasses = async (req, res) => {
   try {
-    // Fetch instructors and their classes
-    const instructors = await Instructor.find({}, "classes");
+    const classes = await Class.find({ status: "Approved" }).populate(
+      "instructor",
+      "fullName image"
+    );
+    // .populate("students", "fullName email image");
 
-    // Filter the classes to only include those with 'Approved' status
-    const allClasses = instructors
-      .flatMap((instructor) => instructor.classes)
-      .filter((classItem) => classItem.status === "Approved");
-
-    res.status(200).json(allClasses);
+    res.status(200).json({
+      success: true,
+      count: classes.length,
+      classes,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching classes", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching classes",
+      error: error.message,
+    });
   }
 };
 
-// Function to update class status
-export const updateClassStatus = async (req, res) => {
-  const { classId, newStatus } = req.body;
-
+export const getAllClassApplications = async (req, res) => {
   try {
-    const instructor = await Instructor.findOne({
-      "classes._id": classId, // Find the instructor with the class
-    });
+    const classes = await Class.find()
+      .populate({
+        path: "instructor",
+        select:
+          "fullName email phone experience qualifications bio image serviceTypes",
+      })
+      // .populate({
+      //   path: "students",
+      //   select: "fullName email image enrolledDate",
+      // })
+      .sort({ createdAt: -1 }); // Sort by newest first
 
-    if (!instructor) {
-      return res.status(404).json({ message: "Instructor or class not found" });
+    if (!classes || classes.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No class applications found",
+      });
     }
 
-    // Find the class to update
-    const classToUpdate = instructor.classes.find(
-      (classItem) => classItem._id.toString() === classId
+    res.status(200).json({
+      success: true,
+      count: classes.length,
+      classes,
+    });
+  } catch (error) {
+    console.error("Error fetching class applications:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+export const updateClassStatus = async (req, res) => {
+  try {
+    const { classId, newStatus } = req.body;
+
+    if (!classId || !newStatus) {
+      return res.status(400).json({
+        success: false,
+        message: "Class ID and new status are required.",
+      });
+    }
+
+    const updatedClass = await Class.findByIdAndUpdate(
+      classId,
+      { status: newStatus },
+      { new: true }
     );
 
-    if (!classToUpdate) {
-      return res.status(404).json({ message: "Class not found" });
+    if (!updatedClass) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found.",
+      });
     }
 
-    // Update the class status
-    classToUpdate.status = newStatus;
-
-    // Save the updated instructor
-    await instructor.save();
-
-    res.status(200).json({ message: "Class status updated successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Class status updated successfully.",
+      class: updatedClass,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error updating class status",
+      error: error.message,
+    });
   }
 };
 
-// Fetch class details by classId
 export const getClassDetails = async (req, res) => {
   try {
     const { classId } = req.params;
 
-    // Find an instructor that has the class
-    const instructor = await Instructor.findOne({ "classes._id": classId });
-
-    if (!instructor) {
-      return res.status(404).json({ message: "Class not found" });
-    }
-
-    // Find the specific class by ID
-    const classDetails = instructor.classes.id(classId);
+    const classDetails = await Class.findById(classId).populate(
+      "instructor",
+      "fullName email image bio"
+    );
+    // .populate("students", "fullName email image enrolledDate");
 
     if (!classDetails) {
-      return res.status(404).json({ message: "Class not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Class not found.",
+      });
     }
 
-    // Include instructor's full name
-    const response = {
-      ...classDetails.toObject(),
-      instructorFullName: instructor.fullName,
-      instructorId: instructor._id,
-    };
-
-    res.status(200).json(response);
+    res.status(200).json({
+      success: true,
+      class: classDetails,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching class details",
+      error: error.message,
+    });
   }
 };
 
@@ -158,41 +210,51 @@ export const toggleFavorite = async (req, res) => {
     const { userId, classId } = req.body;
 
     if (!userId || !classId) {
-      return res
-        .status(400)
-        .json({ message: "User ID and Class ID are required" });
+      return res.status(400).json({
+        success: false,
+        message: "User ID and Class ID are required.",
+      });
     }
 
-    // Find the user
-    const user = await userModel.findById(userId);
+    const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
-    // Check if class is already in favorites
-    const isFavorite = user.favoriteClasses.some(
-      (fav) => fav.classId.toString() === classId
-    );
+    // Check if class exists
+    const classExists = await Class.exists({ _id: classId });
+    if (!classExists) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found.",
+      });
+    }
 
-    if (isFavorite) {
-      // Remove from favorites
-      user.favoriteClasses = user.favoriteClasses.filter(
-        (fav) => fav.classId.toString() !== classId
-      );
-    } else {
+    const index = user.favoriteClasses.indexOf(classId);
+    if (index === -1) {
       // Add to favorites
-      user.favoriteClasses.push({ classId });
+      user.favoriteClasses.push(classId);
+    } else {
+      // Remove from favorites
+      user.favoriteClasses.splice(index, 1);
     }
 
     await user.save();
 
-    res.json({
-      isFavorite: !isFavorite,
-      message: isFavorite ? "Removed from favorites" : "Added to favorites",
+    res.status(200).json({
+      success: true,
+      isFavorite: index === -1,
+      message: index === -1 ? "Added to favorites" : "Removed from favorites",
     });
   } catch (error) {
-    console.error("Error toggling favorite:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({
+      success: false,
+      message: "Error toggling favorite",
+      error: error.message,
+    });
   }
 };
 
@@ -200,227 +262,240 @@ export const getFavoriteClasses = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Find user
-    const user = await userModel.findById(userId);
+    const user = await User.findById(userId).populate({
+      path: "favoriteClasses",
+      select:
+        "className image instructor date time difficultyLevel price totalDuration capacity",
+      populate: {
+        path: "instructor",
+        select: "fullName",
+      },
+    });
+
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
-    // Extract and return only class IDs
-    const favoriteClassIds = user.favoriteClasses.map((fav) => fav.classId);
-
-    res.json({ success: true, favoriteClassIds });
+    res.status(200).json({
+      success: true,
+      favoriteClasses: user.favoriteClasses,
+    });
   } catch (error) {
-    console.error("Error fetching favorite class IDs:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching favorite classes",
+      error: error.message,
+    });
   }
 };
 
 export const enrollUserInClass = async (req, res) => {
-  const { userId, classId, instructorId, email, image, fullName } = req.body;
-
-  if (!userId || !classId || !instructorId || !email || !fullName) {
-    return res.status(400).json({
-      message:
-        "User ID, Class ID, Instructor ID, Email, and Full Name are required",
-    });
-  }
-
   try {
-    // Find the instructor by instructorId
-    const instructor = await Instructor.findById(instructorId);
-    if (!instructor) {
-      return res.status(404).json({ message: "Instructor not found" });
+    const { userId, classId } = req.body;
+
+    if (!userId || !classId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID and Class ID are required.",
+      });
     }
 
-    // Find the specific class in the instructor's classes
-    const classToEnroll = instructor.classes.find(
-      (cls) => cls._id.toString() === classId
-    );
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    // Find class
+    const classToEnroll = await Class.findById(classId);
     if (!classToEnroll) {
-      return res.status(404).json({ message: "Class not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Class not found.",
+      });
     }
 
-    // Check if class has available capacity
+    // Check capacity
     if (classToEnroll.capacity <= 0) {
-      return res.status(400).json({ message: "Class is already full" });
+      return res.status(400).json({
+        success: false,
+        message: "Class is already full.",
+      });
     }
 
-    // Check if user is already in the class's students list by email
-    const isAlreadyInClass = classToEnroll.students.some(
-      (student) => student.email === email
-    );
-    if (isAlreadyInClass) {
-      return res
-        .status(400)
-        .json({ message: "You are already enrolled in this class" });
+    // Check if already enrolled
+    const isAlreadyEnrolled = classToEnroll.students.includes(user._id);
+    if (isAlreadyEnrolled) {
+      return res.status(400).json({
+        success: false,
+        message: "You are already enrolled in this class.",
+      });
     }
 
-    // Add user to the class's students list
-    classToEnroll.students.push({
-      fullName,
-      email,
-      image: image || "",
-      enrolledDate: new Date(),
-    });
-
-    // Decrease the class capacity by 1
+    // Add student to class
+    classToEnroll.students.push(user._id);
     classToEnroll.capacity -= 1;
+    await classToEnroll.save();
 
-    // Find and update user (if you still want to track enrollments in user document)
-    const user = await userModel.findByIdAndUpdate(
-      userId,
-      { $addToSet: { enrolledClasses: { classId } } },
-      { new: true }
-    );
+    // Add class to user's enrolled classes
+    if (!user.enrolledClasses.includes(classId)) {
+      user.enrolledClasses.push(classId);
+      await user.save();
+    }
 
-    // Save the instructor document
-    await instructor.save();
-
-    // Respond with success
     res.status(200).json({
-      message: "Successfully enrolled in the class",
+      success: true,
+      message: "Successfully enrolled in the class.",
       remainingCapacity: classToEnroll.capacity,
     });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while enrolling the user" });
+    res.status(500).json({
+      success: false,
+      message: "Error enrolling in class",
+      error: error.message,
+    });
   }
 };
 
 export const getEnrolledClasses = async (req, res) => {
-  const { userId } = req.params;
-
-  if (!userId) {
-    return res.status(400).json({ message: "User ID is required" });
-  }
-
   try {
-    // Find the user by userId and only return the enrolledClasses field
-    const user = await userModel.findById(userId, "enrolledClasses");
+    const { userId } = req.params;
+
+    const user = await User.findById(userId).populate({
+      path: "enrolledClasses",
+      select:
+        "className image instructor date time difficultyLevel price totalDuration capacity",
+      populate: {
+        path: "instructor",
+        select: "fullName",
+      },
+    });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
-    // Extract only classIds from enrolledClasses
-    const classIds = user.enrolledClasses.map(
-      (enrolledClass) => enrolledClass.classId
-    );
-
-    // Respond with classIds as an array
-    res.status(200).json(classIds); // Returning an array of classIds
+    res.status(200).json({
+      success: true,
+      enrolledClasses: user.enrolledClasses,
+    });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ message: "An error occurred while fetching enrolled classes" });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching enrolled classes",
+      error: error.message,
+    });
   }
 };
 
 export const updateClass = async (req, res) => {
-  const { _id } = req.params; // Class _id from URL
-  const {
-    className,
-    description,
-    date,
-    time,
-    duration,
-    capacity,
-    totalDuration,
-    price,
-    classLink,
-    difficultyLevel,
-    status,
-    students,
-    instructorId,
-  } = req.body; // Data from the request body
-
   try {
-    let imageUrl = null;
+    const { classId } = req.params;
+    const updateData = req.body;
 
-    // Check if an image was uploaded by multer
+    // Handle image upload if present
     if (req.file) {
-      imageUrl = req.file.path; // Multer + Cloudinary gives you the URL here
-      console.log("Image uploaded successfully:", imageUrl);
+      updateData.image = req.file.path;
     }
 
-    // Find the instructor by instructorId
-    const instructor = await Instructor.findById(instructorId);
-    if (!instructor) {
-      return res.status(404).json({ message: "Instructor not found" });
+    const updatedClass = await Class.findByIdAndUpdate(classId, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedClass) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found.",
+      });
     }
-
-    // Find the class in the instructor's classes list using _id
-    const classToUpdate = instructor.classes.id(_id);
-    if (!classToUpdate) {
-      return res.status(404).json({ message: "Class not found" });
-    }
-
-    // Update the class properties
-    classToUpdate.className = className || classToUpdate.className;
-    classToUpdate.description = description || classToUpdate.description;
-    classToUpdate.date = date || classToUpdate.date;
-    classToUpdate.time = time || classToUpdate.time;
-    classToUpdate.duration = duration || classToUpdate.duration;
-    classToUpdate.capacity = capacity || classToUpdate.capacity;
-    classToUpdate.totalDuration = totalDuration || classToUpdate.totalDuration;
-    classToUpdate.price = price || classToUpdate.price;
-    classToUpdate.classLink = classLink || classToUpdate.classLink;
-    classToUpdate.difficultyLevel =
-      difficultyLevel || classToUpdate.difficultyLevel;
-    classToUpdate.status = status || classToUpdate.status;
-
-    // Update image if uploaded
-    if (imageUrl) {
-      classToUpdate.image = imageUrl;
-    }
-
-    // Optional: Update students list if you need
-    // classToUpdate.students = students || classToUpdate.students;
-
-    // Save the updated instructor document
-    await instructor.save();
 
     res.status(200).json({
-      message: "Class updated successfully",
-      updatedClass: classToUpdate,
+      success: true,
+      message: "Class updated successfully.",
+      class: updatedClass,
     });
-  } catch (err) {
-    console.error("Error updating class:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating class",
+      error: error.message,
+    });
   }
 };
 
 export const deleteClass = async (req, res) => {
   try {
-    const { instructorId, classId } = req.body;
+    const { classId, instructorId } = req.body;
 
-    if (!instructorId || !classId) {
-      return res
-        .status(400)
-        .json({ message: "Instructor Id or class Id is empty" });
+    if (!classId || !instructorId) {
+      return res.status(400).json({
+        success: false,
+        message: "Class ID and Instructor ID are required.",
+      });
     }
 
-    // Find the instructor
-    const instructor = await Instructor.findById(instructorId);
-    if (!instructorId) {
-      return res.status(400).json({ message: "Instructor not found" });
+    // Verify instructor owns the class
+    const classToDelete = await Class.findOne({
+      _id: classId,
+      instructorId: instructorId,
+    });
+
+    if (!classToDelete) {
+      return res.status(404).json({
+        success: false,
+        message: "Class not found or you don't have permission to delete it.",
+      });
     }
 
-    // Remove the class from the instructor's classes array
-    instructor.classes = instructor.classes.filter(
-      (cls) => cls._id.toString() !== classId
-    );
+    // Remove class from instructor's classes array
+    await Instructor.findByIdAndUpdate(instructorId, {
+      $pull: { classes: classId },
+    });
 
-    await instructor.save();
-    res.status(200).json({ message: "Class deleted successfully" });
+    // Delete the class
+    await Class.findByIdAndDelete(classId);
+
+    res.status(200).json({
+      success: true,
+      message: "Class deleted successfully.",
+    });
   } catch (error) {
-    console.error("Error deleting class:", error);
-    res.status(500).json({ message: "Internal server error." });
+    res.status(500).json({
+      success: false,
+      message: "Error deleting class",
+      error: error.message,
+    });
+  }
+};
+
+export const getInstructorClasses = async (req, res) => {
+  try {
+    const { instructorId } = req.params;
+
+    const classes = await Class.find({ instructorId })
+      .populate("students", "fullName email image")
+      .sort({ date: 1 });
+
+    res.status(200).json({
+      success: true,
+      count: classes.length,
+      classes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching instructor classes",
+      error: error.message,
+    });
   }
 };
