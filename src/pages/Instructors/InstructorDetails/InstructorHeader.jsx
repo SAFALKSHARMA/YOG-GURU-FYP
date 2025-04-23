@@ -10,7 +10,7 @@ import {
   Calendar,
   ServerIcon,
 } from "lucide-react";
-import YogaBookingModal from "./YogaBookingModal"; // Import the YogaBookingModal component
+import YogaBookingModal from "./YogaBookingModal";
 
 function InstructorHeader({
   instructor,
@@ -20,17 +20,12 @@ function InstructorHeader({
   setActiveTab,
   instructorId,
 }) {
-  // Add state to control the booking modal
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
-  // Function to open the booking modal
-  const openBookingModal = () => {
-    setIsBookingModalOpen(true);
-  };
+  const openBookingModal = () => setIsBookingModalOpen(true);
 
   return (
     <div className="bg-gradient-to-r from-purple-800 via-purple-700 to-indigo-800 text-white relative overflow-hidden">
-      {/* Abstract Shapes Background */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-10 left-10 w-40 h-40 rounded-full bg-purple-400"></div>
         <div className="absolute top-40 right-20 w-64 h-64 rounded-full bg-indigo-400"></div>
@@ -39,7 +34,6 @@ function InstructorHeader({
 
       <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
-          {/* Instructor Image */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
             <div className="w-44 h-44 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-white shadow-2xl transform transition-all duration-300 group-hover:scale-105">
@@ -51,22 +45,18 @@ function InstructorHeader({
             </div>
           </div>
 
-          {/* Instructor Details */}
           <div className="flex-1 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
               <h1 className="text-3xl md:text-4xl font-bold">
                 {instructor.fullName}
               </h1>
-              <div className="flex">
-                {Array(5)
-                  .fill(0)
-                  .map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-5 h-5 text-yellow-300 fill-current"
-                    />
-                  ))}
-              </div>
+              <button onClick={() => setFavorite(!favorite)} className="ml-2">
+                <Heart
+                  className={`w-6 h-6 ${
+                    favorite ? "fill-red-500 text-red-500" : "text-white"
+                  }`}
+                />
+              </button>
             </div>
 
             <div className="flex items-center justify-center md:justify-start mb-4">
@@ -76,12 +66,6 @@ function InstructorHeader({
               </p>
             </div>
 
-            <div className="flex items-center justify-center md:justify-start mb-4">
-              <MapPin className="w-5 h-5 mr-2 text-purple-300" />
-              <p className="text-purple-200">New York, NY</p>
-            </div>
-
-            {/* Contact Information */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <div className="flex items-center">
                 <Mail className="w-4 h-4 mr-2 text-purple-300" />
@@ -98,9 +82,12 @@ function InstructorHeader({
                 <ServerIcon className="w-4 h-4 mr-2 mt-1 text-purple-300" />
                 <div>
                   <p className="text-sm font-medium mb-1">Services Offered:</p>
-                  <ul className="text-sm list-disc list-inside space-y-1">
+                  <ul className="text-sm space-y-1">
                     {instructor.serviceTypes.map((service, index) => (
-                      <li key={index}>{service}</li>
+                      <li key={index} className="flex items-center">
+                        <span className="mr-2">•</span>
+                        {service}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -124,7 +111,6 @@ function InstructorHeader({
         </div>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex space-x-1 bg-white/10 backdrop-blur-md p-1 rounded-t-xl max-w-lg mx-auto md:mx-0">
           <button
@@ -150,11 +136,11 @@ function InstructorHeader({
         </div>
       </div>
 
-      {/* Render the YogaBookingModal conditionally */}
       <YogaBookingModal
         isOpen={isBookingModalOpen}
         setIsOpen={setIsBookingModalOpen}
-        instructorId={instructorId} // Add this line
+        instructorId={instructorId}
+        instructorName={instructor.fullName}
       />
     </div>
   );

@@ -1,9 +1,9 @@
-// NavBar.jsx
 import React, { useEffect, useState, useContext } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { FaBars, FaShoppingCart } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { AppContent } from "../../context/AppContext";
+import axios from "axios"; // Make sure axios is installed
 
 const navLinks = [
   { name: "Home", route: "/" },
@@ -19,8 +19,26 @@ const NavBar = () => {
   const location = useLocation();
   const [navBg, setNavBg] = useState("bg-white text-black");
   const { userData, isLoggedin } = useContext(AppContent);
-  // Add a state for cart items count (this would normally come from your cart context)
-  const [cartItemsCount, setCartItemsCount] = useState(3);
+  const [cartItemsCount, setCartItemsCount] = useState(0);
+
+  // 👇 Fetch cart items when component mounts
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const userId = userData?.userId;
+        if (isLoggedin && userId) {
+          const response = await axios.get(
+            `http://localhost:3000/api/shop/cart/${userId}`
+          );
+          setCartItemsCount(response.data?.cartItems?.length || 0);
+        }
+      } catch (error) {
+        console.error("Error fetching cart items:", error);
+      }
+    };
+
+    fetchCartItems();
+  }, [isLoggedin, userData]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -110,7 +128,6 @@ const NavBar = () => {
 
           {/* Mobile Menu Button with Cart */}
           <div className="md:hidden flex items-center space-x-4">
-            {/* Mobile Cart Button */}
             <Link to="/cart" className="relative">
               <button className="p-1 text-black hover:text-secondary transition duration-300">
                 <FaShoppingCart className="h-5 w-5" />
@@ -141,7 +158,6 @@ const NavBar = () => {
           transition={{ duration: 0.3 }}
           className="fixed top-0 left-0 w-3/4 max-w-xs h-full bg-white shadow-lg z-30 p-6 flex flex-col space-y-6"
         >
-          {/* Close Sidebar on Link Click */}
           {navLinks.map((link) => (
             <NavLink
               key={link.route}
@@ -157,7 +173,7 @@ const NavBar = () => {
             </NavLink>
           ))}
 
-          {/* Cart Link in Mobile Menu */}
+          {/* Cart in Mobile */}
           <NavLink
             to="/cart"
             onClick={() => setIsMobileMenuOpen(false)}

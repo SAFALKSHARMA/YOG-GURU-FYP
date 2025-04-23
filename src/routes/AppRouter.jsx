@@ -26,6 +26,7 @@ import AdminShopList from "../Admin/AdminShopList";
 import BookingManagement from "../pages/Instructors/BookingManagement";
 import ProductDetail from "../pages/Shop/ProductDetail";
 import MyCart from "../pages/Shop/MyCart";
+import TrackProgress from "../profile/TrackProgress";
 
 function AppRouter() {
   return (
@@ -77,6 +78,7 @@ function AppRouter() {
           <Route path="/admin/manage-classes" element={<ManageClass />} />
           <Route path="/admin/manage-shop" element={<AdminShop />} />
           <Route path="/admin/shopList" element={<AdminShopList />} />
+          <Route path="/track-progress" element={<TrackProgress />} />
         </Route>
 
         {/* Auth Routes (No Layout) */}

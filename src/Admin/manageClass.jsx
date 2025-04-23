@@ -19,7 +19,7 @@ import Sidebar from "./Sidebar";
 import ClassDetailsModal from "./classModal";
 
 const ManageClass = () => {
-  const [users, setUsers] = useState([]);
+  const [classes, setClasses] = useState([]); // Changed from users to classes
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedClass, setSelectedClass] = useState(null);
@@ -56,13 +56,13 @@ const ManageClass = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        "http://localhost:3000/api/instructors/all-instructors"
+        "http://localhost:3000/api/classes/applications"
       );
       if (!response.ok) {
         throw new Error("Failed to fetch classes data");
       }
       const data = await response.json();
-      setUsers(data || []);
+      setClasses(data.classes || []); // Update to use the correct data structure
     } catch (err) {
       setError(err.message);
     } finally {
@@ -99,15 +99,13 @@ const ManageClass = () => {
         throw new Error("Failed to update status");
       }
 
-      setUsers((prevUsers) =>
-        prevUsers.map((user) => ({
-          ...user,
-          classes: user.classes.map((classItem) =>
-            classItem._id === classId
-              ? { ...classItem, status: newStatus }
-              : classItem
-          ),
-        }))
+      // Update the specific class status in the state
+      setClasses((prevClasses) =>
+        prevClasses.map((classItem) =>
+          classItem._id === classId
+            ? { ...classItem, status: newStatus }
+            : classItem
+        )
       );
     } catch (err) {
       console.error("Error updating class status:", err);
@@ -122,26 +120,21 @@ const ManageClass = () => {
     setOpenDropdownId((prevId) => (prevId === classId ? null : classId));
   };
 
-  const filteredClasses = users.flatMap((user) =>
-    (user.classes || [])
-      .filter((classItem) => {
-        const matchesSearch =
-          classItem.className
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          user.fullName.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredClasses = classes.filter((classItem) => {
+    const matchesSearch =
+      classItem.className.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      classItem.instructor?.fullName
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      classItem.instructor?.email
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
-        const matchesStatus =
-          statusFilter === "All" || classItem.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "All" || classItem.status === statusFilter;
 
-        return matchesSearch && matchesStatus;
-      })
-      .map((classItem) => ({
-        ...classItem,
-        instructorName: user.fullName,
-        instructorImage: user.image,
-      }))
-  );
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -259,14 +252,14 @@ const ManageClass = () => {
                         <div className="flex items-center">
                           <img
                             src={
-                              classItem.instructorImage ||
+                              classItem.instructor?.image ||
                               "/api/placeholder/40/40"
                             }
-                            alt={classItem.instructorName}
+                            alt={classItem.instructor?.fullName}
                             className="w-10 h-10 rounded-full object-cover mr-3"
                           />
                           <span className="font-medium text-gray-800">
-                            {classItem.instructorName}
+                            {classItem.instructor?.fullName || "No instructor"}
                           </span>
                         </div>
                       </td>

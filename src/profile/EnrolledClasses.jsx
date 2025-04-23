@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Calendar, Smile } from "lucide-react";
+import { BookOpen, Smile, Loader2, AlertCircle } from "lucide-react";
 import { AppContent } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import ClassCard from "../ui/ClassCard";
 
 const EnrolledClasses = () => {
   const { userData, backendUrl } = useContext(AppContent);
@@ -14,52 +14,39 @@ const EnrolledClasses = () => {
   useEffect(() => {
     const fetchEnrolledClasses = async () => {
       try {
-        // Fetch enrolled class IDs from the user's API endpoint
-        const response = await axios.get(
-          `${backendUrl}/api/classes/${userData.userId}/enrolled-classes`,
-          { withCredentials: true }
+        if (!userData?.userId) {
+          setError("Please login to view enrolled classes");
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        // Fetch enrolled classes directly from the API endpoint
+        const response = await fetch(
+          `${backendUrl}/api/classes/${userData.userId}/enrolled-classes`
         );
 
-        const classIds = response.data; // Class IDs are already in the response as an array
+        if (!response.ok) {
+          throw new Error(
+            response.status === 404
+              ? "No enrolled classes found"
+              : "Failed to fetch enrolled classes"
+          );
+        }
 
-        console.log("Extracted class IDs:", classIds);
+        const data = await response.json();
 
-        // Fetch class details for each classId
-        const classDetailsPromises = classIds.map(async (classId) => {
-          try {
-            const classResponse = await axios.get(
-              `${backendUrl}/api/classes/${classId}`,
-              { withCredentials: true }
-            );
-            return classResponse.data; // Assuming response contains the class details as 'class'
-          } catch (err) {
-            console.error(
-              `Error fetching class details for ${classId}:`,
-              err.message
-            );
-            return null;
-          }
-        });
+        if (!data.success) {
+          throw new Error(data.message || "Error fetching enrolled classes");
+        }
 
-        const classDetails = await Promise.all(classDetailsPromises);
-
-        // Log the raw class details
-        console.log("Class details before filtering:", classDetails);
-
-        // Filter out invalid or null class details
-        const validClassDetails = classDetails.filter(
-          (classDetail) => classDetail && classDetail._id
-        );
-
-        console.log("Valid class details:", validClassDetails);
-
-        setEnrolledClasses(validClassDetails);
+        // Assuming the API returns an array of class objects directly
+        setEnrolledClasses(data.enrolledClasses || []);
       } catch (err) {
-        console.error(
-          "Error fetching enrolled classes:",
-          err.response?.data || err.message
-        );
-        setError(err.response?.data?.message || err.message);
+        console.error("Error fetching enrolled classes:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -75,100 +62,91 @@ const EnrolledClasses = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+        <Loader2 className="animate-spin h-12 w-12 text-indigo-600" />
+        <span className="ml-3 text-gray-600">Loading your classes...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white shadow rounded-lg overflow-hidden p-6 text-center">
-        <div className="text-red-500 mb-4">Error: {error}</div>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700"
-        >
-          Try Again
-        </button>
+      <div className="bg-white shadow-md rounded-lg overflow-hidden p-6 text-center max-w-md mx-auto border border-gray-100">
+        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+        <div className="text-gray-700 mb-4">{error}</div>
+        {error === "Please login to view enrolled classes" ? (
+          <button
+            onClick={() => navigate("/login")}
+            className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-all"
+          >
+            Login
+          </button>
+        ) : (
+          <div className="space-x-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-all"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={handleBrowseClasses}
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-all"
+            >
+              Browse Classes
+            </button>
+          </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
-      <div className="px-6 py-5 border-b border-gray-200">
-        <h3 className="text-lg font-medium leading-6 text-gray-900">
-          My Enrolled Yoga Classes
-        </h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Your journey to mindfulness and well-being.
-        </p>
+    <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-100">
+      <div className="px-6 py-5 bg-indigo-500">
+        <div className="flex items-center">
+          <div className="p-2 mr-4 bg-white bg-opacity-20 rounded-lg">
+            <BookOpen className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-white">
+              My Enrolled Yoga Classes
+            </h3>
+            <p className="text-sm text-indigo-100 mt-1">
+              Your journey to mindfulness and well-being
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="px-6 py-5">
         {enrolledClasses.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {enrolledClasses.map((yogaClass) => (
-              <div
+              <ClassCard
                 key={yogaClass._id}
-                className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="h-48 w-full relative">
-                  <img
-                    src={yogaClass.image || "https://via.placeholder.com/300"} // Fallback to placeholder if image is missing
-                    alt={yogaClass.className}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="p-4">
-                  <h4 className="text-lg font-semibold text-gray-900">
-                    {yogaClass.className}
-                  </h4>
-                  <div className="mt-2 flex items-center text-sm text-gray-500">
-                    <span className="mr-2">
-                      {yogaClass.instructorFullName || "Unknown Instructor"}
-                    </span>
-                    <span>•</span>
-                    <span className="mx-2">{yogaClass.difficultyLevel}</span>
-                    {/* <span>•</span>
-                    <span className="ml-2">{yogaClass.classLink}</span> */}
-                  </div>
-                  <div className="mt-3 flex items-center text-sm">
-                    <Calendar className="mr-2 h-4 w-4 text-gray-400" />
-                    <span className="text-gray-600">
-                      {new Date(yogaClass.date).toLocaleDateString()} at{" "}
-                      {yogaClass.time}
-                    </span>
-                  </div>
-                  <div className="mt-4 flex space-x-3">
-                    <button
-                      onClick={() =>
-                        navigate(`/class-details/${yogaClass._id}`)
-                      }
-                      className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              </div>
+                yogaClass={yogaClass}
+                isFavorite={false}
+                toggleFavorite={null}
+                userId={userData?.userId}
+                showEnrolledStatus={true}
+              />
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <Smile className="mx-auto h-12 w-12 text-gray-300" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No enrolled yoga classes yet
+            <Smile className="mx-auto h-16 w-16 text-gray-300" />
+            <h3 className="mt-4 text-lg font-medium text-gray-900">
+              No enrolled classes yet
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Find the perfect yoga class and begin your journey today.
+            <p className="mt-2 text-sm text-gray-500">
+              Find the perfect yoga class and begin your journey today
             </p>
             <div className="mt-6">
               <button
                 onClick={handleBrowseClasses}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700"
+                className="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 transition-all"
               >
-                Browse Classes
+                Browse Available Classes
               </button>
             </div>
           </div>

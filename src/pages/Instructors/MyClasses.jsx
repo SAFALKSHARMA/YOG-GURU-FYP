@@ -184,9 +184,9 @@ const MyClasses = () => {
 
   const filteredClasses = (instructorData?.classes || []).filter(
     (classItem) => {
-      const matchesSearch = classItem.className
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      const matchesSearch =
+        typeof classItem.className === "string" &&
+        classItem.className.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
         statusFilter === "All" || classItem.status === statusFilter;

@@ -1,30 +1,25 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Heart, Loader2 } from "lucide-react";
+import { Heart, Loader2, AlertCircle } from "lucide-react";
 import { AppContent } from "../context/AppContext";
 import ClassCard from "../ui/ClassCard";
 import { useNavigate } from "react-router-dom";
 
-// API endpoints
-const FAVORITES_API_URL = "http://localhost:3000/api/classes";
-const CLASS_DETAILS_API_URL = "http://localhost:3000/api/classes"; // Base URL for fetching class details
-
 const FavoriteClasses = () => {
-  const { userData } = useContext(AppContent);
-  const [favoriteClassIds, setFavoriteClassIds] = useState([]);
+  const { userData, backendUrl } = useContext(AppContent);
   const [favoriteClasses, setFavoriteClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch favorite class IDs
+  // Fetch favorite classes
   useEffect(() => {
-    const fetchFavoriteClassIds = async () => {
+    const fetchFavoriteClasses = async () => {
       try {
         const userId = userData?.userId;
-        console.log("Fetching favorites for userId:", userId);
 
         if (!userId) {
           setLoading(false);
+          setError("Please login to view your favorite classes");
           return;
         }
 
@@ -32,104 +27,117 @@ const FavoriteClasses = () => {
         setError(null);
 
         const response = await fetch(
-          `${FAVORITES_API_URL}/${userId}/favorites`
+          `${backendUrl}/api/classes/${userId}/favorites`
         );
-        console.log("API Response Status:", response.status);
 
         if (!response.ok) {
           throw new Error(
             response.status === 404
-              ? "User not found"
+              ? "No favorite classes found"
               : "Failed to fetch favorites"
           );
         }
 
         const data = await response.json();
-        console.log("API Response Data:", data);
 
         if (!data.success) {
           throw new Error(data.message || "Error fetching favorites");
         }
 
-        console.log("Favorite class IDs received:", data.favoriteClassIds);
-        setFavoriteClassIds(data.favoriteClassIds || []);
+        setFavoriteClasses(data.favoriteClasses || []);
       } catch (error) {
-        console.error("Error fetching favorite class IDs:", error);
+        console.error("Error fetching favorite classes:", error);
         setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFavoriteClassIds();
-  }, [userData]);
-
-  // Fetch class details using the IDs
-  useEffect(() => {
-    const fetchClassDetails = async () => {
-      try {
-        setLoading(true);
-        const classDetailsPromises = favoriteClassIds.map(async (classId) => {
-          const response = await fetch(`${CLASS_DETAILS_API_URL}/${classId}`);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch class details for ${classId}`);
-          }
-          return response.json();
-        });
-
-        const classDetails = await Promise.all(classDetailsPromises);
-        console.log("Fetched class details:", classDetails);
-        setFavoriteClasses(classDetails);
-      } catch (error) {
-        console.error("Error fetching class details:", error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (favoriteClassIds.length > 0) {
-      fetchClassDetails();
-    }
-  }, [favoriteClassIds]);
+    fetchFavoriteClasses();
+  }, [userData, backendUrl]);
 
   const handleBrowseClasses = () => {
     navigate("/classes");
   };
 
+  const handleRemoveFavorite = async (classId) => {
+    try {
+      const response = await fetch(
+        `${backendUrl}/api/classes/${userData.userId}/favorites/${classId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to remove favorite");
+      }
+
+      // Update local state to remove the class
+      setFavoriteClasses((prev) => prev.filter((cls) => cls._id !== classId));
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      setError(error.message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 className="animate-spin h-12 w-12 text-amber-600" />
+        <Loader2 className="animate-spin h-12 w-12 text-indigo-600" />
+        <span className="ml-3 text-gray-600">Loading your favorites...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white shadow rounded-lg overflow-hidden p-6 text-center">
-        <div className="text-red-500 mb-4">{error}</div>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700"
-        >
-          Try Again
-        </button>
+      <div className="bg-white shadow-md rounded-lg overflow-hidden p-6 text-center max-w-md mx-auto border border-gray-100">
+        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+        <div className="text-gray-700 mb-4">{error}</div>
+        {error === "Please login to view your favorite classes" ? (
+          <button
+            onClick={() => navigate("/login")}
+            className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-all"
+          >
+            Login
+          </button>
+        ) : (
+          <div className="space-x-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-all"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={handleBrowseClasses}
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-all"
+            >
+              Browse Classes
+            </button>
+          </div>
+        )}
       </div>
     );
   }
 
-  console.log("Rendering favorite classes with details:", favoriteClasses);
-
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
-      <div className="px-6 py-5 border-b border-gray-200">
-        <h3 className="text-lg font-medium leading-6 text-gray-900">
-          Favorite Yoga Classes
-        </h3>
-        <p className="mt-1 text-sm text-gray-500">
-          Classes you've saved to join later.
-        </p>
+    <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-100">
+      <div className="px-6 py-5 bg-indigo-500">
+        <div className="flex items-center">
+          <div className="p-2 mr-4 bg-white bg-opacity-20 rounded-lg">
+            <Heart className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-white">
+              Your Favorite Yoga Classes
+            </h3>
+            <p className="text-sm text-indigo-100 mt-1">
+              Classes you've saved to join later
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="px-6 py-5">
@@ -139,25 +147,27 @@ const FavoriteClasses = () => {
               <ClassCard
                 key={yogaClass._id}
                 yogaClass={yogaClass}
-                showFavoriteButton={false} // Assuming your ClassCard has this prop
+                isFavorite={true}
+                toggleFavorite={() => handleRemoveFavorite(yogaClass._id)}
+                userId={userData?.userId}
               />
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <Heart className="mx-auto h-12 w-12 text-gray-300" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No favorite yoga classes yet
+            <Heart className="mx-auto h-16 w-16 text-gray-300" />
+            <h3 className="mt-4 text-lg font-medium text-gray-900">
+              No favorite classes yet
             </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Save yoga classes you're interested in to your favorites list.
+            <p className="mt-2 text-sm text-gray-500">
+              Save classes you're interested in by clicking the heart icon
             </p>
             <div className="mt-6">
               <button
                 onClick={handleBrowseClasses}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700"
+                className="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 transition-all"
               >
-                Browse Classes
+                Browse Available Classes
               </button>
             </div>
           </div>

@@ -10,6 +10,7 @@ import {
   LogOut,
   Edit,
   ArrowRightCircle,
+  TrendingUp,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -80,271 +81,150 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     }
   };
 
-  return (
-    <div className="bg-white shadow-xl rounded-3xl overflow-hidden sticky top-6 border-2 border-purple-200">
-      {/* Profile Section - Curved top design */}
-      <div className="relative">
-        {/* Purple decorative top wave */}
-        <div className="h-32 bg-gradient-to-r from-purple-400 to-purple-300 rounded-b-full scale-110 origin-top"></div>
+  // Navigation items configuration
+  const navItems = [
+    { id: "profile", label: "Profile", icon: User, count: null },
+    {
+      id: "enrolled",
+      label: "My Classes",
+      icon: BookOpen,
+      count: userData?.enrolledClasses?.length || 0,
+    },
+    {
+      id: "favorites",
+      label: "Favorites",
+      icon: Heart,
+      count: userData?.favoriteClasses?.length || 0,
+    },
+    {
+      id: "applications",
+      label: "Applications",
+      icon: Calendar,
+      count: userData?.applications?.length || 0,
+    },
+    { id: "trackprogress", label: "Progress", icon: TrendingUp, count: null },
+    { id: "settings", label: "Settings", icon: Settings, count: null },
+  ];
 
-        {/* Profile image and info - positioned over the wave */}
-        <div className="absolute inset-0 flex flex-col items-center justify-end pt-12">
-          <div className="relative mb-2">
-            <div className="w-28 h-28 rounded-full p-1 bg-white shadow-lg">
-              <img
-                src={userData?.image}
-                alt={userData?.name}
-                className="rounded-full w-full h-full object-cover border-2 border-purple-200"
-              />
-            </div>
-            <button
-              onClick={handleEditClick}
-              className="absolute bottom-0 right-0 bg-purple-500 text-white p-2 rounded-full hover:bg-purple-600 transition-colors duration-300 shadow-md"
-              disabled={isUploading}
-            >
-              {isUploading ? "..." : <Edit className="h-4 w-4" />}
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              onChange={handleFileChange}
-              accept="image/*"
+  return (
+    <div className="bg-white shadow-md rounded-lg overflow-hidden h-full border border-gray-100 sticky top-4">
+      {/* Profile Section */}
+      <div className="bg-indigo-500 px-4 py-5 flex items-center">
+        <div className="relative">
+          <div className="w-14 h-14 rounded-full bg-white shadow-sm">
+            <img
+              src={userData?.image || "/default-avatar.png"}
+              alt={userData?.name || "User"}
+              className="rounded-full w-full h-full object-cover"
             />
           </div>
+          <button
+            onClick={handleEditClick}
+            className="absolute bottom-0 right-0 bg-white text-indigo-600 p-1 rounded-full hover:bg-indigo-50 transition-all shadow-sm"
+            disabled={isUploading}
+            aria-label="Edit profile picture"
+          >
+            {isUploading ? (
+              <div className="h-3 w-3 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Edit className="h-3 w-3" />
+            )}
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleFileChange}
+            accept="image/*"
+          />
+        </div>
+
+        <div className="ml-3 overflow-hidden">
+          <h2 className="text-base font-medium text-white truncate">
+            {userData?.name || "User"}
+          </h2>
+          <p className="text-xs text-indigo-100">
+            Member since{" "}
+            {userData?.createdAt
+              ? new Date(userData.createdAt).toLocaleDateString("en-US", {
+                  month: "short",
+                  year: "numeric",
+                })
+              : "..."}
+          </p>
         </div>
       </div>
 
-      {/* Name and member info */}
-      <div className="text-center mt-20 mb-6 px-4">
-        <h2 className="text-xl font-bold text-purple-800">{userData?.name}</h2>
-        <p className="text-sm text-purple-500 mt-1">
-          Member since{" "}
-          {new Date(userData?.createdAt).toLocaleDateString("en-US", {
-            month: "long",
-            year: "numeric",
-          })}
-        </p>
-      </div>
-
       {/* Navigation Menu */}
-      <div className="px-4">
-        <nav className="flex flex-col space-y-1">
-          <button
-            onClick={() => setActiveTab("profile")}
-            className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl ${
-              activeTab === "profile"
-                ? "bg-purple-100 text-purple-800 shadow-sm"
-                : "text-gray-600 hover:bg-purple-50 hover:text-purple-700"
-            }`}
-          >
-            <div
-              className={`p-2 mr-3 rounded-lg ${
-                activeTab === "profile" ? "bg-purple-200" : "bg-gray-100"
+      <div className="flex-1 overflow-y-auto px-3 py-4">
+        <nav className="space-y-1">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`flex items-center w-full px-3 py-2.5 text-sm rounded-md transition-all ${
+                activeTab === item.id
+                  ? "bg-indigo-50 text-indigo-700 font-medium"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-indigo-600"
               }`}
             >
-              <User
-                className={`h-4 w-4 ${
-                  activeTab === "profile" ? "text-purple-600" : "text-gray-500"
+              <item.icon
+                className={`h-4 w-4 mr-3 ${
+                  activeTab === item.id ? "text-indigo-600" : "text-gray-500"
                 }`}
               />
-            </div>
-            Profile Information
-          </button>
-
-          <button
-            onClick={() => setActiveTab("enrolled")}
-            className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl ${
-              activeTab === "enrolled"
-                ? "bg-purple-100 text-purple-800 shadow-sm"
-                : "text-gray-600 hover:bg-purple-50 hover:text-purple-700"
-            }`}
-          >
-            <div
-              className={`p-2 mr-3 rounded-lg ${
-                activeTab === "enrolled" ? "bg-purple-200" : "bg-gray-100"
-              }`}
-            >
-              <BookOpen
-                className={`h-4 w-4 ${
-                  activeTab === "enrolled" ? "text-purple-600" : "text-gray-500"
-                }`}
-              />
-            </div>
-            My Enrolled Classes
-            <span className="ml-auto bg-purple-100 text-purple-700 py-1 px-3 rounded-full text-xs font-medium">
-              {userData?.enrolledClasses?.length || 0}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("favorites")}
-            className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl ${
-              activeTab === "favorites"
-                ? "bg-purple-100 text-purple-800 shadow-sm"
-                : "text-gray-600 hover:bg-purple-50 hover:text-purple-700"
-            }`}
-          >
-            <div
-              className={`p-2 mr-3 rounded-lg ${
-                activeTab === "favorites" ? "bg-purple-200" : "bg-gray-100"
-              }`}
-            >
-              <Heart
-                className={`h-4 w-4 ${
-                  activeTab === "favorites"
-                    ? "text-purple-600"
-                    : "text-gray-500"
-                }`}
-              />
-            </div>
-            Favorite Classes
-            <span className="ml-auto bg-purple-100 text-purple-700 py-1 px-3 rounded-full text-xs font-medium">
-              {userData?.favoriteClasses?.length || 0}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("applications")}
-            className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl ${
-              activeTab === "applications"
-                ? "bg-purple-100 text-purple-800 shadow-sm"
-                : "text-gray-600 hover:bg-purple-50 hover:text-purple-700"
-            }`}
-          >
-            <div
-              className={`p-2 mr-3 rounded-lg ${
-                activeTab === "applications" ? "bg-purple-200" : "bg-gray-100"
-              }`}
-            >
-              <Calendar
-                className={`h-4 w-4 ${
-                  activeTab === "applications"
-                    ? "text-purple-600"
-                    : "text-gray-500"
-                }`}
-              />
-            </div>
-            My Applications
-            <span className="ml-auto bg-purple-100 text-purple-700 py-1 px-3 rounded-full text-xs font-medium">
-              {userData?.applications?.length || 0}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("settings")}
-            className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl ${
-              activeTab === "settings"
-                ? "bg-purple-100 text-purple-800 shadow-sm"
-                : "text-gray-600 hover:bg-purple-50 hover:text-purple-700"
-            }`}
-          >
-            <div
-              className={`p-2 mr-3 rounded-lg ${
-                activeTab === "settings" ? "bg-purple-200" : "bg-gray-100"
-              }`}
-            >
-              <Settings
-                className={`h-4 w-4 ${
-                  activeTab === "settings" ? "text-purple-600" : "text-gray-500"
-                }`}
-              />
-            </div>
-            Account Settings
-          </button>
-
-          {userData?.role === "admin" && (
-            <Link to="/admin/dashboard" className="mt-2">
-              <button
-                className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl ${
-                  activeTab === "admin-dashboard"
-                    ? "bg-purple-100 text-purple-800 shadow-sm"
-                    : "text-gray-600 hover:bg-purple-50 hover:text-purple-700"
-                }`}
-              >
-                <div
-                  className={`p-2 mr-3 rounded-lg ${
-                    activeTab === "admin-dashboard"
-                      ? "bg-purple-200"
-                      : "bg-gray-100"
+              {item.label}
+              {item.count !== null && (
+                <span
+                  className={`ml-auto py-0.5 px-2 rounded-full text-xs ${
+                    activeTab === item.id
+                      ? "bg-indigo-100 text-indigo-700"
+                      : "bg-gray-100 text-gray-600"
                   }`}
                 >
-                  <ArrowRightCircle
-                    className={`h-4 w-4 ${
-                      activeTab === "admin-dashboard"
-                        ? "text-purple-600"
-                        : "text-gray-500"
-                    }`}
-                  />
-                </div>
-                Go to Admin Dashboard
-              </button>
-            </Link>
-          )}
-          {userData?.role === "instructor" && (
-            <Link to="/instructor/dashboard" className="mt-2">
-              <button
-                className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl ${
-                  activeTab === "instructor-dashboard"
-                    ? "bg-purple-100 text-purple-800 shadow-sm"
-                    : "text-gray-600 hover:bg-purple-50 hover:text-purple-700"
-                } w-full text-left`}
-              >
-                <div
-                  className={`p-2 mr-3 rounded-lg ${
-                    activeTab === "instructor-dashboard"
-                      ? "bg-purple-200"
-                      : "bg-gray-100"
-                  }`}
-                >
-                  <ArrowRightCircle
-                    className={`h-4 w-4 ${
-                      activeTab === "instructor-dashboard"
-                        ? "text-purple-600"
-                        : "text-gray-500"
-                    }`}
-                  />
-                </div>
-                Go to Instructor Dashboard
-              </button>
-            </Link>
-          )}
-          {userData?.role === "user" && (
-            <Link to="/applyInstructor" className="mt-2">
-              <button
-                className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-200 rounded-xl ${
-                  activeTab === "apply-instructor"
-                    ? "bg-purple-100 text-purple-800 shadow-sm"
-                    : "text-gray-600 hover:bg-purple-50 hover:text-purple-700"
-                } w-full text-left`}
-              >
-                <div
-                  className={`p-2 mr-3 rounded-lg ${
-                    activeTab === "apply-instructor"
-                      ? "bg-purple-200"
-                      : "bg-gray-100"
-                  }`}
-                >
-                  <ArrowRightCircle
-                    className={`h-4 w-4 ${
-                      activeTab === "apply-instructor"
-                        ? "text-purple-600"
-                        : "text-gray-500"
-                    }`}
-                  />
-                </div>
-                Apply for Instructor
-              </button>
-            </Link>
-          )}
+                  {item.count}
+                </span>
+              )}
+            </button>
+          ))}
         </nav>
+
+        {/* Role-based navigation */}
+        <div className="mt-6 pt-3 border-t border-gray-100">
+          {userData?.role === "admin" && (
+            <Link to="/admin/dashboard">
+              <button className="flex items-center w-full px-3 py-2.5 text-sm text-gray-600 hover:text-indigo-600 rounded-md hover:bg-gray-50 transition-all">
+                <ArrowRightCircle className="h-4 w-4 mr-3 text-gray-500" />
+                Admin Dashboard
+              </button>
+            </Link>
+          )}
+
+          {userData?.role === "instructor" && (
+            <Link to="/instructor/dashboard">
+              <button className="flex items-center w-full px-3 py-2.5 text-sm text-gray-600 hover:text-indigo-600 rounded-md hover:bg-gray-50 transition-all">
+                <ArrowRightCircle className="h-4 w-4 mr-3 text-gray-500" />
+                Instructor Dashboard
+              </button>
+            </Link>
+          )}
+
+          {userData?.role === "user" && (
+            <Link to="/applyInstructor">
+              <button className="flex items-center w-full px-3 py-2.5 text-sm text-gray-600 hover:text-indigo-600 rounded-md hover:bg-gray-50 transition-all">
+                <ArrowRightCircle className="h-4 w-4 mr-3 text-gray-500" />
+                Become an Instructor
+              </button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Sign Out Button */}
-      <div className="p-6 mt-6 mb-4">
+      <div className="p-3 border-t border-gray-100">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-full shadow-md text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 transition-all duration-300"
+          className="w-full flex items-center justify-center px-3 py-2.5 rounded-md text-sm text-white bg-red-500 hover:bg-red-600 transition-all"
         >
           <LogOut className="mr-2 h-4 w-4" />
           Sign Out

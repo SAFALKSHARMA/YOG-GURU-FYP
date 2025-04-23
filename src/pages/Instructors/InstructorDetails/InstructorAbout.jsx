@@ -9,21 +9,19 @@ function InstructorAbout({ instructor }) {
           <BookOpen className="w-6 h-6 mr-2 text-purple-700" />
           About {instructor.fullName.split(" ")[0]}
         </h2>
-        <p className="text-gray-700 leading-relaxed mb-6">{instructor.bio}</p>
+        <p className="text-gray-700 leading-relaxed mb-6">
+          {instructor.bio || "No bio provided yet."}
+        </p>
 
         <div className="flex flex-wrap gap-2">
-          <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-            Yoga Instructor
-          </span>
-          <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-            Meditation
-          </span>
-          <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-            Pilates
-          </span>
-          <span className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-            Mind & Body
-          </span>
+          {instructor.serviceTypes.map((service, index) => (
+            <span
+              key={index}
+              className="px-4 py-2 bg-purple-100 text-purple-800 rounded-full text-sm font-medium"
+            >
+              {service}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -44,8 +42,7 @@ function InstructorAbout({ instructor }) {
               <div className="ml-4">
                 <p className="font-medium text-gray-900">{qual}</p>
                 <p className="text-gray-500 text-sm mt-1">
-                  Certified{" "}
-                  {new Date().getFullYear() - Math.floor(Math.random() * 10)}
+                  Certified {instructor.experience}+ years
                 </p>
               </div>
             </div>

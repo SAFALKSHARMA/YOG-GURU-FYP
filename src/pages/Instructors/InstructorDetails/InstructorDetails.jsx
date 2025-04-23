@@ -25,8 +25,6 @@ function InstructorDetails() {
         }
 
         const data = await response.json();
-        console.log(data);
-
         setInstructor(data);
       } catch (error) {
         console.error("Error fetching instructor data:", error);
@@ -89,23 +87,20 @@ function InstructorDetails() {
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-purple-50 to-indigo-50">
-      {/* Header Component */}
       <InstructorHeader
         instructor={instructor}
         favorite={favorite}
         setFavorite={setFavorite}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        instructorId={instructorId} // Add this line
+        instructorId={instructorId}
       />
 
-      {/* Content Area */}
       <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
         {activeTab === "classes" && (
-          <InstructorClasses classes={instructor.classes} />
+          <InstructorClasses classes={instructor.classes || []} />
         )}
         {activeTab === "about" && <InstructorAbout instructor={instructor} />}
-        {activeTab === "reviews" && <InstructorReviews />}
       </div>
     </div>
   );
