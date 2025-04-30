@@ -56,6 +56,9 @@ export const createYogaBooking = async (req, res) => {
       remarks,
       userId,
       instructorId,
+      status: "Pending",
+
+      paymentStatus: totalPrice > 0 ? "pending" : "paid",
     });
 
     await newBooking.save();

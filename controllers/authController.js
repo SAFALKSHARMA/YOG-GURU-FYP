@@ -56,7 +56,10 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    res.json({ success: false, message: "Email and password are required" });
+    return res.json({
+      success: false,
+      message: "Email and password are required",
+    });
   }
 
   try {
@@ -64,6 +67,16 @@ export const login = async (req, res) => {
 
     if (!user) {
       return res.json({ success: false, message: "Invalid email" });
+    }
+
+    // Check if user is banned
+    if (user.banInfo.isBanned) {
+      return res.json({
+        success: false,
+        message: `Your account is banned. Reason: ${
+          user.banInfo.banReason || "No reason provided"
+        }`,
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -83,7 +96,16 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.json({ success: true });
+    return res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        image: user.image,
+      },
+    });
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }

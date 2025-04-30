@@ -5,12 +5,13 @@ import {
   updateClassStatus,
   getClassDetails,
   getFavoriteClasses,
-  toggleFavorite,
   enrollUserInClass,
   getEnrolledClasses,
   updateClass,
   deleteClass,
   getAllClassApplications,
+  getInstructorClasses,
+  toggleFavorite,
 } from "../controllers/classController.js";
 import { upload } from "../config/cloudinary.js";
 
@@ -23,11 +24,12 @@ router.get("/applications", getAllClassApplications);
 
 router.put("/update-status", updateClassStatus); // Use the controller function
 router.get("/:classId", getClassDetails);
-router.post("/toggle-favorites", toggleFavorite);
+router.post("/toggle-favorite", toggleFavorite);
 router.get("/:userId/favorites", getFavoriteClasses);
 router.post("/enroll", enrollUserInClass);
 router.get("/:userId/enrolled-classes", getEnrolledClasses);
 router.put("/:_id", upload.single("image"), updateClass);
 router.delete("/delete-class", deleteClass);
+router.get("/instructor/:instructorId", getInstructorClasses);
 
 export default router;

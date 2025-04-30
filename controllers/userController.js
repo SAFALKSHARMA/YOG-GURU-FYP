@@ -1,5 +1,6 @@
 import userModel from "../models/userModel.js";
 import Instructor from "../models/Instructor.js";
+import bcrypt from "bcryptjs";
 
 export const getUserData = async (req, res) => {
   try {
@@ -48,6 +49,9 @@ export const getUserData = async (req, res) => {
         bio: user.bio,
         address: user.address,
         createdAt: user.createdAt, // ✅ Include createdAt
+        favoriteClasses: user.favoriteClasses,
+        enrolledClasses: user.enrolledClasses,
+        cartItems: user.cartItems,
       },
       instructorData: instructorData,
     });
@@ -59,7 +63,7 @@ export const getUserData = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     // Fetch all users without filtering or limiting fields
-    const users = await userModel.find();
+    const users = await userModel.find({ role: { $ne: "admin" } });
 
     // Return all user data
     res.json({
@@ -229,6 +233,77 @@ export const updateUserProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Something went wrong while updating profile",
+    });
+  }
+};
+
+export const getAllAdmins = async (req, res) => {
+  try {
+    const admins = await userModel.find({ role: "admin" });
+
+    return res.status(200).json({
+      success: true,
+      admins,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const createAdmin = async (req, res) => {
+  const { name, email, password } = req.body;
+
+  // Validate input
+  if (!name || !email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide name, email, and password",
+    });
+  }
+
+  try {
+    // Check if user already exists
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        message: "User already exists with this email",
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create new admin user
+    const user = new userModel({
+      name,
+      email,
+      password: hashedPassword,
+      role: "admin", // Make sure to set the role as admin
+    });
+
+    await user.save();
+
+    // Return success response (omit password in response)
+    return res.status(201).json({
+      success: true,
+      message: "Admin created successfully",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating admin:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
     });
   }
 };

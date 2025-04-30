@@ -1,5 +1,5 @@
 import Instructor from "../models/Instructor.js";
-import User from "../models/userModel.js";
+import userModel from "../models/userModel.js";
 import Class from "../models/class.model.js";
 import mongoose from "mongoose";
 
@@ -208,6 +208,7 @@ export const getClassDetails = async (req, res) => {
 export const toggleFavorite = async (req, res) => {
   try {
     const { userId, classId } = req.body;
+    console.log("Received Payload:", { userId, classId });
 
     if (!userId || !classId) {
       return res.status(400).json({
@@ -216,7 +217,17 @@ export const toggleFavorite = async (req, res) => {
       });
     }
 
-    const user = await User.findById(userId);
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(classId)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid User ID or Class ID format.",
+      });
+    }
+
+    const user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -224,7 +235,6 @@ export const toggleFavorite = async (req, res) => {
       });
     }
 
-    // Check if class exists
     const classExists = await Class.exists({ _id: classId });
     if (!classExists) {
       return res.status(404).json({
@@ -233,23 +243,33 @@ export const toggleFavorite = async (req, res) => {
       });
     }
 
-    const index = user.favoriteClasses.indexOf(classId);
-    if (index === -1) {
+    // Check if the class is already favorited
+    const favoriteIndex = user.favoriteClasses.findIndex((favId) =>
+      favId.equals(classId)
+    );
+
+    let message, isFavorite;
+    if (favoriteIndex === -1) {
       // Add to favorites
-      user.favoriteClasses.push(classId);
+      user.favoriteClasses.push(new mongoose.Types.ObjectId(classId));
+      message = "Added to favorites.";
+      isFavorite = true;
     } else {
       // Remove from favorites
-      user.favoriteClasses.splice(index, 1);
+      user.favoriteClasses.splice(favoriteIndex, 1);
+      message = "Removed from favorites.";
+      isFavorite = false;
     }
 
     await user.save();
 
     res.status(200).json({
       success: true,
-      isFavorite: index === -1,
-      message: index === -1 ? "Added to favorites" : "Removed from favorites",
+      isFavorite,
+      message,
     });
   } catch (error) {
+    console.error("Error toggling favorite:", error);
     res.status(500).json({
       success: false,
       message: "Error toggling favorite",
@@ -262,7 +282,7 @@ export const getFavoriteClasses = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId).populate({
+    const user = await userModel.findById(userId).populate({
       path: "favoriteClasses",
       select:
         "className image instructor date time difficultyLevel price totalDuration capacity",
@@ -304,7 +324,7 @@ export const enrollUserInClass = async (req, res) => {
     }
 
     // Find user
-    const user = await User.findById(userId);
+    const user = await userModel.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -367,7 +387,7 @@ export const getEnrolledClasses = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId).populate({
+    const user = await userModel.findById(userId).populate({
       path: "enrolledClasses",
       select:
         "className image instructor date time difficultyLevel price totalDuration capacity",
@@ -482,20 +502,19 @@ export const getInstructorClasses = async (req, res) => {
   try {
     const { instructorId } = req.params;
 
-    const classes = await Class.find({ instructorId })
-      .populate("students", "fullName email image")
-      .sort({ date: 1 });
+    console.log("Instructor QID received:", instructorId);
 
-    res.status(200).json({
-      success: true,
-      count: classes.length,
-      classes,
-    });
+    if (!instructorId) {
+      return res.status(400).json({ message: "Instructor ID is required." });
+    }
+
+    const classes = await Class.find({ instructor: instructorId }).populate(
+      "students"
+    );
+
+    res.status(200).json({ classes });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error fetching instructor classes",
-      error: error.message,
-    });
+    console.error("Error fetching instructor classes:", error);
+    res.status(500).json({ message: "Server error while fetching classes." });
   }
 };

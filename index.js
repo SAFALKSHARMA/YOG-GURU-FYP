@@ -13,6 +13,7 @@ import shopRoutes from "./routes/shopRoutes.js";
 import yogaBookingRoutes from "./routes/bookingRoutes.js";
 import trackRoutes from "./routes/trackRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 const app = express();
 const PORT = 3000;
@@ -45,38 +46,7 @@ app.use("/api/shop", shopRoutes);
 app.use("/api/bookings", yogaBookingRoutes);
 app.use("/api/track", trackRoutes);
 app.use("/api/stats", statsRoutes);
-
-// Example backend route in Node.js (Express)
-app.get("/api/classes/instructor/:instructorId", async (req, res) => {
-  try {
-    const instructorId = req.params.instructorId;
-    const instructor = await Instructor.findById(instructorId).populate(
-      "classes"
-    );
-
-    if (!instructor) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Instructor not found" });
-    }
-
-    res.json({ success: true, classes: instructor.classes });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-// Route to fetch all instructors
-app.get("/api/instructors/all-instructors", async (req, res) => {
-  try {
-    const instructors = await Instructor.find(); // Fetches all instructors
-    res.status(200).json(instructors);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error fetching instructors" });
-  }
-});
+app.use("/api/payments", paymentRoutes);
 
 // Start the server
 app.listen(PORT, () => {
