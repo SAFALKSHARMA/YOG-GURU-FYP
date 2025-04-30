@@ -4,37 +4,22 @@ import {
   Users,
   Calendar,
   ChevronRight,
-  Heart,
   CheckCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import FavouriteIcon from "./FavouriteIcon";
 
-const ClassCard = ({
-  yogaClass,
-  isFavorite,
-  toggleFavorite,
-  userId,
-  showEnrolledStatus = false,
-}) => {
+const ClassCard = ({ yogaClass, showEnrolledStatus = false }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
     navigate(`/class-details/${yogaClass._id}`);
   };
 
-  const handleFavoriteClick = (e) => {
-    e.stopPropagation();
-    if (toggleFavorite) {
-      toggleFavorite(yogaClass._id);
-    }
-  };
-
   return (
-    <div
-      className="bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-300 relative overflow-hidden cursor-pointer"
-      onClick={handleClick}
-    >
-      <div className="relative h-44">
+    <div className="bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-300 relative overflow-hidden">
+      {/* Image section */}
+      <div className="relative h-44" onClick={handleClick}>
         <img
           src={yogaClass.image || "https://via.placeholder.com/300"}
           alt={yogaClass.className}
@@ -44,37 +29,27 @@ const ClassCard = ({
           {yogaClass.difficultyLevel}
         </div>
 
-        {/* Show enrolled status if enabled */}
         {showEnrolledStatus && (
           <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold shadow-md flex items-center">
             <CheckCircle className="h-3 w-3 mr-1" />
             <span>Enrolled</span>
           </div>
         )}
-
-        {/* Favorite button (only shown if toggleFavorite is provided) */}
-        {toggleFavorite && userId && (
-          <button
-            onClick={handleFavoriteClick}
-            className={`absolute top-2 right-2 p-2 rounded-full ${
-              isFavorite ? "text-red-500 bg-white" : "text-gray-400 bg-white"
-            }`}
-            aria-label={
-              isFavorite ? "Remove from favorites" : "Add to favorites"
-            }
-          >
-            <Heart
-              className="h-5 w-5"
-              fill={isFavorite ? "currentColor" : "none"}
-            />
-          </button>
-        )}
       </div>
 
-      <div className="p-5">
+      {/* Favorite icon */}
+      {!showEnrolledStatus && (
+        <div className="absolute top-2 right-2 z-10">
+          <FavouriteIcon yogaClass={yogaClass} />
+        </div>
+      )}
+
+      {/* Content section */}
+      <div className="p-5" onClick={handleClick}>
         <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
           {yogaClass.className}
         </h3>
+
         <div className="flex items-center text-sm text-gray-600 mb-2">
           <Calendar className="h-4 w-4 mr-2 text-purple-600" />
           <span>
@@ -85,7 +60,8 @@ const ClassCard = ({
             })}
           </span>
         </div>
-        <div className="flex justify-between items-center rounded-md mb-2">
+
+        <div className="flex justify-between items-center mb-2">
           <div className="text-sm text-gray-700 flex items-center">
             <Clock className="h-4 w-4 mr-2 text-purple-600" />
             <span>{yogaClass.time}</span>
@@ -94,10 +70,12 @@ const ClassCard = ({
             ₹{yogaClass.price.toLocaleString()}
           </span>
         </div>
+
         <div className="text-sm text-gray-700 mb-2">
           <span className="font-medium">Duration:</span>{" "}
           {yogaClass.totalDuration}
         </div>
+
         <div className="flex items-center text-sm text-gray-600 mb-4">
           <Users className="h-4 w-4 mr-2 text-purple-600" />
           <span>
@@ -106,6 +84,7 @@ const ClassCard = ({
               : "Class full"}
           </span>
         </div>
+
         <button
           onClick={(e) => {
             e.stopPropagation();

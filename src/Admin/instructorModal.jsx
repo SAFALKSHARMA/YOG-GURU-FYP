@@ -1,55 +1,82 @@
 import React from "react";
 import {
-  Award,
-  Mail,
-  Phone,
-  Calendar,
-  GraduationCap,
-  FileText,
-  X,
-} from "lucide-react";
+  Modal,
+  Divider,
+  Badge,
+  Avatar,
+  Tag,
+  Button,
+  message,
+  Image,
+} from "antd";
+import {
+  MailOutlined,
+  PhoneOutlined,
+  CalendarOutlined,
+  ReadOutlined,
+  FileTextOutlined,
+  TrophyOutlined,
+  FileImageOutlined,
+  UserOutlined,
+  FilePdfOutlined,
+  CloseOutlined,
+} from "@ant-design/icons";
 
-export const Modal = ({ instructor, onClose }) => {
+const InstructorDetailsModal = ({
+  visible,
+  onClose,
+  instructor,
+  onApprove,
+  onReject,
+  isProcessing,
+}) => {
   if (!instructor) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-60 flex justify-center items-center z-50 backdrop-blur-sm">
-      <div className="bg-white p-8 rounded-xl max-w-4xl w-full shadow-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center">
-            <Award className="mr-3 text-purple-600" size={24} />
-            Instructor Profile
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <X size={24} className="text-gray-500" />
-          </button>
+    <Modal
+      title={
+        <div className="flex items-center">
+          <TrophyOutlined className="mr-3 text-purple-600" />
+          Instructor Profile
         </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
+      }
+      visible={visible}
+      onCancel={onClose}
+      footer={null}
+      width={800}
+      centered
+      className="rounded-xl"
+    >
+      <div className="space-y-6">
+        <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-1 flex flex-col items-center">
-            <img
-              src={instructor.image || "/api/placeholder/150/150"}
-              alt={instructor.fullName}
-              className="w-48 h-48 rounded-lg object-cover shadow-md"
+            <Avatar
+              src={instructor.image}
+              size={150}
+              icon={<UserOutlined />}
+              className="rounded-lg shadow-md"
             />
 
-            <div className="mt-6 w-full">
-              <div className="flex items-center justify-center mt-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-white text-sm font-medium ${
-                    instructor.status === "Approved"
-                      ? "bg-green-500"
-                      : instructor.status === "Rejected"
-                      ? "bg-red-500"
-                      : "bg-amber-500"
-                  }`}
-                >
-                  {instructor.status}
-                </span>
-              </div>
+            <div className="mt-6 w-full text-center">
+              <Badge
+                status={
+                  instructor.status === "Approved"
+                    ? "success"
+                    : instructor.status === "Rejected"
+                    ? "error"
+                    : "warning"
+                }
+                text={
+                  <span className="capitalize font-medium">
+                    {instructor.status}
+                  </span>
+                }
+                className="text-sm"
+              />
+              <p className="text-gray-500 mt-2">
+                Applied on:{" "}
+                {new Date(instructor.createdAt).toLocaleDateString()}
+              </p>
             </div>
           </div>
 
@@ -60,10 +87,7 @@ export const Modal = ({ instructor, onClose }) => {
 
             <div className="space-y-4">
               <div className="flex items-start">
-                <Mail
-                  size={18}
-                  className="mr-3 text-purple-600 mt-1 flex-shrink-0"
-                />
+                <MailOutlined className="mr-3 text-purple-600 mt-1" />
                 <div>
                   <p className="text-sm text-gray-500">Email</p>
                   <p className="text-gray-800">{instructor.email}</p>
@@ -71,10 +95,7 @@ export const Modal = ({ instructor, onClose }) => {
               </div>
 
               <div className="flex items-start">
-                <Phone
-                  size={18}
-                  className="mr-3 text-purple-600 mt-1 flex-shrink-0"
-                />
+                <PhoneOutlined className="mr-3 text-purple-600 mt-1" />
                 <div>
                   <p className="text-sm text-gray-500">Phone</p>
                   <p className="text-gray-800">{instructor.phone}</p>
@@ -82,10 +103,7 @@ export const Modal = ({ instructor, onClose }) => {
               </div>
 
               <div className="flex items-start">
-                <Calendar
-                  size={18}
-                  className="mr-3 text-purple-600 mt-1 flex-shrink-0"
-                />
+                <CalendarOutlined className="mr-3 text-purple-600 mt-1" />
                 <div>
                   <p className="text-sm text-gray-500">Experience</p>
                   <p className="text-gray-800">{instructor.experience} years</p>
@@ -93,10 +111,7 @@ export const Modal = ({ instructor, onClose }) => {
               </div>
 
               <div className="flex items-start">
-                <GraduationCap
-                  size={18}
-                  className="mr-3 text-purple-600 mt-1 flex-shrink-0"
-                />
+                <ReadOutlined className="mr-3 text-purple-600 mt-1" />
                 <div>
                   <p className="text-sm text-gray-500">Qualifications</p>
                   <p className="text-gray-800">{instructor.qualifications}</p>
@@ -104,28 +119,30 @@ export const Modal = ({ instructor, onClose }) => {
               </div>
 
               <div className="flex items-start">
-                <FileText
-                  size={18}
-                  className="mr-3 text-purple-600 mt-1 flex-shrink-0"
-                />
+                <FileTextOutlined className="mr-3 text-purple-600 mt-1" />
                 <div>
                   <p className="text-sm text-gray-500">Bio</p>
-                  <p className="text-gray-800">{instructor.bio}</p>
+                  <p className="text-gray-800 whitespace-pre-line">
+                    {instructor.bio}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6">
+            <Divider />
+
+            <div>
               <h4 className="font-medium text-gray-700 mb-2">Service Types</h4>
               <div className="flex flex-wrap gap-2">
-                {instructor.serviceType && instructor.serviceType.length > 0 ? (
+                {instructor.serviceType?.length > 0 ? (
                   instructor.serviceType.map((service, index) => (
-                    <span
+                    <Tag
+                      color="purple"
                       key={index}
-                      className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
+                      className="px-3 py-1 rounded-full"
                     >
                       {service}
-                    </span>
+                    </Tag>
                   ))
                 ) : (
                   <p className="text-gray-500 text-sm">No services specified</p>
@@ -135,62 +152,130 @@ export const Modal = ({ instructor, onClose }) => {
           </div>
         </div>
 
-        <div className="mt-8 grid md:grid-cols-2 gap-6">
+        <Divider />
+
+        <div className="grid md:grid-cols-2 gap-6">
           <div>
             <h4 className="font-medium text-gray-700 mb-3 flex items-center">
-              <FileText size={18} className="mr-2 text-purple-600" />
-              Documents
+              <FileImageOutlined className="mr-2 text-purple-600" />
+              Documents ({instructor.documents?.length || 0})
             </h4>
             <div className="grid grid-cols-2 gap-3">
-              {instructor.documents && instructor.documents.length > 0 ? (
+              {instructor.documents?.length > 0 ? (
                 instructor.documents.map((doc, index) => (
                   <div
                     key={index}
                     className="border rounded-lg overflow-hidden"
                   >
-                    <img
-                      src={doc || "/api/placeholder/150/150"}
+                    <Image
+                      src={doc}
                       alt={`Document ${index + 1}`}
                       className="w-full h-32 object-cover"
+                      preview={{
+                        mask: <span className="text-white">View</span>,
+                      }}
                     />
+                    <p className="text-center py-2 text-sm text-gray-600">
+                      Document {index + 1}
+                    </p>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 col-span-2">
-                  No documents available
-                </p>
+                <div className="col-span-2 flex flex-col items-center justify-center py-4 bg-gray-50 rounded-lg">
+                  <FilePdfOutlined className="text-3xl text-gray-400 mb-2" />
+                  <p className="text-gray-500">No documents available</p>
+                </div>
               )}
             </div>
           </div>
 
           <div>
             <h4 className="font-medium text-gray-700 mb-3 flex items-center">
-              <Award size={18} className="mr-2 text-purple-600" />
-              Certificates
+              <TrophyOutlined className="mr-2 text-purple-600" />
+              Certificates ({instructor.certificates?.length || 0})
             </h4>
             <div className="grid grid-cols-2 gap-3">
-              {instructor.certificates && instructor.certificates.length > 0 ? (
+              {instructor.certificates?.length > 0 ? (
                 instructor.certificates.map((cert, index) => (
                   <div
                     key={index}
                     className="border rounded-lg overflow-hidden"
                   >
-                    <img
-                      src={cert || "/api/placeholder/150/150"}
+                    <Image
+                      src={cert}
                       alt={`Certificate ${index + 1}`}
                       className="w-full h-32 object-cover"
+                      preview={{
+                        mask: <span className="text-white">View</span>,
+                      }}
                     />
+                    <p className="text-center py-2 text-sm text-gray-600">
+                      Certificate {index + 1}
+                    </p>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 col-span-2">
-                  No certificates available
-                </p>
+                <div className="col-span-2 flex flex-col items-center justify-center py-4 bg-gray-50 rounded-lg">
+                  <FileTextOutlined className="text-3xl text-gray-400 mb-2" />
+                  <p className="text-gray-500">No certificates available</p>
+                </div>
               )}
             </div>
           </div>
         </div>
+
+        <Divider />
+
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="font-medium text-gray-700 mb-2">
+            Application Timeline
+          </h4>
+          <div className="flex justify-between text-sm text-gray-600">
+            <div>
+              <p>Created:</p>
+              <p className="font-medium">
+                {new Date(instructor.createdAt).toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p>Last Updated:</p>
+              <p className="font-medium">
+                {new Date(instructor.updatedAt).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <Divider />
+
+        <div className="flex justify-end space-x-3">
+          {instructor.status !== "Approved" && (
+            <Button
+              type="primary"
+              icon={<CheckOutlined />}
+              onClick={() => onApprove(instructor._id)}
+              loading={isProcessing}
+              disabled={isProcessing}
+            >
+              Approve
+            </Button>
+          )}
+          {instructor.status !== "Rejected" && (
+            <Button
+              danger
+              icon={<CloseOutlined />}
+              onClick={() => onReject(instructor._id)}
+              loading={isProcessing}
+              disabled={isProcessing}
+            >
+              Reject
+            </Button>
+          )}
+          <Button onClick={onClose}>Close</Button>
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 };
+
+export default InstructorDetailsModal;

@@ -27,6 +27,15 @@ import BookingManagement from "../pages/Instructors/BookingManagement";
 import ProductDetail from "../pages/Shop/ProductDetail";
 import MyCart from "../pages/Shop/MyCart";
 import TrackProgress from "../profile/TrackProgress";
+import AllAdmins from "../Admin/AllAdmins";
+import AddBlog from "../Admin/AddBlog";
+import PaymentSuccess from "../Payment/PaymentSuccess";
+import PaymentFailure from "../Payment/PaymentFailure";
+import OrderHistory from "../profile/OrderHistory";
+import ProtectedRoute from "./ProtectedRoute";
+import InstructorRoute from "./InstructorRoute";
+import AdminRoute from "./AdminRoute";
+import PageNotFound from "./PageNotFound";
 
 function AppRouter() {
   return (
@@ -41,47 +50,61 @@ function AppRouter() {
           <Route path="/blog" element={<Blog />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/shop/:id" element={<ProductDetail />} />
-          <Route path="/cart" element={<MyCart />} />
-          <Route path="/profile" element={<Profile />} />
-
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/email-verification" element={<EmailVerification />} />
           <Route path="/forget-password" element={<ForgetPassword />} />
-
-          {/* Instructor Routes */}
-          <Route
-            path="/applyInstructor"
-            element={<InstructorApplicationForm />}
-          />
           <Route path="/instructors" element={<InstructorsList />} />
           <Route
             path="/instructor-details/:instructorId"
             element={<InstructorDetails />}
           />
-          <Route
-            path="/instructor/dashboard"
-            element={<InstructorDashboard />}
-          />
-          <Route path="/instructor/add-class" element={<AddClass />} />
-          <Route path="/instructor/my-classes" element={<MyClasses />} />
-          <Route path="/instructor/students" element={<StudentsList />} />
-          <Route path="/instructor/bookings" element={<BookingManagement />} />
 
-          {/* Admin Routes */}
-          <Route
-            path="/admin/manage-instructors"
-            element={<ManageInstructors />}
-          />
-          <Route path="/admin/manage-users" element={<ManageUsers />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/manage-classes" element={<ManageClass />} />
-          <Route path="/admin/manage-shop" element={<AdminShop />} />
-          <Route path="/admin/shopList" element={<AdminShopList />} />
-          <Route path="/track-progress" element={<TrackProgress />} />
+          {/* Protected Routes (Require authentication) */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/cart" element={<MyCart />} />
+            <Route path="/track-progress" element={<TrackProgress />} />
+            <Route path="/orders" element={<OrderHistory />} />
+            <Route
+              path="/applyInstructor"
+              element={<InstructorApplicationForm />}
+            />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-failure" element={<PaymentFailure />} />
+          </Route>
+
+          {/* Instructor Routes (Require instructor role) */}
+          <Route element={<InstructorRoute />}>
+            <Route
+              path="/instructor/dashboard"
+              element={<InstructorDashboard />}
+            />
+            <Route path="/instructor/add-class" element={<AddClass />} />
+            <Route path="/instructor/my-classes" element={<MyClasses />} />
+            <Route path="/instructor/students" element={<StudentsList />} />
+            <Route
+              path="/instructor/bookings"
+              element={<BookingManagement />}
+            />
+          </Route>
+
+          {/* Admin Routes (Require admin role) */}
+          <Route element={<AdminRoute />}>
+            <Route
+              path="/admin/manage-instructors"
+              element={<ManageInstructors />}
+            />
+            <Route path="/admin/manage-users" element={<ManageUsers />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/manage-classes" element={<ManageClass />} />
+            <Route path="/admin/all-admins" element={<AllAdmins />} />
+            <Route path="/admin/manage-shop" element={<AdminShop />} />
+            <Route path="/admin/shopList" element={<AdminShopList />} />
+            <Route path="/admin/addblog" element={<AddBlog />} />
+          </Route>
         </Route>
-
-        {/* Auth Routes (No Layout) */}
+        <Route path="*" element={<PageNotFound />} />
       </Routes>
     </Router>
   );

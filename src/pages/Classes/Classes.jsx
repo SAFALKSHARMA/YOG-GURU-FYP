@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import ClassCard from "../../ui/ClassCard";
-import FavouriteIcon from "../../ui/FavouriteIcon";
 import { Search, Filter, X, Loader2 } from "lucide-react";
+import { AppContent } from "../../context/AppContext";
 
 const Classes = () => {
   const [allClasses, setAllClasses] = useState([]);
@@ -14,7 +14,9 @@ const Classes = () => {
   const [sortBy, setSortBy] = useState("featured");
   const [showFilters, setShowFilters] = useState(false);
   const [durationRange, setDurationRange] = useState([0, 120]);
-  const userId = "user-id-here"; // Replace with actual userId
+  const { userData } = useContext(AppContent);
+
+  // console.log(userData?.userId);
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -250,7 +252,7 @@ const Classes = () => {
                   yogaClass={yogaClass}
                   isFavorite={favorites[yogaClass._id]}
                   toggleFavorite={() => toggleFavorite(yogaClass._id)}
-                  userId={userId}
+                  userId={userData?.userId}
                 />
               ))}
             </div>

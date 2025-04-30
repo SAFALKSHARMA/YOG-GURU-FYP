@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   BookOpen,
   Search,
@@ -25,175 +25,145 @@ const MyClasses = () => {
   const { instructorData, setInstructorData } = useContext(AppContent);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [classToDelete, setClassToDelete] = useState(null);
+  const [classes, setClasses] = useState([]);
 
-  const handleViewClassDetails = (classItem) => {
-    setSelectedClass(classItem);
-  };
+  useEffect(() => {
+    const fetchClasses = async () => {
+      if (!instructorData?._id) return;
+      const endpoint = `http://localhost:3000/api/classes/instructor/${instructorData._id}`;
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to fetch classes");
+        }
+        const data = await response.json();
+        console.log(data);
 
-  const handleCloseModal = () => {
-    setSelectedClass(null);
-  };
+        // Corrected: Access the classes array from the response object
+        setClasses(Array.isArray(data.classes) ? data.classes : []);
+
+        // Optional: Update instructorData if needed
+        if (setInstructorData) {
+          setInstructorData((prev) => ({
+            ...prev,
+            classes: data.classes || [],
+          }));
+        }
+      } catch (err) {
+        setError(err.message);
+        toast.error("Failed to load classes");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchClasses();
+  }, [instructorData?._id, setInstructorData]);
+
+  const handleViewClassDetails = (classItem) => setSelectedClass(classItem);
+  const handleCloseModal = () => setSelectedClass(null);
 
   const handleUpdateClass = async (formData) => {
     setLoading(true);
     setError(null);
-
     const classId = formData.get("_id");
-    console.log(`Starting class update process for class ID: ${classId}`);
-
     try {
-      // Append instructorId if it's missing
       if (instructorData?._id && !formData.get("instructorId")) {
         formData.append("instructorId", instructorData._id);
       }
-
-      // Log FormData contents in a readable format
-      const formDataArray = Array.from(formData.entries()).map(
-        ([key, value]) => ({
-          key,
-          value: value instanceof File ? `[File: ${value.name}]` : value,
-        })
-      );
-      console.log("FormData contents:", formDataArray);
-
-      // Send PUT request to update the class
       const response = await fetch(
         `http://localhost:3000/api/classes/${classId}`,
         {
           method: "PUT",
-          body: formData, // Let browser automatically set headers for FormData
+          body: formData,
         }
       );
-
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error response from server:", errorData);
         throw new Error(errorData.message || "Failed to update class");
       }
-
       const { updatedClass } = await response.json();
-      console.log("Class updated successfully. Data received:", updatedClass);
-
-      // Update instructor data in state
-      setInstructorData((prev) => ({
-        ...prev,
-        classes: prev.classes.map((cls) =>
-          cls._id === updatedClass._id ? updatedClass : cls
-        ),
-      }));
-
-      // Reset UI
+      setClasses((prev) =>
+        prev.map((cls) => (cls._id === updatedClass._id ? updatedClass : cls))
+      );
+      if (setInstructorData) {
+        setInstructorData((prev) => ({
+          ...prev,
+          classes: prev.classes.map((cls) =>
+            cls._id === updatedClass._id ? updatedClass : cls
+          ),
+        }));
+      }
       setSelectedClass(null);
       toast.success("Class updated successfully!");
-      console.log("Class updated successfully in local state.");
     } catch (err) {
-      console.error("Error while updating class:", err.message);
       setError(err.message);
       toast.error(err.message);
     } finally {
       setLoading(false);
-      console.log("Class update process finished.");
     }
   };
 
-  // Modified to open confirmation modal instead of using window.confirm
   const initiateDeleteClass = (classItem) => {
-    if (!classItem?._id) {
-      toast.error("Class ID is missing");
-      console.error("Class ID is missing.");
-      return;
-    }
-
-    // Set the class to delete and open the modal
+    if (!classItem?._id) return toast.error("Class ID is missing");
     setClassToDelete(classItem);
     setDeleteModalOpen(true);
   };
 
-  // The actual delete function that gets called after confirmation
   const handleDeleteClass = async () => {
-    if (!classToDelete?._id) {
-      toast.error("Class ID is missing");
-      console.error("Class ID is missing.");
-      return;
-    }
-
-    console.log(
-      "Starting class deletion process for class ID:",
-      classToDelete._id
-    );
-
-    const requestBody = {
-      classId: classToDelete._id, // Add class ID to the request
-      instructorId: instructorData?._id, // Send instructor ID along with class ID
-    };
-
-    console.log("Sending data to backend for class deletion:", requestBody);
-
+    if (!classToDelete?._id) return toast.error("Class ID is missing");
     setLoading(true);
     setError(null);
-
     try {
       const response = await fetch(
         `http://localhost:3000/api/classes/delete-class`,
         {
           method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            classId: classToDelete._id,
+            instructorId: instructorData?._id,
+          }),
         }
       );
-
-      console.log(
-        "Received response from server for class deletion:",
-        response
-      );
-
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Error response from server:", errorData);
         throw new Error(errorData.message || "Failed to delete class");
       }
-
-      // Update local state
-      setInstructorData((prev) => ({
-        ...prev,
-        classes: prev.classes.filter((cls) => cls._id !== classToDelete._id),
-      }));
-
+      setClasses((prev) => prev.filter((cls) => cls._id !== classToDelete._id));
+      if (setInstructorData) {
+        setInstructorData((prev) => ({
+          ...prev,
+          classes: prev.classes.filter((cls) => cls._id !== classToDelete._id),
+        }));
+      }
       toast.success("Class deleted successfully!");
-      setSelectedClass(null); // Close modal
-      console.log("Class deleted successfully from local state.");
+      setSelectedClass(null);
     } catch (err) {
       setError(err.message);
-      console.error("Error while deleting class:", err.message);
       toast.error(err.message);
     } finally {
       setLoading(false);
-      setDeleteModalOpen(false); // Close confirmation modal
-      setClassToDelete(null); // Clear the class to delete
-      console.log("Class deletion process finished.");
+      setDeleteModalOpen(false);
+      setClassToDelete(null);
     }
   };
 
-  // Function to close the delete confirmation modal without deleting
   const handleCancelDelete = () => {
     setDeleteModalOpen(false);
     setClassToDelete(null);
   };
 
-  const filteredClasses = (instructorData?.classes || []).filter(
-    (classItem) => {
-      const matchesSearch =
-        typeof classItem.className === "string" &&
-        classItem.className.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "All" || classItem.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    }
-  );
+  const filteredClasses = classes.filter((classItem) => {
+    const matchesSearch =
+      typeof classItem.className === "string" &&
+      classItem.className.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "All" || classItem.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const columns = [
     {
@@ -264,24 +234,20 @@ const MyClasses = () => {
     {
       label: "View Details",
       icon: <Eye size={16} className="text-blue-500" />,
-      onClick: handleViewClassDetails,
+      onClick: () => handleViewClassDetails(item),
     },
   ];
 
   return (
     <div className="flex flex-col lg:flex-row h-screen bg-gray-50">
       <Sidebar />
-
       <div className="flex-1 p-6 lg:ml-8">
-        {" "}
-        {/* Add margin when sidebar is collapsed */}
         <div className="mb-12">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center mb-4 md:mb-0">
               <BookOpen className="mr-3 text-purple-600" size={28} />
               My Classes
             </h1>
-
             <div className="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3 w-full md:w-auto">
               <div className="relative flex-grow md:flex-grow-0 md:w-64">
                 <Search
@@ -296,7 +262,6 @@ const MyClasses = () => {
                   className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
-
               <div className="relative flex-grow md:flex-grow-0 md:w-40">
                 <Filter
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -329,17 +294,14 @@ const MyClasses = () => {
           />
         </div>
       </div>
-
       {selectedClass && (
         <ClassDetailsModal
           selectedClass={selectedClass}
           handleCloseModal={handleCloseModal}
           onSaveChanges={handleUpdateClass}
-          onDeleteClass={initiateDeleteClass} // Changed to use our new function
+          onDeleteClass={initiateDeleteClass}
         />
       )}
-
-      {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={deleteModalOpen}
         onClose={handleCancelDelete}

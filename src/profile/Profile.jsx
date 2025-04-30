@@ -8,6 +8,7 @@ import Applications from "./Applications";
 import Settings from "./Settings";
 import TrackProgress from "./TrackProgress";
 import { AppContent } from "../context/AppContext";
+import OrderHistory from "./OrderHistory";
 import axios from "axios";
 
 const Profile = () => {
@@ -29,6 +30,8 @@ const Profile = () => {
         return <TrackProgress />;
       case "settings":
         return <Settings />;
+      case "orders":
+        return <OrderHistory />;
       default:
         return <ProfileInfo />;
     }

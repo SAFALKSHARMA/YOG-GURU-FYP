@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Award,
   Mail,
@@ -11,6 +11,8 @@ import {
   ServerIcon,
 } from "lucide-react";
 import YogaBookingModal from "./YogaBookingModal";
+import { AppContent } from "../../../context/AppContext";
+import { message } from "antd";
 
 function InstructorHeader({
   instructor,
@@ -21,8 +23,15 @@ function InstructorHeader({
   instructorId,
 }) {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const { userData, isLoggedIn } = useContext(AppContent);
 
-  const openBookingModal = () => setIsBookingModalOpen(true);
+  const openBookingModal = () => {
+    if (!isLoggedIn) {
+      message.warning("Please log in to book a session");
+      return;
+    }
+    setIsBookingModalOpen(true);
+  };
 
   return (
     <div className="bg-gradient-to-r from-purple-800 via-purple-700 to-indigo-800 text-white relative overflow-hidden">

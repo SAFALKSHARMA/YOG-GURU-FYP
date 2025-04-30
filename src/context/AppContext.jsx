@@ -8,55 +8,50 @@ export const AppContent = createContext();
 export const AppContextProvider = (props) => {
   const backendUrl = "http://localhost:3000";
   const [isLoggedin, setIsLoggedin] = useState(false);
-  const [userData, setUserData] = useState(null); // Set default to null
+  const [userData, setUserData] = useState(null);
   const [instructorData, setInstructorData] = useState(null);
 
-  axios.defaults.withCredentials = true;
+  const [loading, setLoading] = useState(true);
 
+  // Configure axios defaults once
   useEffect(() => {
-    const token = Cookies.get("token");
-    if (token) {
-      getUserData(); // ✅ Fetch user data if token exists
-    } else {
-      setIsLoggedin(false);
-      setUserData(null);
-    }
+    axios.defaults.withCredentials = true;
   }, []);
 
-  const getAuthState = async () => {
-    try {
-      const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`);
-      if (data.success) {
-        setIsLoggedin(true);
-        getUserData();
+  // Single auth check on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`);
+        if (data.success) {
+          setIsLoggedin(true);
+          await getUserData();
+        }
+      } catch (error) {
+        console.log("Auth check failed:", error.message);
+        setIsLoggedin(false);
+        setUserData(null);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
+    };
 
-  useEffect(() => {
-    getAuthState();
-  }, []);
+    checkAuth();
+  }, [backendUrl]);
 
   const getUserData = async () => {
     try {
-      const { data } = await axios.get(`${backendUrl}/api/user/data`, {
-        withCredentials: true,
-      });
-
+      const { data } = await axios.get(`${backendUrl}/api/user/data`);
       if (data.success) {
         setUserData(data.userData);
         setInstructorData(data.instructorData || null); // Ensure instructorData is set
+
         setIsLoggedin(true);
-      } else {
-        toast.error(data.message);
-        setIsLoggedin(false);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
-      toast.error(error.response?.data?.message || "An error occurred");
       setIsLoggedin(false);
+      setUserData(null);
     }
   };
 
@@ -65,10 +60,11 @@ export const AppContextProvider = (props) => {
     isLoggedin,
     setIsLoggedin,
     userData,
-    setUserData,
-    instructorData, // ✅ Now available in context
+    instructorData,
     setInstructorData,
+    setUserData,
     getUserData,
+    loading,
   };
 
   return (

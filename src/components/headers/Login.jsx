@@ -1,13 +1,12 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import InputField from "../../ui/InputField";
-import ToastComponent from "../../ui/ToastComponent";
-import { toast } from "react-toastify";
 import { AppContent } from "../../context/AppContext";
 import Button from "../../ui/button";
 import Loading from "../../ui/Loading";
 import icon from "../../assets/meditation.gif";
 import OAuth from "../OAuth";
+import { message } from "antd";
 
 const Login = () => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -22,6 +21,13 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    // Basic client-side validation
+    if (!email || !password) {
+      message.warning("Please enter both email and password");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -29,24 +35,36 @@ const Login = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-        credentials: "include", // ✅ Send credentials (token)
+        credentials: "include",
       });
 
       const data = await response.json();
 
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
       if (data.success) {
-        toast.success("Login successful! Redirecting...");
+        message.success("Login successful! Redirecting...");
         setIsLoggedin(true);
-
-        // ✅ Ensure we fetch user data AFTER login
         await getUserData();
-
         setTimeout(() => navigate("/"), 2000);
       } else {
-        toast.error(data.message || "Invalid credentials. Please try again.");
+        // Handle specific error cases
+        if (data.message.toLowerCase().includes("banned")) {
+          message.error({
+            content: data.message,
+            duration: 5, // Show for longer duration
+          });
+        } else {
+          message.error(
+            data.message || "Invalid credentials. Please try again."
+          );
+        }
       }
     } catch (error) {
-      toast.error("Something went wrong. Please try again.");
+      console.error("Login error:", error);
+      message.error(error.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -54,13 +72,11 @@ const Login = () => {
 
   return (
     <>
-      {/* <Navbar /> */}
       <div className="flex items-center justify-center min-h-screen bg-[#efeff2] bg-image-login">
         <div className="w-full max-w-[410px] p-6 rounded-lg bg-white shadow-lg">
           <h2 className="text-left text-[2rem] font-semibold mb-5 text-black">
             Login
           </h2>
-          <p className="text-left text-lg font-medium text-gray-700 mb-6"></p>
 
           <form onSubmit={handleLogin} className="login-form">
             <InputField
@@ -116,7 +132,6 @@ const Login = () => {
         text="Logging in..."
         icon={<img src={icon} alt="Loading" className="w-16 h-16" />}
       />
-      <ToastComponent />
     </>
   );
 };

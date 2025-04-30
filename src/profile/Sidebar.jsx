@@ -1,5 +1,4 @@
-// Sidebar.js
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext, useRef, useState, useEffect } from "react";
 import { AppContent } from "../context/AppContext";
 import {
   User,
@@ -11,6 +10,7 @@ import {
   Edit,
   ArrowRightCircle,
   TrendingUp,
+  ShoppingBag,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -23,9 +23,31 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [orderCount, setOrderCount] = useState(0);
 
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+  // Fetch order count
+  useEffect(() => {
+    const fetchOrderCount = async () => {
+      if (!userData?.userId) return;
+
+      try {
+        const response = await axios.get(
+          `${backendUrl}/api/payments/orders/${userData.userId}`,
+          { withCredentials: true }
+        );
+        if (response.data.success) {
+          setOrderCount(response.data.orders.length);
+        }
+      } catch (error) {
+        console.error("Error fetching order count:", error);
+      }
+    };
+
+    fetchOrderCount();
+  }, [userData, backendUrl]);
 
   const handleLogout = async () => {
     try {
@@ -101,6 +123,12 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       label: "Applications",
       icon: Calendar,
       count: userData?.applications?.length || 0,
+    },
+    {
+      id: "orders",
+      label: "Order History",
+      icon: ShoppingBag,
+      count: orderCount,
     },
     { id: "trackprogress", label: "Progress", icon: TrendingUp, count: null },
     { id: "settings", label: "Settings", icon: Settings, count: null },
