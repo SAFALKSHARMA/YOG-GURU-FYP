@@ -359,22 +359,6 @@ export const verifyPayment = async (req, res) => {
       // Clear cart
       await User.findByIdAndUpdate(payment.userId, { $set: { cartItems: [] } });
 
-      // Optional: Create an order record (uncomment if needed)
-      /*
-      const order = new Order({
-        userId: payment.userId,
-        items: payment.cartItems.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        totalPrice: payment.totalPrice,
-        paymentStatus: "paid",
-        paymentId: payment._id,
-      });
-      await order.save();
-      */
-
       console.log("[Success] Khalti payment verified and cart cleared");
       res.status(200).json({
         success: true,

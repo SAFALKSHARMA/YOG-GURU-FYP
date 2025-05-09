@@ -1,5 +1,6 @@
 import YogaBooking from "../models/booking.model.js";
-import { sendBookingEmail } from "../config/nodemailer.js";
+import { bookingStatusTemplate } from "../utils/emailTemplates.js";
+import { sendEmail } from "../utils/emailTemplates.js";
 
 export const createYogaBooking = async (req, res) => {
   try {
@@ -57,8 +58,6 @@ export const createYogaBooking = async (req, res) => {
       userId,
       instructorId,
       status: "Pending",
-
-      paymentStatus: totalPrice > 0 ? "pending" : "paid",
     });
 
     await newBooking.save();
@@ -113,15 +112,14 @@ export const getInstructorBookings = async (req, res) => {
 
 export const updateBookingStatus = async (req, res) => {
   try {
-    const { bookingId, status, instructorId } = req.body;
+    const { bookingId, status, instructorId, rejectionReason } = req.body;
 
+    // Basic validation
     if (!bookingId || !status || !instructorId) {
-      return res.status(400).json({
-        success: false,
-        message: "Booking ID, status, and instructor ID are required",
-      });
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
+    // Find booking
     const booking = await YogaBooking.findOne({
       _id: bookingId,
       instructorId: instructorId,
@@ -130,82 +128,60 @@ export const updateBookingStatus = async (req, res) => {
       .populate("instructorId", "fullName email");
 
     if (!booking) {
-      return res.status(404).json({
-        success: false,
-        message: "Booking not found or instructor mismatch",
-      });
+      return res.status(404).json({ error: "Booking not found" });
     }
 
-    const validTransitions = {
+    // Check valid status change
+    const allowedChanges = {
       Pending: ["Approved", "Rejected"],
       Approved: ["Completed", "Cancelled"],
       Rejected: [],
     };
 
-    if (!validTransitions[booking.status]?.includes(status)) {
+    if (!allowedChanges[booking.status]?.includes(status)) {
       return res.status(400).json({
-        success: false,
-        message: `Cannot change status from ${booking.status} to ${status}`,
-        validTransitions: validTransitions[booking.status] || [],
+        error: `Cannot change from ${booking.status} to ${status}`,
       });
     }
 
-    const previousStatus = booking.status;
+    // Update booking
+    const oldStatus = booking.status;
     booking.status = status;
-    const updatedBooking = await booking.save();
+    if (status === "Rejected") booking.rejectionReason = rejectionReason;
+    await booking.save();
 
+    // Send email notification
     if (["Approved", "Rejected"].includes(status)) {
-      sendBookingEmail(
-        status.toLowerCase(),
-        {
-          _id: booking._id,
-          fullName: booking.userId.name,
-          preferredDate: booking.preferredDate,
-          preferredTime: booking.preferredTime,
-          sessionDuration: booking.sessionDuration,
+      const emailData = {
+        status,
+        userName: booking.userId.name,
+        bookingDetails: {
           yogaType: booking.yogaType,
-          sessionLocation: booking.sessionLocation,
-          remarks: booking.remarks,
+          preferredDate: booking.preferredDate.toDateString(),
+          preferredTime: booking.preferredTime,
+          rejectionReason: booking.rejectionReason,
         },
-        {
-          _id: booking.instructorId._id,
+        instructor: {
           name: booking.instructorId.fullName,
-          email: booking.instructorId.email,
         },
-        booking.userId.email
-      ).catch((error) => {
-        console.error("Email sending failed:", error);
+      };
+
+      await sendEmail({
+        to: booking.userId.email,
+        subject: `Your Yoga Session - ${status}`,
+        html: bookingStatusTemplate(emailData),
       });
     }
 
-    console.log(
-      `Booking ${bookingId} status changed from ${previousStatus} to ${status}`
-    );
-
-    res.status(200).json({
+    // Return success
+    res.json({
       success: true,
-      data: updatedBooking,
-      changes: {
-        from: previousStatus,
-        to: status,
-        at: new Date(),
-      },
+      message: `Status updated from ${oldStatus} to ${status}`,
+      booking,
     });
   } catch (error) {
-    console.error("Booking status update error:", {
-      error: error.message,
-      stack: error.stack,
-      request: req.body,
-    });
-
-    res.status(500).json({
-      success: false,
-      message:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : "Internal server error",
-      ...(process.env.NODE_ENV === "development" && { stack: error.stack }),
-    });
+    console.error("Update error:", error);
+    res.status(500).json({ error: "Server error" });
   }
 };
 

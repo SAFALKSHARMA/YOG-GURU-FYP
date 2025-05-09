@@ -2,6 +2,8 @@ import Instructor from "../models/Instructor.js";
 import userModel from "../models/userModel.js";
 import Class from "../models/class.model.js";
 import mongoose from "mongoose";
+import studentModel from "../models/student.model.js";
+import { sendEnrollmentEmail } from "../utils/emailTemplates.js";
 
 export const createClass = async (req, res) => {
   try {
@@ -312,6 +314,7 @@ export const getFavoriteClasses = async (req, res) => {
   }
 };
 
+// Enroll user in class
 export const enrollUserInClass = async (req, res) => {
   try {
     const { userId, classId } = req.body;
@@ -332,8 +335,8 @@ export const enrollUserInClass = async (req, res) => {
       });
     }
 
-    // Find class
-    const classToEnroll = await Class.findById(classId);
+    // Find class with instructor populated
+    const classToEnroll = await Class.findById(classId).populate("instructor");
     if (!classToEnroll) {
       return res.status(404).json({
         success: false,
@@ -350,7 +353,7 @@ export const enrollUserInClass = async (req, res) => {
     }
 
     // Check if already enrolled
-    const isAlreadyEnrolled = classToEnroll.students.includes(user._id);
+    const isAlreadyEnrolled = classToEnroll.students.includes(userId);
     if (isAlreadyEnrolled) {
       return res.status(400).json({
         success: false,
@@ -359,7 +362,7 @@ export const enrollUserInClass = async (req, res) => {
     }
 
     // Add student to class
-    classToEnroll.students.push(user._id);
+    classToEnroll.students.push(userId);
     classToEnroll.capacity -= 1;
     await classToEnroll.save();
 
@@ -369,12 +372,16 @@ export const enrollUserInClass = async (req, res) => {
       await user.save();
     }
 
+    // Send enrollment emails
+    await sendEnrollmentEmail(user, classToEnroll.instructor, classToEnroll);
+
     res.status(200).json({
       success: true,
       message: "Successfully enrolled in the class.",
       remainingCapacity: classToEnroll.capacity,
     });
   } catch (error) {
+    console.error("Error enrolling in class:", error);
     res.status(500).json({
       success: false,
       message: "Error enrolling in class",
