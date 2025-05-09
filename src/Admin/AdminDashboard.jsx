@@ -366,9 +366,6 @@ const AdminDashboard = () => {
           <h1 className="text-xl font-bold text-gray-800">
             Dashboard Overview
           </h1>
-          <p className="text-sm text-gray-500">
-            Welcome back! Here's what's happening with your platform.
-          </p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">

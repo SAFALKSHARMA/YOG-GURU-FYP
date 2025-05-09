@@ -11,6 +11,7 @@ import {
   Info,
   ArrowRight,
   Loader2,
+  ArrowLeft,
 } from "lucide-react";
 import { AppContent } from "../../context/AppContext";
 import axios from "axios";
@@ -214,6 +215,17 @@ const MyCart = () => {
 
   return (
     <div className="pt-24 pb-16 px-4 md:px-8 max-w-7xl mx-auto">
+      {/* Back Button */}
+      <div className="mb-4">
+        <Link
+          to="/shop"
+          className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors text-sm"
+        >
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Back to Shop
+        </Link>
+      </div>
+
       <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
         <ShoppingBag className="h-8 w-8" />
         My Cart

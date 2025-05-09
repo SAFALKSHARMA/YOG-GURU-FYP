@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Heart, ArrowLeft, ShoppingBag } from "lucide-react";
+import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { AppContent } from "../../context/AppContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -230,22 +230,6 @@ export default function ProductDetail() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 {product.name}
               </h1>
-              <button
-                onClick={handleFavoriteClick}
-                className="p-2 rounded-full hover:bg-purple-50 transition-colors"
-                aria-label={
-                  isFavorite ? "Remove from favorites" : "Add to favorites"
-                }
-              >
-                <Heart
-                  size={24}
-                  className={
-                    isFavorite
-                      ? "fill-purple-500 text-purple-500"
-                      : "text-purple-400"
-                  }
-                />
-              </button>
             </div>
 
             <p className="text-2xl font-semibold text-purple-600 mb-6">

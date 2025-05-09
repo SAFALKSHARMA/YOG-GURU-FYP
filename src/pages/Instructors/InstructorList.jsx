@@ -169,7 +169,7 @@ const InstructorsList = () => {
             <select
               value={selectedExperience}
               onChange={(e) => setSelectedExperience(e.target.value)}
-              className="h-12 px-4 rounded-xl border-2 border-white/10 focus:border-white/20 focus:ring-0 bg-white/5 text-white backdrop-blur-sm transition-colors"
+              className="h-12 px-4 rounded-xl border-2 border-white/10 focus:border-white/20 focus:ring-0 bg-white/5 text-white backdrop-blur-sm transition-colors appearance-none"
             >
               <option value="all">All Experience</option>
               <option value="beginner">Beginner (0-2 years)</option>
@@ -179,7 +179,7 @@ const InstructorsList = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="h-12 px-4 rounded-xl border-2 border-white/10 focus:border-white/20 focus:ring-0 bg-white/5 text-white   backdrop-blur-sm transition-colors"
+              className="h-12 px-4 rounded-xl border-2 border-white/10 focus:border-white/20 focus:ring-0 bg-white/5 text-white backdrop-blur-sm transition-colors appearance-none"
             >
               <option value="featured">Featured</option>
               <option value="experience-high">Experience: High to Low</option>
@@ -197,6 +197,17 @@ const InstructorsList = () => {
           </div>
         </div>
 
+        {/* Custom dropdown styling */}
+        <style>{`
+          select option {
+            background-color: rgba(79, 70, 229, 0.9);
+            color: white;
+          }
+          select:focus option:checked {
+            background-color: rgba(99, 102, 241, 0.9);
+          }
+        `}</style>
+
         {showFilters && (
           <div className="mb-8 p-6 border-2 border-white/10 rounded-xl bg-white/5 backdrop-blur-sm">
             <div className="flex items-center gap-4">
@@ -207,7 +218,7 @@ const InstructorsList = () => {
                 <select
                   value={serviceType}
                   onChange={(e) => setServiceType(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg border-2 border-white/10 focus:border-white/20 focus:ring-0 bg-white/5 text-white"
+                  className="w-full h-12 px-4 rounded-lg border-2 border-white/10 focus:border-white/20 focus:ring-0 bg-white/5 text-white backdrop-blur-sm transition-colors appearance-none"
                 >
                   <option value="all">All Service Types</option>
                   {allServiceTypes.map((type, index) => (

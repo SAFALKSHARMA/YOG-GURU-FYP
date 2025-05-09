@@ -27,7 +27,6 @@ function ClassDetails() {
   const [phone, setPhone] = useState(userData?.phone || "");
   const navigate = useNavigate();
 
-  console.log(userData);
   // Fetch class details
   useEffect(() => {
     const fetchClassDetails = async () => {
@@ -59,7 +58,7 @@ function ClassDetails() {
   }, [classId]);
 
   // Save phone number to user profile
-  const savephone = async () => {
+  const savePhone = async () => {
     const phoneRegex = /^\+?\d{10,15}$/;
     if (!phoneRegex.test(phone)) {
       setEnrollmentError("Invalid phone number (10-15 digits required)");
@@ -147,15 +146,15 @@ function ClassDetails() {
       return;
     }
     if (!userData.phone && phone) {
-      const saved = await savephone();
+      const saved = await savePhone();
       if (!saved) return;
     }
 
     if (classData.price > 0) {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/payments/check?classId=${classId}&userId=${userData.userId}`
-          // { credentials: "include" }
+          `http://localhost:3000/api/payments/check?classId=${classId}&userId=${userData.userId}`,
+          { credentials: "include" }
         );
         if (!response.ok) {
           const errorData = await response.json();
@@ -203,7 +202,7 @@ function ClassDetails() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-gray-700">Loading class details...</p>
+          <p className="text-gray-600">Loading class details...</p>
         </div>
       </div>
     );
@@ -232,7 +231,7 @@ function ClassDetails() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-700">Class not found</p>
+          <p className="text-gray-600">Class not found</p>
           <Link
             to="/classes"
             className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors inline-block"
@@ -380,8 +379,11 @@ function ClassDetails() {
 
                   {enrollmentSuccess && (
                     <div className="mb-4 p-3 bg-green-50 text-green-600 rounded-lg flex items-start">
-                      <CheckCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
-                      <p>Successfully enrolled in this class!</p>
+                      <CheckCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink0" />
+                      <p>
+                        Successfully enrolled in this class! Check your email
+                        for details.
+                      </p>
                     </div>
                   )}
 

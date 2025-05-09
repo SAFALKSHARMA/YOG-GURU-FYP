@@ -16,8 +16,6 @@ const Classes = () => {
   const [durationRange, setDurationRange] = useState([0, 120]);
   const { userData } = useContext(AppContent);
 
-  // console.log(userData?.userId);
-
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -147,7 +145,7 @@ const Classes = () => {
               placeholder="Search classes or instructors..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 h-12 rounded-xl border-2 border-white/10 focus:border-white/20 bg-white/5 text-white placeholder-purple-300 backdrop-blur-sm"
+              className="w-full pl-10 pr-4 h-12 rounded-xl border-2 border-white/10 focus:border-white/20 bg-white/5 text-white placeholder-purple-300 backdrop-blur-sm transition-colors"
             />
           </div>
 
@@ -155,7 +153,7 @@ const Classes = () => {
             <select
               value={selectedLevel}
               onChange={(e) => setSelectedLevel(e.target.value)}
-              className="h-12 px-4 rounded-xl border-2 border-white/10 bg-white/5 text-white backdrop-blur-sm"
+              className="h-12 px-4 rounded-xl border-2 border-white/10 focus:border-white/20 bg-white/5 text-white backdrop-blur-sm transition-colors appearance-none"
             >
               <option value="all">All Levels</option>
               <option value="beginner">Beginner</option>
@@ -166,7 +164,7 @@ const Classes = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="h-12 px-4 rounded-xl border-2 border-white/10 bg-white/5 text-white backdrop-blur-sm"
+              className="h-12 px-4 rounded-xl border-2 border-white/10 focus:border-white/20 bg-white/5 text-white backdrop-blur-sm transition-colors appearance-none"
             >
               <option value="featured">Featured</option>
               <option value="date">Date</option>
@@ -178,13 +176,24 @@ const Classes = () => {
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="h-12 px-4 flex items-center gap-2 border-2 border-white/10 rounded-xl bg-white/5 text-white backdrop-blur-sm"
+              className="h-12 px-4 flex items-center gap-2 border-2 border-white/10 hover:border-white/20 rounded-xl bg-white/5 text-white backdrop-blur-sm transition-colors"
             >
               <Filter size={18} />
               <span className="hidden sm:inline">Filters</span>
             </button>
           </div>
         </div>
+
+        {/* Custom dropdown styling */}
+        <style>{`
+          select option {
+            background-color: rgba(79, 70, 229, 0.9);
+            color: white;
+          }
+          select:focus option:checked {
+            background-color: rgba(99, 102, 241, 0.9);
+          }
+        `}</style>
 
         {/* Additional filters panel */}
         {showFilters && (
@@ -206,7 +215,7 @@ const Classes = () => {
                         durationRange[1],
                       ])
                     }
-                    className="w-full h-10 px-3 rounded-lg border-2 border-white/10 bg-white/5 text-white"
+                    className="w-full h-10 px-3 rounded-lg border-2 border-white/10 focus:border-white/20 bg-white/5 text-white transition-colors"
                     placeholder="Min"
                   />
                   <span className="text-purple-200">-</span>
@@ -221,7 +230,7 @@ const Classes = () => {
                         Number(e.target.value),
                       ])
                     }
-                    className="w-full h-10 px-3 rounded-lg border-2 border-white/10 bg-white/5 text-white"
+                    className="w-full h-10 px-3 rounded-lg border-2 border-white/10 focus:border-white/20 bg-white/5 text-white transition-colors"
                     placeholder="Max"
                   />
                 </div>

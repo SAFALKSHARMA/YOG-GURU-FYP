@@ -4,15 +4,16 @@ import {
   Mail,
   Phone,
   MapPin,
-  Heart,
   Share2,
   Star,
   Calendar,
   ServerIcon,
+  ArrowLeft,
 } from "lucide-react";
 import YogaBookingModal from "./YogaBookingModal";
 import { AppContent } from "../../../context/AppContext";
 import { message } from "antd";
+import { Link } from "react-router-dom";
 
 function InstructorHeader({
   instructor,
@@ -23,11 +24,17 @@ function InstructorHeader({
   instructorId,
 }) {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const { userData, isLoggedIn } = useContext(AppContent);
+  const { userData, isLoggedin } = useContext(AppContent);
 
   const openBookingModal = () => {
-    if (!isLoggedIn) {
+    console.log("isLoggedIn state:", isLoggedin, "userData:", userData);
+    if (!isLoggedin) {
       message.warning("Please log in to book a session");
+      return;
+    }
+    if (!userData) {
+      console.warn("User data is missing despite being logged in");
+      message.error("Unable to proceed with booking. Please try again.");
       return;
     }
     setIsBookingModalOpen(true);
@@ -42,6 +49,17 @@ function InstructorHeader({
       </div>
 
       <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8 relative z-10">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Link
+            to="/instructors"
+            className="inline-flex items-center text-purple-200 hover:text-white transition-colors text-sm"
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Back to Instructors
+          </Link>
+        </div>
+
         <div className="flex flex-col md:flex-row items-center md:items-start gap-10">
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
@@ -59,13 +77,10 @@ function InstructorHeader({
               <h1 className="text-3xl md:text-4xl font-bold">
                 {instructor.fullName}
               </h1>
-              <button onClick={() => setFavorite(!favorite)} className="ml-2">
-                <Heart
-                  className={`w-6 h-6 ${
-                    favorite ? "fill-red-500 text-red-500" : "text-white"
-                  }`}
-                />
-              </button>
+              <button
+                onClick={() => setFavorite(!favorite)}
+                className="ml-2"
+              ></button>
             </div>
 
             <div className="flex items-center justify-center md:justify-start mb-4">
@@ -110,10 +125,6 @@ function InstructorHeader({
               >
                 <Calendar className="w-5 h-5" />
                 Book Appointment
-              </button>
-              <button className="bg-purple-600/30 backdrop-blur-sm text-white px-4 py-3 rounded-xl font-semibold hover:bg-purple-600/50 transition-all duration-300 flex items-center gap-2">
-                <Share2 className="w-5 h-5" />
-                Share Profile
               </button>
             </div>
           </div>

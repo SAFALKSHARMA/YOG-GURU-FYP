@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Heart, Search, Filter, SlidersHorizontal, Eye, X } from "lucide-react";
+import { Search, Filter, SlidersHorizontal, Eye, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Shop() {
@@ -126,7 +126,7 @@ export default function Shop() {
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="h-12 px-4 rounded-xl border-2 border-white/10 focus:border-white/20 focus:ring-0 bg-white/5 text-white backdrop-blur-sm transition-colors"
+              className="h-12 px-4 rounded-xl border-2 border-white/10 focus:border-white/20 focus:ring-0 bg-white/5 text-white backdrop-blur-sm transition-colors appearance-none"
             >
               <option value="all">All Categories</option>
               <option value="mats">Yoga Mats</option>
@@ -136,7 +136,7 @@ export default function Shop() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="h-12 px-4 rounded-xl border-2 border-white/10 focus:border-white/20 focus:ring-0 bg-white/5 text-white backdrop-blur-sm transition-colors"
+              className="h-12 px-4 rounded-xl border-2 border-white/10 focus:border-white/20 focus:ring-0 bg-white/5 text-white backdrop-blur-sm transition-colors appearance-none"
             >
               <option value="featured">Featured</option>
               <option value="price-low">Price: Low to High</option>
@@ -152,6 +152,16 @@ export default function Shop() {
             </button>
           </div>
         </div>
+
+        <style>{`
+          select option {
+            background-color: rgba(79, 70, 229, 0.9);
+            color: white;
+          }
+          select:focus option:checked {
+            background-color: rgba(99, 102, 241, 0.9);
+          }
+        `}</style>
 
         {showFilters && (
           <div className="mb-8 p-6 border-2 border-white/10 rounded-xl bg-white/5 backdrop-blur-sm">
@@ -232,20 +242,6 @@ function ItemCard({ item }) {
             </p>
           </div>
         </div>
-
-        {/* Favorite button */}
-        <button
-          className="absolute top-4 right-4 p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors z-10"
-          onClick={() => setIsFavorite(!isFavorite)}
-          aria-label="Add to favorites"
-        >
-          <Heart
-            size={18}
-            className={
-              isFavorite ? "fill-purple-500 text-purple-500" : "text-purple-500"
-            }
-          />
-        </button>
 
         {/* Sliding View Product Button */}
         <div className="absolute inset-0 flex items-center">

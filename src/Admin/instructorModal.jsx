@@ -20,6 +20,7 @@ import {
   UserOutlined,
   FilePdfOutlined,
   CloseOutlined,
+  CheckOutlined,
 } from "@ant-design/icons";
 
 const InstructorDetailsModal = ({
