@@ -1,6 +1,6 @@
 import Class from "../models/class.model.js";
 import Instructor from "../models/Instructor.js";
-import Student from "../models/student.model.js";
+import studentModel from "../models/student.model.js";
 import YogaAccessory from "../models/shop.js";
 import InstructorApplication from "../models/InstructorApplication.js";
 import userModel from "../models/userModel.js";
@@ -13,8 +13,8 @@ export const getAdminDashboard = async (req, res) => {
       totalUsers,
       totalInstructors,
       totalStudents,
-      totalClasses,
-      totalApplications,
+      totalApprovedClasses,
+      totalApprovedApplications,
       totalProducts,
       pendingClasses,
       pendingApplications,
@@ -24,9 +24,9 @@ export const getAdminDashboard = async (req, res) => {
     ] = await Promise.all([
       userModel.countDocuments(),
       Instructor.countDocuments(),
-      Student.countDocuments(),
-      Class.countDocuments(),
-      InstructorApplication.countDocuments(),
+      studentModel.countDocuments(),
+      Class.countDocuments({ status: "Approved" }), // Only approved classes
+      InstructorApplication.countDocuments({ status: "Approved" }), // Only approved applications
       YogaAccessory.countDocuments(),
       Class.countDocuments({ status: "Pending" }),
       InstructorApplication.countDocuments({ status: "Pending" }),
@@ -81,8 +81,8 @@ export const getAdminDashboard = async (req, res) => {
         users: totalUsers,
         instructors: totalInstructors,
         students: totalStudents,
-        classes: totalClasses,
-        applications: totalApplications,
+        classes: totalApprovedClasses, // updated
+        applications: totalApprovedApplications, // updated
         products: totalProducts,
         pendingClasses,
         pendingApplications,
@@ -127,21 +127,42 @@ export const getInstructorDashboardData = async (req, res) => {
       return res.status(404).json({ message: "Instructor not found" });
     }
 
-    // Get all classes taught by this instructor
+    // Get all classes taught by this instructor with complete details
     const classes = await Class.find({ instructor: instructorId }).select(
-      "_id students"
+      "className description date time duration capacity price image difficultyLevel status students"
     );
 
     const totalClasses = classes.length;
 
-    // Flatten and deduplicate student IDs from all classes
-    const studentIds = [
-      ...new Set(
-        classes.flatMap((cls) => cls.students.map((id) => id.toString()))
-      ),
-    ];
+    // Get students count and recent students from studentModel
+    const students = await studentModel
+      .find({ instructorId })
+      .populate("user", "name email image") // Populate user details
+      .populate("classId", "className date time"); // Populate more class details
 
-    const totalStudents = studentIds.length;
+    const totalStudents = students.length;
+
+    // Get recent students (last 5)
+    const recentStudents = await studentModel
+      .find({ instructorId })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("user", "name email image")
+      .populate("classId", "className date time image");
+
+    // Format recent students data with more class details
+    const formattedRecentStudents = recentStudents.map((student) => ({
+      _id: student._id,
+      user: student.user,
+      class: {
+        _id: student.classId?._id,
+        name: student.classId?.className,
+        date: student.classId?.date,
+        time: student.classId?.time,
+        image: student.classId?.image,
+      },
+      enrolledAt: student.createdAt,
+    }));
 
     // Get bookings count and recent bookings
     const totalBookings = await YogaBooking.countDocuments({ instructorId });
@@ -153,23 +174,22 @@ export const getInstructorDashboardData = async (req, res) => {
         "fullName email phoneNumber preferredDate preferredTime sessionDuration sessionLocation status"
       );
 
-    // Get recent joined users (students only)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-    const recentUsers = await userModel
-      .find({
-        role: "user",
-        createdAt: { $gte: sevenDaysAgo },
-      })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .select("name email image createdAt");
-
-    const recentUsersCount = await userModel.countDocuments({
-      role: "user",
-      createdAt: { $gte: sevenDaysAgo },
-    });
+    // Format classes data with student count for each
+    const formattedClasses = classes.map((cls) => ({
+      _id: cls._id,
+      name: cls.className,
+      description: cls.description,
+      date: cls.date,
+      time: cls.time,
+      duration: cls.duration,
+      capacity: cls.capacity,
+      price: cls.price,
+      image: cls.image,
+      difficultyLevel: cls.difficultyLevel,
+      status: cls.status,
+      studentCount: cls.students.length,
+      remainingCapacity: cls.capacity - cls.students.length,
+    }));
 
     res.json({
       instructor,
@@ -177,10 +197,16 @@ export const getInstructorDashboardData = async (req, res) => {
         totalClasses,
         totalStudents,
         totalBookings,
-        recentUsersCount,
+        upcomingClasses: classes.filter(
+          (cls) => new Date(cls.date) > new Date()
+        ).length,
+        completedClasses: classes.filter(
+          (cls) => new Date(cls.date) <= new Date()
+        ).length,
       },
       recentBookings,
-      recentUsers,
+      recentStudents: formattedRecentStudents,
+      classes: formattedClasses, // Include detailed classes data
     });
   } catch (error) {
     console.error("Error in instructor dashboard:", error);

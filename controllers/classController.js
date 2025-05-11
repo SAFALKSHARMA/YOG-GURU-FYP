@@ -317,7 +317,7 @@ export const getFavoriteClasses = async (req, res) => {
 // Enroll user in class
 export const enrollUserInClass = async (req, res) => {
   try {
-    const { userId, classId } = req.body;
+    const { userId, classId, instructorId } = req.body;
 
     if (!userId || !classId) {
       return res.status(400).json({
@@ -371,6 +371,14 @@ export const enrollUserInClass = async (req, res) => {
       user.enrolledClasses.push(classId);
       await user.save();
     }
+
+    const students = new studentModel({
+      user: userId,
+      classId: classId,
+      instructorId: classToEnroll.instructor._id, // Use the class's instructor
+    });
+
+    await students.save();
 
     // Send enrollment emails
     await sendEnrollmentEmail(user, classToEnroll.instructor, classToEnroll);
@@ -427,9 +435,11 @@ export const getEnrolledClasses = async (req, res) => {
 export const updateClass = async (req, res) => {
   try {
     const { classId } = req.params;
-    const updateData = req.body;
 
-    // Handle image upload if present
+    // Create updateData manually since req.body is not available with FormData directly
+    const updateData = { ...req.body };
+
+    // Multer handles image uploads
     if (req.file) {
       updateData.image = req.file.path;
     }
@@ -464,6 +474,8 @@ export const deleteClass = async (req, res) => {
   try {
     const { classId, instructorId } = req.body;
 
+    console.log(classId, instructorId);
+
     if (!classId || !instructorId) {
       return res.status(400).json({
         success: false,
@@ -474,13 +486,13 @@ export const deleteClass = async (req, res) => {
     // Verify instructor owns the class
     const classToDelete = await Class.findOne({
       _id: classId,
-      instructorId: instructorId,
+      instructor: instructorId,
     });
 
     if (!classToDelete) {
       return res.status(404).json({
         success: false,
-        message: "Class not found or you don't have permission to delete it.",
+        message: "Class not found .",
       });
     }
 

@@ -7,6 +7,16 @@ const studentSchema = new Schema({
     ref: "User",
     required: true,
   },
+  classId: {
+    type: Schema.Types.ObjectId,
+    ref: "Class",
+    required: true,
+  },
+  instructorId: {
+    type: Schema.Types.ObjectId,
+    ref: "Instructor",
+    required: true,
+  },
   enrolledDate: { type: Date, default: Date.now },
 });
 

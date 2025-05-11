@@ -28,7 +28,7 @@ router.post("/toggle-favorite", toggleFavorite);
 router.get("/:userId/favorites", getFavoriteClasses);
 router.post("/enroll", enrollUserInClass);
 router.get("/:userId/enrolled-classes", getEnrolledClasses);
-router.put("/:_id", upload.single("image"), updateClass);
+router.put("/:classId", upload.single("image"), updateClass);
 router.delete("/delete-class", deleteClass);
 router.get("/instructor/:instructorId", getInstructorClasses);
 
