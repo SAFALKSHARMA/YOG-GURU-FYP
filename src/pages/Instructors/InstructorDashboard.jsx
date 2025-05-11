@@ -24,7 +24,7 @@ import {
   Title,
 } from "chart.js";
 import { AppContent } from "../../context/AppContext";
-import Sidebar from "./Sidebar"; // Import your sidebar component
+import Sidebar from "./Sidebar";
 
 ChartJS.register(
   ArcElement,
@@ -40,7 +40,7 @@ const InstructorDashboard = () => {
   const { instructorData } = useContext(AppContent);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true); // State for sidebar toggle
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     const fetchInstructorStats = async () => {
@@ -87,11 +87,11 @@ const InstructorDashboard = () => {
       {
         data: [
           dashboardData.recentBookings.filter((b) => b.status === "Approved")
-            .length || 1,
+            .length,
           dashboardData.recentBookings.filter((b) => b.status === "Pending")
-            .length || 0,
+            .length,
           dashboardData.recentBookings.filter((b) => b.status === "Cancelled")
-            .length || 0,
+            .length,
         ],
         backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
         borderWidth: 0,
@@ -99,27 +99,18 @@ const InstructorDashboard = () => {
     ],
   };
 
-  const studentClassesData = {
-    labels: ["Students", "Classes", "Bookings"],
+  const classCapacityData = {
+    labels: dashboardData.classes.map((cls) => cls.name),
     datasets: [
       {
-        label: "Count",
-        data: [
-          dashboardData.stats.totalStudents,
-          dashboardData.stats.totalClasses,
-          dashboardData.stats.totalBookings,
-        ],
-        backgroundColor: [
-          "rgba(54, 162, 235, 0.6)",
-          "rgba(153, 102, 255, 0.6)",
-          "rgba(255, 159, 64, 0.6)",
-        ],
-        borderColor: [
-          "rgb(54, 162, 235)",
-          "rgb(153, 102, 255)",
-          "rgb(255, 159, 64)",
-        ],
-        borderWidth: 1,
+        label: "Enrolled",
+        data: dashboardData.classes.map((cls) => cls.studentCount),
+        backgroundColor: "rgba(54, 162, 235, 0.6)",
+      },
+      {
+        label: "Capacity",
+        data: dashboardData.classes.map((cls) => cls.capacity),
+        backgroundColor: "rgba(255, 99, 132, 0.6)",
       },
     ],
   };
@@ -191,13 +182,11 @@ const InstructorDashboard = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      {/* Main Content */}
       <div
         className={`flex-1 overflow-auto transition-all duration-300 ${
           sidebarOpen ? "ml-19" : "ml-19"
@@ -242,10 +231,10 @@ const InstructorDashboard = () => {
               color="purple"
             />
             <StatCard
-              icon={User}
-              title="Recent Students"
-              value={dashboardData.stats.recentUsersCount}
-              color="indigo"
+              icon={CheckCircle}
+              title="Upcoming Classes"
+              value={dashboardData.stats.upcomingClasses}
+              color="orange"
             />
           </div>
 
@@ -260,33 +249,25 @@ const InstructorDashboard = () => {
                   plugins: {
                     legend: {
                       position: "bottom",
-                      labels: {
-                        boxWidth: 12,
-                        padding: 15,
-                      },
                     },
                   },
                 }}
               />
             </ChartCard>
 
-            <ChartCard title="Students & Classes" icon={BarChart}>
+            <ChartCard title="Class Capacity" icon={BarChart}>
               <Bar
-                data={studentClassesData}
+                data={classCapacityData}
                 options={{
                   responsive: true,
                   maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      display: false,
-                    },
-                  },
                   scales: {
+                    x: {
+                      stacked: true,
+                    },
                     y: {
+                      stacked: true,
                       beginAtZero: true,
-                      ticks: {
-                        precision: 0,
-                      },
                     },
                   },
                 }}
@@ -323,22 +304,6 @@ const InstructorDashboard = () => {
                   ),
                 },
                 {
-                  title: "Details",
-                  key: "details",
-                  render: (_, record) => (
-                    <div className="space-y-1">
-                      <div className="flex items-center text-sm">
-                        <Clock3 className="w-3 h-3 mr-1 text-gray-500" />
-                        {record.sessionDuration} mins
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <MapPin className="w-3 h-3 mr-1 text-gray-500" />
-                        {record.sessionLocation}
-                      </div>
-                    </div>
-                  ),
-                },
-                {
                   title: "Status",
                   dataIndex: "status",
                   key: "status",
@@ -352,7 +317,6 @@ const InstructorDashboard = () => {
                           : "bg-red-100 text-red-800"
                       }`}
                     >
-                      <CheckCircle className="w-3 h-3 inline mr-1" />
                       {status}
                     </span>
                   ),
@@ -363,7 +327,7 @@ const InstructorDashboard = () => {
             <Table
               title="Recent Students"
               icon={Users}
-              data={dashboardData.recentUsers}
+              data={dashboardData.recentStudents}
               columns={[
                 {
                   title: "Student",
@@ -371,37 +335,39 @@ const InstructorDashboard = () => {
                   render: (_, record) => (
                     <div className="flex items-center">
                       <img
-                        src={record.image}
-                        alt={record.name}
-                        className="w-7 h-7 rounded-full mr-2"
+                        src={record.user.image}
+                        alt={record.user.name}
+                        className="w-8 h-8 rounded-full mr-2"
                       />
                       <div>
-                        <div className="font-medium">{record.name}</div>
+                        <div className="font-medium">{record.user.name}</div>
                         <div className="text-xs text-gray-500">
-                          {record.email}
+                          {record.user.email}
                         </div>
                       </div>
                     </div>
                   ),
                 },
                 {
-                  title: "Joined",
-                  dataIndex: "createdAt",
-                  key: "createdAt",
-                  render: (date) => (
-                    <div className="flex items-center">
-                      <Calendar className="w-3 h-3 mr-1 text-gray-500" />
-                      {new Date(date).toLocaleDateString()}
+                  title: "Class",
+                  key: "class",
+                  render: (_, record) => (
+                    <div>
+                      <div>{record.class.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(record.class.date).toLocaleDateString()} at{" "}
+                        {record.class.time}
+                      </div>
                     </div>
                   ),
                 },
                 {
-                  title: "",
-                  key: "action",
-                  render: () => (
-                    <button className="text-blue-500 hover:text-blue-700">
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                  title: "Enrolled",
+                  key: "enrolledAt",
+                  render: (_, record) => (
+                    <div className="text-sm text-gray-500">
+                      {new Date(record.enrolledAt).toLocaleDateString()}
+                    </div>
                   ),
                 },
               ]}

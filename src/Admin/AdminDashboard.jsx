@@ -163,16 +163,23 @@ const AdminDashboard = () => {
   });
 
   const userDistributionData = createChartData(stats.breakdowns.userRoles, [
-    "#4f46e5",
-    "#10b981",
+    "#8b5cf6", // Purple 500 (for Admin)
+    "#10b981", // Green 500 (for User)
+    "#f59e0b", // Yellow 500 (for Instructor if exists)
   ]);
+
   const classStatusData = createChartData(stats.breakdowns.classStatuses, [
-    "#10b981",
-    "#f59e0b",
+    "#10b981", // Green 500 (for Approved)
+    "#f59e0b", // Yellow 500 (for Pending)
   ]);
+
   const applicationStatusData = createChartData(
     stats.breakdowns.applicationStatuses,
-    ["#10b981", "#f59e0b", "#ef4444"]
+    [
+      "#10b981", // Green 500 (for Approved)
+      "#f59e0b", // Yellow 500 (for Pending)
+      "#ef4444", // Red 500 (for Rejected)
+    ]
   );
 
   const chartOptions = {
@@ -383,13 +390,13 @@ const AdminDashboard = () => {
           />
           <StatCard
             icon={GraduationCap}
-            title="Students"
+            title="Enrolled Students"
             value={stats.totals.students}
             color="green"
           />
           <StatCard
             icon={BookOpen}
-            title="Classes"
+            title="Approved Classes"
             value={stats.totals.classes}
             color="purple"
           />
@@ -422,14 +429,14 @@ const AdminDashboard = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6 align-middle ">
           <ChartCard title="User Distribution" icon={PieChart}>
             <Pie data={userDistributionData} options={chartOptions} />
           </ChartCard>
           <ChartCard title="Class Status" icon={PieChart}>
             <Pie data={classStatusData} options={chartOptions} />
           </ChartCard>
-          <ChartCard title="Application Status" icon={PieChart}>
+          <ChartCard title="Instructor Application Status" icon={PieChart}>
             <Pie data={applicationStatusData} options={chartOptions} />
           </ChartCard>
         </div>

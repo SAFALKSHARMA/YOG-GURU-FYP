@@ -5,18 +5,139 @@ import {
   Trash2,
   Tag,
   FileText,
-  Layers,
-  DollarSign,
   Package,
-  Images,
-  BookOpen,
-  Palette,
-  Feather,
   Upload,
-  Image,
+  X,
 } from "lucide-react";
-import { TextInput, SelectInput, NumberInput } from "../ui/InputComponents";
-import Sidebar from "./Sidebar";
+
+const TextInput = ({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  error,
+  required,
+  textarea,
+  icon: Icon,
+}) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <div className="relative">
+      {Icon && (
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+          <Icon size={16} />
+        </div>
+      )}
+      {textarea ? (
+        <textarea
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required={required}
+          className={`w-full border ${
+            error ? "border-red-300" : "border-gray-300"
+          } rounded-lg py-2 px-3 ${
+            Icon ? "pl-10" : ""
+          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+          rows={4}
+        />
+      ) : (
+        <input
+          type="text"
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required={required}
+          className={`w-full border ${
+            error ? "border-red-300" : "border-gray-300"
+          } rounded-lg py-2 px-3 ${
+            Icon ? "pl-10" : ""
+          } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+        />
+      )}
+    </div>
+    {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+  </div>
+);
+
+const NumberInput = ({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder,
+  error,
+  required,
+  currency,
+  step,
+  icon: Icon,
+}) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <div className="relative">
+      {Icon && (
+        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+          <Icon size={16} />
+        </div>
+      )}
+      <input
+        type="number"
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={required}
+        step={step}
+        className={`w-full border ${
+          error ? "border-red-300" : "border-gray-300"
+        } rounded-lg py-2 px-3 ${
+          Icon ? "pl-10" : ""
+        } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+      />
+    </div>
+    {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+  </div>
+);
+
+const SelectInput = ({
+  label,
+  name,
+  value,
+  onChange,
+  options,
+  error,
+  required,
+}) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <select
+      name={name}
+      value={value}
+      onChange={onChange}
+      required={required}
+      className={`w-full border ${
+        error ? "border-red-300" : "border-gray-300"
+      } rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+    >
+      <option value="">Select {label}</option>
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+    {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+  </div>
+);
 
 const FileUploadInput = ({
   images,
@@ -30,53 +151,42 @@ const FileUploadInput = ({
   const handleChange = (index, files) => {
     if (files && files[0]) {
       const file = files[0];
-      // Update previews
       const newPreviews = [...previews];
       newPreviews[index] = URL.createObjectURL(file);
       setPreviews(newPreviews);
-
-      // Pass file to parent component
       handleFileChange(index, file);
     }
   };
 
   return (
     <div className="space-y-3">
-      {images.map((_, index) => (
-        <div key={index} className="flex items-start">
-          <div className="flex-grow">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-indigo-500 transition-colors">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {images.map((_, index) => (
+          <div key={index} className="relative">
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
               {previews[index] ? (
                 <div className="relative">
-                  <div className="mb-2 max-w-xs mx-auto">
-                    <img
-                      src={previews[index]}
-                      alt="Preview"
-                      className="h-32 object-contain mx-auto rounded"
-                    />
+                  <img
+                    src={previews[index]}
+                    alt="Preview"
+                    className="h-40 w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <label className="cursor-pointer bg-white rounded-full p-2 text-blue-600 hover:text-blue-800">
+                      <Upload size={20} />
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => handleChange(index, e.target.files)}
+                      />
+                    </label>
                   </div>
-                  <label className="cursor-pointer text-sm text-indigo-600 hover:text-indigo-800 flex items-center justify-center">
-                    <Upload size={16} className="mr-1" />
-                    Change image
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={(e) => handleChange(index, e.target.files)}
-                    />
-                  </label>
                 </div>
               ) : (
-                <label className="cursor-pointer">
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">
-                      Click to upload image
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      PNG, JPG, GIF up to 10MB
-                    </p>
-                  </div>
+                <label className="flex flex-col items-center justify-center h-40 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500">Upload image</p>
                   <input
                     type="file"
                     className="hidden"
@@ -86,35 +196,29 @@ const FileUploadInput = ({
                 </label>
               )}
             </div>
+            {images.length > 1 && (
+              <button
+                type="button"
+                onClick={() => removeImageField(index)}
+                className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md text-red-500 hover:text-red-700 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
-          <button
-            type="button"
-            onClick={() => removeImageField(index)}
-            disabled={images.length === 1}
-            className={`ml-2 p-2 rounded-lg ${
-              images.length === 1
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-red-100 text-red-600 hover:bg-red-200"
-            } transition-colors`}
-          >
-            <Trash2 size={18} />
-          </button>
-        </div>
-      ))}
-      {error && (
-        <p className="mt-1 text-sm text-red-600 flex items-center">
-          <Trash2 size={14} className="mr-1" />
-          {error}
-        </p>
-      )}
+        ))}
 
-      <button
-        type="button"
-        onClick={addImageField}
-        className="mt-2 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-indigo-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-      >
-        <PlusCircle className="mr-2" size={18} /> Add Another Image
-      </button>
+        <button
+          type="button"
+          onClick={addImageField}
+          className="flex flex-col items-center justify-center h-40 border border-dashed border-gray-300 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+        >
+          <PlusCircle className="h-8 w-8 text-blue-500 mb-2" />
+          <p className="text-sm text-gray-500">Add image</p>
+        </button>
+      </div>
+
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 };
@@ -320,140 +424,122 @@ const AdminShop = () => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-5xl mx-auto py-8 px-4">
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-800">Add New Product</h1>
+          <p className="text-gray-500">
+            Create a new yoga accessory in your inventory
+          </p>
+        </header>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="bg-gradient-to-br from-purple-50 to-blue-50 min-h-screen p-4 md:p-8">
-          <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
-            <div className="bg-indigo-600 p-6 text-white">
-              <h1 className="text-2xl font-bold flex items-center">
-                <Package className="mr-2" size={24} /> Add New Yoga Accessory
-              </h1>
-              <p className="mt-1 text-indigo-100">
-                Fill in the details to add a new item to your inventory
-              </p>
+        {successMessage && (
+          <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded">
+            {successMessage}
+          </div>
+        )}
+
+        {errors.submit && (
+          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
+            {errors.submit}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+            <div className="p-6">
+              <h2 className="text-lg font-medium text-gray-800 mb-4">
+                Basic Information
+              </h2>
+              <div className="space-y-4">
+                <TextInput
+                  label="Product Name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="Yoga Mat Premium"
+                  error={errors.name}
+                  required
+                  icon={Tag}
+                />
+
+                <TextInput
+                  label="Description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="A premium quality yoga mat with extra cushioning..."
+                  error={errors.description}
+                  required
+                  textarea
+                  icon={FileText}
+                />
+
+                <SelectInput
+                  label="Category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  options={categoryOptions}
+                  error={errors.category}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-lg font-medium text-gray-800 mb-4">
+                  Pricing & Inventory
+                </h2>
+                <div className="space-y-4">
+                  <NumberInput
+                    label="Price ($)"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    placeholder="29.99"
+                    error={errors.price}
+                    required
+                    step="0.01"
+                  />
+
+                  <NumberInput
+                    label="Stock Quantity"
+                    name="stock"
+                    value={formData.stock}
+                    onChange={handleChange}
+                    placeholder="100"
+                    error={errors.stock}
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="p-6 md:p-8">
-              {successMessage && (
-                <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-md flex items-center">
-                  <PlusCircle className="mr-3 text-green-500" size={20} />
-                  <span>{successMessage}</span>
-                </div>
-              )}
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-lg font-medium text-gray-800 mb-4">
+                  Product Details
+                </h2>
+                <div className="space-y-4">
+                  <TextInput
+                    label="Brand"
+                    name="brand"
+                    value={formData.brand}
+                    onChange={handleChange}
+                    placeholder="YogaEssentials"
+                  />
 
-              {errors.submit && (
-                <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md flex items-center">
-                  <Trash2 className="mr-3 text-red-500" size={20} />
-                  <span>{errors.submit}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Basic Information Section */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h2 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                    <BookOpen className="mr-2 text-indigo-500" size={20} />{" "}
-                    Basic Information
-                  </h2>
-
-                  <div className="space-y-4">
-                    <TextInput
-                      label="Name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Yoga Mat Premium"
-                      error={errors.name}
-                      required
-                      icon={Tag}
-                    />
-
-                    <TextInput
-                      label="Description"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      placeholder="A premium quality yoga mat with extra cushioning for comfort..."
-                      error={errors.description}
-                      required
-                      textarea
-                      icon={FileText}
-                    />
-
-                    <SelectInput
-                      label="Category"
-                      name="category"
-                      value={formData.category}
-                      onChange={handleChange}
-                      options={categoryOptions}
-                      error={errors.category}
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Inventory Section */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h2 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                    <Package className="mr-2 text-indigo-500" size={20} />{" "}
-                    Inventory Details
-                  </h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <NumberInput
-                      label="Price"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleChange}
-                      placeholder="29.99"
-                      error={errors.price}
-                      required
-                      currency
-                      step="0.01"
-                      icon={DollarSign}
-                    />
-
-                    <NumberInput
-                      label="Stock"
-                      name="stock"
-                      value={formData.stock}
-                      onChange={handleChange}
-                      placeholder="100"
-                      error={errors.stock}
-                      required
-                      icon={Package}
-                    />
-                  </div>
-                </div>
-
-                {/* Product Details Section */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h2 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                    <Feather className="mr-2 text-indigo-500" size={20} />{" "}
-                    Product Details
-                  </h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <TextInput
-                      label="Brand"
-                      name="brand"
-                      value={formData.brand}
-                      onChange={handleChange}
-                      placeholder="YogaEssentials"
-                      icon={Tag}
-                    />
-
+                  <div className="grid grid-cols-2 gap-4">
                     <TextInput
                       label="Color"
                       name="color"
                       value={formData.color}
                       onChange={handleChange}
                       placeholder="Purple"
-                      icon={Palette}
                     />
 
                     <TextInput
@@ -462,78 +548,70 @@ const AdminShop = () => {
                       value={formData.material}
                       onChange={handleChange}
                       placeholder="TPE Foam"
-                      icon={Layers}
                     />
                   </div>
                 </div>
-
-                {/* Images Section */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h2 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                    <Images className="mr-2 text-indigo-500" size={20} />{" "}
-                    Product Images
-                  </h2>
-
-                  <div className="mb-2 flex items-center text-sm font-medium text-gray-700">
-                    <Image className="mr-2 text-indigo-500" size={16} /> Images{" "}
-                    <span className="text-red-500 ml-1">*</span>
-                  </div>
-
-                  <FileUploadInput
-                    images={formData.imageFiles}
-                    handleFileChange={handleFileChange}
-                    addImageField={addImageField}
-                    removeImageField={removeImageField}
-                    error={errors.images}
-                  />
-                </div>
-
-                {/* Submit Button */}
-                <div className="pt-4">
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`w-full py-3 px-4 flex items-center justify-center border border-transparent rounded-lg shadow-sm text-white bg-indigo-600 ${
-                      isSubmitting
-                        ? "opacity-70 cursor-not-allowed"
-                        : "hover:bg-indigo-700"
-                    } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors`}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <svg
-                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Adding Product...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2" size={20} /> Add Yoga Accessory
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
+              </div>
             </div>
           </div>
-        </div>
+
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+            <div className="p-6">
+              <h2 className="text-lg font-medium text-gray-800 mb-4">
+                Product Images
+              </h2>
+              <FileUploadInput
+                images={formData.imageFiles}
+                handleFileChange={handleFileChange}
+                addImageField={addImageField}
+                removeImageField={removeImageField}
+                error={errors.images}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`px-6 py-2 rounded-lg font-medium flex items-center ${
+                isSubmitting
+                  ? "bg-gray-300 text-gray-700 cursor-not-allowed"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              } transition-colors`}
+            >
+              {isSubmitting ? (
+                <>
+                  <svg
+                    className="animate-spin mr-2 h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2" size={16} /> Save Product
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

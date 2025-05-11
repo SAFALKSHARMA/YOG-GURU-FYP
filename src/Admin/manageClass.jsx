@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  BookOutlined,
+  ReadOutlined,
   EyeOutlined,
   CheckOutlined,
   CloseOutlined,
@@ -12,6 +12,7 @@ import {
   ClockCircleOutlined,
   UserOutlined,
   TeamOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
 import {
   Table,
@@ -24,15 +25,12 @@ import {
   Menu,
   Modal,
   Spin,
-  Alert,
-  DatePicker,
+  Empty,
   Card,
-  Divider,
 } from "antd";
 import Sidebar from "./Sidebar";
 import ClassDetailsModal from "./classModal";
 
-const { Search } = Input;
 const { Option } = Select;
 
 const ManageClass = () => {
@@ -161,7 +159,7 @@ const ManageClass = () => {
       key: "className",
       render: (text) => (
         <div className="flex items-center">
-          <BookOutlined className="mr-2 text-blue-500" />
+          <ReadOutlined className="mr-2 text-purple-600" />
           <span>{text}</span>
         </div>
       ),
@@ -250,73 +248,68 @@ const ManageClass = () => {
         <Sidebar />
       </div>
 
-      <div className="flex-1 p-6">
-        <Card
-          title={
-            <div className="flex items-center">
-              <BookOutlined className="mr-3 text-blue-500" />
-              <span className="text-xl font-semibold">Class Applications</span>
-            </div>
-          }
-          extra={
-            <Button
-              icon={<ReloadOutlined />}
-              loading={loading}
-              onClick={fetchClasses}
-            >
-              Refresh
-            </Button>
-          }
-          className="mb-6"
-        >
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <Search
-              placeholder="Search classes or instructors..."
-              prefix={<SearchOutlined />}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full md:w-64"
-            />
+      <div className="flex-1 p-6 overflow-auto">
+        <Card className="shadow-sm rounded-xl">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center mb-4 md:mb-0">
+              <ReadOutlined className="mr-3 text-purple-600" />
+              Class Applications
+            </h1>
 
-            <Select
-              placeholder="Filter by status"
-              prefix={<FilterOutlined />}
-              value={statusFilter}
-              onChange={(value) => setStatusFilter(value)}
-              className="w-full md:w-40"
-            >
-              <Option value="All">All Status</Option>
-              <Option value="Pending">Pending</Option>
-              <Option value="Approved">Approved</Option>
-              <Option value="Rejected">Rejected</Option>
-            </Select>
+            <div className="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3 w-full md:w-auto">
+              <Input
+                placeholder="Search classes..."
+                prefix={<SearchOutlined className="text-gray-400" />}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full md:w-64"
+              />
+              <Select
+                value={statusFilter}
+                onChange={setStatusFilter}
+                suffixIcon={<FilterOutlined className="text-gray-400" />}
+                className="w-full md:w-40"
+              >
+                <Option value="All">All Status</Option>
+                <Option value="Pending">Pending</Option>
+                <Option value="Approved">Approved</Option>
+                <Option value="Rejected">Rejected</Option>
+              </Select>
+              <Button
+                icon={<ReloadOutlined spin={loading} />}
+                onClick={fetchClasses}
+                disabled={loading}
+                className="flex items-center"
+              >
+                Refresh
+              </Button>
+            </div>
           </div>
 
           {loading && (
             <div className="flex justify-center items-center py-12">
-              <Spin indicator={<ReloadOutlined spin />} />
-              <span className="ml-3">Loading classes...</span>
+              <Spin
+                indicator={
+                  <ReloadOutlined spin className="text-gray-600 text-2xl" />
+                }
+              />
+              <span className="ml-3 text-gray-600">Loading classes...</span>
             </div>
           )}
 
           {error && (
-            <Alert
-              message="Error"
-              description={error}
-              type="error"
-              showIcon
-              closable
-              onClose={() => setError(null)}
-            />
+            <div className="bg-red-50 p-4 rounded-lg flex items-center text-red-600">
+              <CloseCircleOutlined className="mr-3" />
+              <p>{error}</p>
+            </div>
           )}
 
           {!loading && !error && filteredClasses.length === 0 && (
-            <div className="text-center py-12">
-              <BookOutlined className="text-4xl mb-3 text-gray-400" />
-              <p className="text-gray-500">
-                No classes found matching your criteria.
-              </p>
-            </div>
+            <Empty
+              image={<ReadOutlined className="text-4xl text-gray-400" />}
+              description="No classes found"
+              className="py-12"
+            />
           )}
 
           {!loading && !error && filteredClasses.length > 0 && (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   MoreOutlined,
   SearchOutlined,
@@ -8,6 +8,8 @@ import {
   StopOutlined,
   CloseOutlined,
   ExclamationCircleOutlined,
+  FilterOutlined,
+  ReadOutlined,
 } from "@ant-design/icons";
 import {
   Table,
@@ -22,11 +24,13 @@ import {
   message,
   Spin,
   Empty,
-  Alert,
+  Card,
+  Select,
 } from "antd";
 import Sidebar from "./Sidebar";
 
 const { TextArea } = Input;
+const { Option } = Select;
 const { confirm } = Modal;
 
 const ManageUsers = () => {
@@ -38,6 +42,7 @@ const ManageUsers = () => {
   const [showBanModal, setShowBanModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -47,8 +52,8 @@ const ManageUsers = () => {
       const data = await response.json();
       const usersWithStatus = data.users.map((user) => ({
         ...user,
-        status: user.status || "Active",
-        banReason: user.banReason || "",
+        status: user.banInfo?.isBanned ? "Banned" : "Active",
+        banReason: user.banInfo?.banReason || "",
       }));
       setUsers(usersWithStatus);
     } catch (err) {
@@ -96,7 +101,10 @@ const ManageUsers = () => {
   };
 
   const handleBan = async () => {
-    if (!banReason) return;
+    if (!banReason) {
+      message.error("Please provide a ban reason");
+      return;
+    }
     setIsUpdating(true);
     try {
       const res = await fetch(
@@ -158,11 +166,16 @@ const ManageUsers = () => {
     }
   };
 
-  const filteredUsers = users.filter(
-    (user) =>
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "All" || user.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const columns = [
     {
@@ -191,17 +204,15 @@ const ManageUsers = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (_, record) => (
-        <Tag color={record.banInfo?.isBanned ? "error" : "success"}>
-          {record.banInfo?.isBanned ? "Banned" : "Active"}
-        </Tag>
+      render: (status) => (
+        <Tag color={status === "Banned" ? "error" : "success"}>{status}</Tag>
       ),
     },
     {
       title: "Ban Reason",
       dataIndex: "banReason",
       key: "banReason",
-      render: (_, record) => record.banInfo?.banReason || "-",
+      render: (reason) => reason || "-",
     },
     {
       title: "Actions",
@@ -209,7 +220,7 @@ const ManageUsers = () => {
       align: "right",
       render: (_, record) => (
         <Space>
-          {record.banInfo?.isBanned ? (
+          {record.status === "Banned" ? (
             <Button
               onClick={() => handleUnban(record._id)}
               loading={isUpdating}
@@ -252,26 +263,37 @@ const ManageUsers = () => {
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-      <div className="flex-1 p-6">
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div className="flex-1 p-6 overflow-auto">
+        <Card className="shadow-sm rounded-xl">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center mb-4 md:mb-0">
-              <UserOutlined className="mr-3 text-gray-600" />
+              <ReadOutlined className="mr-3 text-purple-600" />
               Manage Users
             </h1>
 
-            <div className="flex space-x-3 w-full md:w-auto">
+            <div className="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3 w-full md:w-auto">
               <Input
-                placeholder="Search by name or email..."
-                prefix={<SearchOutlined />}
+                placeholder="Search users..."
+                prefix={<SearchOutlined className="text-gray-400" />}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full md:w-64"
               />
+              <Select
+                value={statusFilter}
+                onChange={setStatusFilter}
+                suffixIcon={<FilterOutlined className="text-gray-400" />}
+                className="w-full md:w-40"
+              >
+                <Option value="All">All Status</Option>
+                <Option value="Active">Active</Option>
+                <Option value="Banned">Banned</Option>
+              </Select>
               <Button
+                icon={<ReloadOutlined spin={loading} />}
                 onClick={fetchUsers}
-                loading={loading}
-                icon={<ReloadOutlined />}
+                disabled={loading}
+                className="flex items-center"
               >
                 Refresh
               </Button>
@@ -280,27 +302,25 @@ const ManageUsers = () => {
 
           {loading && (
             <div className="flex justify-center items-center py-12">
-              <Spin indicator={<ReloadOutlined spin />} />
+              <Spin
+                indicator={
+                  <ReloadOutlined spin className="text-gray-600 text-2xl" />
+                }
+              />
               <span className="ml-3 text-gray-600">Loading users...</span>
             </div>
           )}
 
           {error && (
-            <Alert
-              message="Error"
-              description={error}
-              type="error"
-              showIcon
-              closable
-              className="mb-4"
-            />
+            <div className="bg-red-50 p-4 rounded-lg flex items-center text-red-600">
+              <CloseOutlined className="mr-3" />
+              <p>{error}</p>
+            </div>
           )}
 
           {!loading && !error && filteredUsers.length === 0 && (
             <Empty
-              image={
-                <UserOutlined style={{ fontSize: 48, color: "#bfbfbf" }} />
-              }
+              image={<UserOutlined className="text-4xl text-gray-400" />}
               description="No users found"
               className="py-12"
             />
@@ -315,45 +335,45 @@ const ManageUsers = () => {
               scroll={{ x: true }}
             />
           )}
-        </div>
-      </div>
+        </Card>
 
-      <Modal
-        title="Ban User"
-        visible={showBanModal}
-        onCancel={() => {
-          setShowBanModal(false);
-          setBanReason("");
-        }}
-        footer={[
-          <Button
-            key="cancel"
-            onClick={() => {
-              setShowBanModal(false);
-              setBanReason("");
-            }}
-          >
-            Cancel
-          </Button>,
-          <Button
-            key="ban"
-            type="primary"
-            danger
-            onClick={handleBan}
-            disabled={!banReason || isUpdating}
-            loading={isUpdating}
-          >
-            Confirm Ban
-          </Button>,
-        ]}
-      >
-        <TextArea
-          value={banReason}
-          onChange={(e) => setBanReason(e.target.value)}
-          placeholder="Enter ban reason..."
-          rows={4}
-        />
-      </Modal>
+        <Modal
+          title="Ban User"
+          visible={showBanModal}
+          onCancel={() => {
+            setShowBanModal(false);
+            setBanReason("");
+          }}
+          footer={[
+            <Button
+              key="cancel"
+              onClick={() => {
+                setShowBanModal(false);
+                setBanReason("");
+              }}
+            >
+              Cancel
+            </Button>,
+            <Button
+              key="ban"
+              type="primary"
+              danger
+              onClick={handleBan}
+              disabled={!banReason || isUpdating}
+              loading={isUpdating}
+            >
+              Confirm Ban
+            </Button>,
+          ]}
+        >
+          <TextArea
+            value={banReason}
+            onChange={(e) => setBanReason(e.target.value)}
+            placeholder="Enter ban reason..."
+            rows={4}
+          />
+        </Modal>
+      </div>
     </div>
   );
 };

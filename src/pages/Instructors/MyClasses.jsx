@@ -1,32 +1,51 @@
 import React, { useState, useContext, useEffect } from "react";
 import {
-  BookOpen,
-  Search,
-  Filter,
-  Briefcase,
-  Calendar,
-  Clock,
-  Users,
-  Eye,
-} from "lucide-react";
-import Sidebar from "./Sidebar";
-import ClassDetailsModal from "../../Admin/classModal";
-import { AppContent } from "../../context/AppContext";
-import Table from "../../ui/Table";
-import { toast } from "react-toastify";
-import ConfirmationModal from "../../ui/ConfirmationModal";
+  BookOutlined,
+  SearchOutlined,
+  ShoppingOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  TeamOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
+import {
+  Table,
+  Input,
+  Select,
+  Button,
+  Modal,
+  Form,
+  DatePicker,
+  TimePicker,
+  Card,
+  Tag,
+  Space,
+  message,
+  Popconfirm,
+  Divider,
+  Descriptions,
+  Image,
+} from "antd";
+import Sidebar from "./Sidebar"; // Adjust path as needed
+import { AppContent } from "../../context/AppContext"; // Adjust path as needed
+import moment from "moment";
+
+const { Option } = Select;
+const { TextArea } = Input;
 
 const MyClasses = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedClass, setSelectedClass] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const { instructorData, setInstructorData } = useContext(AppContent);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [classToDelete, setClassToDelete] = useState(null);
   const [classes, setClasses] = useState([]);
+  const [form] = Form.useForm();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentClass, setCurrentClass] = useState(null);
 
+  // Fetch classes when instructorData._id changes
   useEffect(() => {
     const fetchClasses = async () => {
       if (!instructorData?._id) return;
@@ -40,12 +59,7 @@ const MyClasses = () => {
           throw new Error(errorData.message || "Failed to fetch classes");
         }
         const data = await response.json();
-        console.log(data);
-
-        // Corrected: Access the classes array from the response object
         setClasses(Array.isArray(data.classes) ? data.classes : []);
-
-        // Optional: Update instructorData if needed
         if (setInstructorData) {
           setInstructorData((prev) => ({
             ...prev,
@@ -54,7 +68,7 @@ const MyClasses = () => {
         }
       } catch (err) {
         setError(err.message);
-        toast.error("Failed to load classes");
+        message.error("Failed to load classes");
       } finally {
         setLoading(false);
       }
@@ -62,69 +76,114 @@ const MyClasses = () => {
     fetchClasses();
   }, [instructorData?._id, setInstructorData]);
 
-  const handleViewClassDetails = (classItem) => setSelectedClass(classItem);
-  const handleCloseModal = () => setSelectedClass(null);
+  // Handle clicking View button
+  const handleViewClassDetails = (classItem) => {
+    setCurrentClass(classItem);
+    const { image, ...formValues } = classItem;
+    form.setFieldsValue({
+      ...formValues,
+      date: classItem.date ? moment(classItem.date) : null,
+      time: classItem.time ? moment(classItem.time, "HH:mm") : null,
+    });
+    setIsModalVisible(true);
+  };
 
-  const handleUpdateClass = async (formData) => {
-    setLoading(true);
-    setError(null);
-    const classId = formData.get("_id");
+  // Handle modal cancel
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setCurrentClass(null);
+    form.resetFields();
+  };
+
+  const handleUpdateClass = async () => {
     try {
-      if (instructorData?._id && !formData.get("instructorId")) {
-        formData.append("instructorId", instructorData._id);
-      }
-      const response = await fetch(
-        `http://localhost:3000/api/classes/${classId}`,
-        {
-          method: "PUT",
-          body: formData,
+      const values = await form.validateFields();
+      setLoading(true);
+      setError(null);
+
+      const formData = new FormData();
+      Object.keys(values).forEach((key) => {
+        if (key === "date" && values[key]) {
+          formData.append(key, values[key].format("YYYY-MM-DD"));
+        } else if (key === "time" && values[key]) {
+          formData.append(key, values[key].format("HH:mm"));
+        } else if (key === "image" && values[key]?.file) {
+          formData.append(key, values[key].file);
+        } else if (values[key] !== undefined) {
+          formData.append(key, values[key]);
         }
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update class");
+      });
+
+      if (currentClass?._id) {
+        formData.append("_id", currentClass._id);
+        if (instructorData?._id && !formData.get("instructorId")) {
+          formData.append("instructorId", instructorData._id);
+        }
+
+        // Debug: log all formData entries before sending
+        console.log("FormData being sent:");
+        for (const [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
+
+        const response = await fetch(
+          `http://localhost:3000/api/classes/${currentClass._id}`,
+          {
+            method: "PUT",
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to update class");
+        }
+
+        const { class: updatedClass } = await response.json();
+        setClasses((prev) =>
+          prev.map((cls) => (cls._id === updatedClass._id ? updatedClass : cls))
+        );
+
+        if (setInstructorData) {
+          setInstructorData((prev) => ({
+            ...prev,
+            classes: prev.classes.map((cls) =>
+              cls._id === updatedClass._id ? updatedClass : cls
+            ),
+          }));
+        }
+
+        message.success("Class updated successfully!");
       }
-      const { updatedClass } = await response.json();
-      setClasses((prev) =>
-        prev.map((cls) => (cls._id === updatedClass._id ? updatedClass : cls))
-      );
-      if (setInstructorData) {
-        setInstructorData((prev) => ({
-          ...prev,
-          classes: prev.classes.map((cls) =>
-            cls._id === updatedClass._id ? updatedClass : cls
-          ),
-        }));
-      }
-      setSelectedClass(null);
-      toast.success("Class updated successfully!");
+
+      setIsModalVisible(false);
+      setCurrentClass(null);
+      form.resetFields();
     } catch (err) {
       setError(err.message);
-      toast.error(err.message);
+      message.error(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const initiateDeleteClass = (classItem) => {
-    if (!classItem?._id) return toast.error("Class ID is missing");
-    setClassToDelete(classItem);
-    setDeleteModalOpen(true);
-  };
-
-  const handleDeleteClass = async () => {
-    if (!classToDelete?._id) return toast.error("Class ID is missing");
+  // Handle deleting a class
+  const handleDeleteClass = async (classId) => {
+    if (!classId || !instructorData?._id) {
+      message.error("Invalid class or instructor ID");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:3000/api/classes/delete-class`,
+        `http://localhost:3000蕴/api/classes/delete-class`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            classId: classToDelete._id,
-            instructorId: instructorData?._id,
+            classId,
+            instructorId: instructorData._id,
           }),
         }
       );
@@ -132,30 +191,23 @@ const MyClasses = () => {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to delete class");
       }
-      setClasses((prev) => prev.filter((cls) => cls._id !== classToDelete._id));
+      setClasses((prev) => prev.filter((cls) => cls._id !== classId));
       if (setInstructorData) {
         setInstructorData((prev) => ({
           ...prev,
-          classes: prev.classes.filter((cls) => cls._id !== classToDelete._id),
+          classes: prev.classes.filter((cls) => cls._id !== classId),
         }));
       }
-      toast.success("Class deleted successfully!");
-      setSelectedClass(null);
+      message.success("Class deleted successfully!");
     } catch (err) {
       setError(err.message);
-      toast.error(err.message);
+      message.error(err.message);
     } finally {
       setLoading(false);
-      setDeleteModalOpen(false);
-      setClassToDelete(null);
     }
   };
 
-  const handleCancelDelete = () => {
-    setDeleteModalOpen(false);
-    setClassToDelete(null);
-  };
-
+  // Filter classes based on search term and status
   const filteredClasses = classes.filter((classItem) => {
     const matchesSearch =
       typeof classItem.className === "string" &&
@@ -165,153 +217,292 @@ const MyClasses = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // Table columns
   const columns = [
     {
-      key: "className",
       title: "Class",
-      sortable: true,
-      render: (item) => (
+      dataIndex: "className",
+      key: "className",
+      render: (text) => (
         <div className="flex items-center">
-          <Briefcase size={16} className="text-purple-500 mr-2" />
-          <span className="font-medium">{item.className}</span>
+          <ShoppingOutlined className="mr-2" />
+          <span className="font-medium">{text}</span>
         </div>
       ),
+      sorter: (a, b) => a.className.localeCompare(b.className),
     },
     {
-      key: "date",
       title: "Schedule",
-      sortable: true,
-      render: (item) => (
-        <div className="space-y-1">
-          <div className="flex items-center text-gray-700">
-            <Calendar size={14} className="mr-2 text-gray-400" />
-            {new Date(item.date).toLocaleDateString("en-US", {
+      key: "schedule",
+      render: (record) => (
+        <Space direction="vertical" size={0}>
+          <div className="flex items-center">
+            <CalendarOutlined className="mr-2" />
+            {new Date(record.date).toLocaleDateString("en-US", {
               year: "numeric",
               month: "short",
               day: "numeric",
             })}
           </div>
-          <div className="flex items-center text-gray-700">
-            <Clock size={14} className="mr-2 text-gray-400" />
-            {item.time}
+          <div className="flex items-center">
+            <ClockCircleOutlined className="mr-2" />
+            {record.time}
           </div>
-        </div>
+        </Space>
       ),
+      sorter: (a, b) => new Date(a.date) - new Date(b.date),
     },
     {
-      key: "capacity",
       title: "Capacity",
-      sortable: true,
-      render: (item) => (
+      dataIndex: "capacity",
+      key: "capacity",
+      render: (text) => (
         <div className="flex items-center">
-          <Users size={16} className="mr-2 text-gray-400" />
-          <span>{item.capacity}</span>
+          <TeamOutlined className="mr-2" />
+          <span>{text}</span>
           <span className="text-gray-500 ml-1">seats</span>
         </div>
       ),
+      sorter: (a, b) => a.capacity - b.capacity,
     },
     {
-      key: "status",
       title: "Status",
-      sortable: true,
-      render: (item) => (
-        <span
-          className={`px-3 py-1 rounded-full text-white text-xs font-medium ${
-            item.status === "Approved"
-              ? "bg-green-500"
-              : item.status === "Rejected"
-              ? "bg-red-500"
-              : "bg-amber-500"
-          }`}
-        >
-          {item.status || "Pending"}
-        </span>
-      ),
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        let color = "default";
+        if (status === "Approved") color = "green";
+        else if (status === "Rejected") color = "red";
+        else if (status === "Pending") color = "orange";
+        return <Tag color={color}>{status || "Pending"}</Tag>;
+      },
+      sorter: (a, b) => a.status.localeCompare(b.status),
     },
-  ];
-
-  const rowActions = (item) => [
     {
-      label: "View Details",
-      icon: <Eye size={16} className="text-blue-500" />,
-      onClick: () => handleViewClassDetails(item),
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Space size="middle">
+          <Button
+            type="text"
+            icon={<EyeOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewClassDetails(record);
+            }}
+          />
+          <Popconfirm
+            title="Are you sure to delete this class?"
+            onConfirm={() => handleDeleteClass(record._id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </Popconfirm>
+        </Space>
+      ),
     },
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen bg-gray-50">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 p-6 lg:ml-8">
-        <div className="mb-12">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800 flex items-center mb-4 md:mb-0">
-              <BookOpen className="mr-3 text-purple-600" size={28} />
-              My Classes
-            </h1>
-            <div className="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3 w-full md:w-auto">
-              <div className="relative flex-grow md:flex-grow-0 md:w-64">
-                <Search
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={18}
-                />
-                <input
-                  type="text"
-                  placeholder="Search my classes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-              </div>
-              <div className="relative flex-grow md:flex-grow-0 md:w-40">
-                <Filter
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  size={18}
-                />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-200 rounded-lg w-full appearance-none focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="All">All Status</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
-              </div>
+        <Card
+          title={
+            <div className="flex items-center">
+              <BookOutlined className="mr-3" />
+              <span>My Classes</span>
             </div>
+          }
+        >
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <Input
+              placeholder="Search classes..."
+              prefix={<SearchOutlined />}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full md:w-64"
+            />
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              className="w-full md:w-40"
+              suffixIcon={<SearchOutlined />}
+            >
+              <Option value="All">All Status</Option>
+              <Option value="Pending">Pending</Option>
+              <Option value="Approved">Approved</Option>
+              <Option value="Rejected">Rejected</Option>
+            </Select>
           </div>
+
           <Table
             columns={columns}
-            data={filteredClasses}
+            dataSource={filteredClasses}
             loading={loading}
-            error={error}
-            emptyState={{
-              icon: <BookOpen size={40} />,
-              message: "No classes found matching your criteria.",
+            rowKey="_id"
+            locale={{
+              emptyText: (
+                <div className="flex flex-col items-center py-8">
+                  <BookOutlined className="text-4xl mb-4 text-gray-400" />
+                  <p className="text-gray-500">No classes found</p>
+                </div>
+              ),
             }}
-            onRowClick={handleViewClassDetails}
-            rowActions={rowActions}
+            onRow={(record) => ({
+              onClick: (e) => {
+                if (
+                  !(
+                    e.target.closest(".ant-btn") ||
+                    e.target.closest(".ant-popconfirm")
+                  )
+                ) {
+                  handleViewClassDetails(record);
+                }
+              },
+            })}
           />
-        </div>
+        </Card>
       </div>
-      {selectedClass && (
-        <ClassDetailsModal
-          selectedClass={selectedClass}
-          handleCloseModal={handleCloseModal}
-          onSaveChanges={handleUpdateClass}
-          onDeleteClass={initiateDeleteClass}
-        />
-      )}
-      <ConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={handleCancelDelete}
-        onConfirm={handleDeleteClass}
-        title="Delete Class"
-        message={`Are you sure you want to delete the class "${classToDelete?.className}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="error"
-      />
+
+      <Modal
+        title="Class Details"
+        open={isModalVisible}
+        onCancel={handleCancel}
+        width={800}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Cancel
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={loading}
+            onClick={handleUpdateClass}
+          >
+            Update
+          </Button>,
+        ]}
+      >
+        <Form form={form} layout="vertical">
+          <Descriptions bordered column={1} size="small" className="mb-6">
+            <Descriptions.Item label="Status">
+              <Tag
+                color={
+                  currentClass?.status === "Approved"
+                    ? "green"
+                    : currentClass?.status === "Rejected"
+                    ? "red"
+                    : "orange"
+                }
+              >
+                {currentClass?.status || "Pending"}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Created At">
+              {currentClass &&
+                new Date(currentClass.createdAt).toLocaleString()}
+            </Descriptions.Item>
+          </Descriptions>
+          {currentClass?.image && (
+            <div className="mb-6">
+              <p>Current Image:</p>
+              <Image
+                src={currentClass.image}
+                alt="Class Image"
+                width={100}
+                height={100}
+                style={{ objectFit: "cover" }}
+              />
+            </div>
+          )}
+
+          <Divider orientation="left">Class Information</Divider>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Form.Item
+              name="className"
+              label="Class Name"
+              rules={[{ required: true, message: "Please input class name!" }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              name="category"
+              label="Category"
+              rules={[{ required: true, message: "Please select category!" }]}
+            >
+              <Select>
+                <Option value="Yoga">Yoga</Option>
+                <Option value="Pilates">Pilates</Option>
+                <Option value="HIIT">HIIT</Option>
+                <Option value="Strength">Strength Training</Option>
+                <Option value="Cardio">Cardio</Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="date"
+              label="Date"
+              rules={[{ required: true, message: "Please select date!" }]}
+            >
+              <DatePicker className="w-full" />
+            </Form.Item>
+
+            <Form.Item
+              name="time"
+              label="Time"
+              rules={[{ required: true, message: "Please select time!" }]}
+            >
+              <TimePicker format="HH:mm" className="w-full" />
+            </Form.Item>
+
+            <Form.Item
+              name="duration"
+              label="Duration (minutes)"
+              rules={[{ required: true, message: "Please input duration!" }]}
+            >
+              <Input type="number" />
+            </Form.Item>
+
+            <Form.Item
+              name="capacity"
+              label="Capacity"
+              rules={[{ required: true, message: "Please input capacity!" }]}
+            >
+              <Input type="number" />
+            </Form.Item>
+
+            <Form.Item
+              name="price"
+              label="Price ($)"
+              rules={[{ required: true, message: "Please input price!" }]}
+            >
+              <Input type="number" />
+            </Form.Item>
+
+            <Form.Item
+              name="image"
+              label="Upload New Image"
+              valuePropName="file"
+              getValueFromEvent={(e) => ({ file: e.target.files[0] })}
+            >
+              <Input type="file" accept="image/*" />
+            </Form.Item>
+          </div>
+
+          <Divider orientation="left">Additional Information</Divider>
+          <Form.Item name="description" label="Description">
+            <TextArea rows={4} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

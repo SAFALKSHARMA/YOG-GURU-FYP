@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import {
+  ReadOutlined,
   SearchOutlined,
   FilterOutlined,
   SyncOutlined,
@@ -7,6 +8,7 @@ import {
   DeleteOutlined,
   EyeOutlined,
   MoreOutlined,
+  CloseCircleOutlined,
 } from "@ant-design/icons";
 import {
   Table,
@@ -24,7 +26,7 @@ import {
   Form,
   InputNumber,
   Select,
-  Descriptions,
+  Empty,
 } from "antd";
 import Sidebar from "./Sidebar";
 
@@ -169,46 +171,68 @@ export default function AdminShopList() {
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
 
-      <div className="flex-1 overflow-auto p-6">
-        <Card title="Shop Inventory" bordered={false}>
-          <Space className="mb-4 w-full" direction="vertical">
-            <Space
-              className="w-full"
-              style={{ justifyContent: "space-between" }}
-            >
+      <div className="flex-1 p-6 overflow-auto">
+        <Card className="shadow-sm rounded-xl">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-800 flex items-center mb-4 md:mb-0">
+              <ReadOutlined className="mr-3 text-purple-600" />
+              Shop Inventory
+            </h1>
+
+            <div className="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3 w-full md:w-auto">
               <Input
-                placeholder="Search products"
-                prefix={<SearchOutlined />}
+                placeholder="Search products..."
+                prefix={<SearchOutlined className="text-gray-400" />}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: 300 }}
+                className="w-full md:w-64"
               />
-              <Space>
-                <Button icon={<FilterOutlined />}>Filter</Button>
-                <Button icon={<SyncOutlined />} onClick={handleRefresh}>
-                  Refresh
-                </Button>
-              </Space>
-            </Space>
-          </Space>
+              <Select
+                value="All" // Placeholder since no status filter exists
+                suffixIcon={<FilterOutlined className="text-gray-400" />}
+                className="w-full md:w-40"
+                disabled
+              >
+                <Option value="All">All Status</Option>
+              </Select>
+              <Button
+                icon={<SyncOutlined spin={loading} />}
+                onClick={handleRefresh}
+                disabled={loading}
+                className="flex items-center"
+              >
+                Refresh
+              </Button>
+            </div>
+          </div>
 
-          <Table
-            columns={columns}
-            dataSource={filteredItems}
-            rowKey="_id"
-            loading={loading}
-            locale={{
-              emptyText: (
-                <div className="py-12">
-                  <FilterOutlined style={{ fontSize: 32, color: "#9CA3AF" }} />
-                  <p className="text-lg text-gray-700 mt-2">
-                    No products found
-                  </p>
-                  <p className="text-gray-500">Try adjusting your search</p>
-                </div>
-              ),
-            }}
-          />
+          {loading && (
+            <div className="flex justify-center items-center py-12">
+              <Spin
+                indicator={
+                  <SyncOutlined spin className="text-gray-600 text-2xl" />
+                }
+              />
+              <span className="ml-3 text-gray-600">Loading products...</span>
+            </div>
+          )}
+
+          {!loading && filteredItems.length === 0 && (
+            <Empty
+              image={<ReadOutlined className="text-4xl text-gray-400" />}
+              description="No products found"
+              className="py-12"
+            />
+          )}
+
+          {!loading && filteredItems.length > 0 && (
+            <Table
+              columns={columns}
+              dataSource={filteredItems}
+              rowKey="_id"
+              loading={loading}
+            />
+          )}
         </Card>
 
         {/* Delete Confirmation Modal */}

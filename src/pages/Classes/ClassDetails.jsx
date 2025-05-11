@@ -110,6 +110,7 @@ function ClassDetails() {
         body: JSON.stringify({
           userId: userData.userId,
           classId,
+          instructorId: classData.instructor._id,
         }),
       });
       if (!response.ok) {
