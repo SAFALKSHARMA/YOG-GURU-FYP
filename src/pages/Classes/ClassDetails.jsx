@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import PaymentButton from "../../Payment/PaymentButton";
 import { AppContent } from "../../context/AppContext";
+import { message } from "antd";
 
 function ClassDetails() {
   const { classId } = useParams();
@@ -65,12 +66,15 @@ function ClassDetails() {
       return false;
     }
     try {
-      const response = await fetch("http://localhost:3000/api/user/update", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ phone: phone }),
-      });
+      const response = await fetch(
+        `http://localhost:3000/api/user/update-profile/${userData?.userId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ phone: phone }),
+        }
+      );
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to save phone number");
@@ -138,6 +142,13 @@ function ClassDetails() {
       setTimeout(() => navigate("/login"), 1500);
       return;
     }
+
+    // Check if userData.role is not equal to "user"
+    if (userData.role !== "user") {
+      message.error("Only users can enroll in class.");
+      return;
+    }
+
     if (classData.capacity <= 0) {
       setEnrollmentError("This class is full");
       return;

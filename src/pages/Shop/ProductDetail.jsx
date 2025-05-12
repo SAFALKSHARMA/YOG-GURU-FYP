@@ -4,6 +4,7 @@ import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { AppContent } from "../../context/AppContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { message } from "antd";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -46,6 +47,12 @@ export default function ProductDetail() {
         closeButton: true,
       });
       navigate("/login");
+      return;
+    }
+
+    // Check if userData.role is not equal to "user"
+    if (userData.role !== "user") {
+      message.error("Only users can add items to cart.");
       return;
     }
 

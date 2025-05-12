@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { AppContent } from "../../context/AppContext";
 import axios from "axios";
+import { message } from "antd";
 
 const MyCart = () => {
   const [cart, setCart] = useState([]);
@@ -132,6 +133,12 @@ const MyCart = () => {
     if (!userData?.userId) {
       setPaymentError("Please login to proceed with checkout");
       setTimeout(() => navigate("/login"), 1500);
+      return;
+    }
+
+    // Check if userData.role is not equal to "user"
+    if (userData.role !== "user") {
+      message.error("Only users can purchase items.");
       return;
     }
 
