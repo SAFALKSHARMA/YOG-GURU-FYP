@@ -113,7 +113,6 @@ export const updateProfileImage = async (req, res) => {
   }
 };
 
-// DELETE USER CONTROLLER
 export const deleteUser = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -127,6 +126,14 @@ export const deleteUser = async (req, res) => {
     }
 
     await userModel.findByIdAndDelete(userId);
+
+    // Clear token cookie with matching options
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      path: "/",
+    });
 
     return res
       .status(200)
@@ -305,5 +312,48 @@ export const createAdmin = async (req, res) => {
       message: "Internal server error",
       error: error.message,
     });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { userId, oldPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!userId || !oldPassword || !newPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Find user by userId
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Current password is incorrect" });
+    }
+
+    // Validate new password (basic example, adjust as needed)
+    if (newPassword.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "New password must be at least 6 characters" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user's password
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    return res
+      .status(500)
+      .json({ message: "Server error. Please try again later." });
   }
 };

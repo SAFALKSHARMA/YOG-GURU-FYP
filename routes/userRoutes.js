@@ -10,6 +10,7 @@ import {
   updateUserProfile,
   getAllAdmins,
   createAdmin,
+  changePassword,
 } from "../controllers/userController.js";
 
 const userRouter = express.Router();
@@ -25,5 +26,7 @@ userRouter.delete("/delete/:userId", deleteUser);
 // Ban and Unban routes
 userRouter.patch("/ban/:userId", banUser);
 userRouter.patch("/unban/:userId", unbanUser);
+
+userRouter.post("/change-password", changePassword);
 
 export default userRouter;
