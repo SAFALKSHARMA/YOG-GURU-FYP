@@ -22,8 +22,11 @@ export default function Footer() {
             YOGIGURU
           </h2>
           <p className="mt-3 text-sm">
-            Your ultimate platform to connect with certified yoga instructors
-            and embark on a journey of wellness.
+            "Born in Nepal, YOGIGURU is the first platform of its kind to offer
+            flexible, personalized yoga experiences—connecting learners with
+            certified instructors for online sessions, home visits, or in-person
+            classes. We honor the roots of yoga while making it more accessible
+            for modern lifestyles."
           </p>
         </div>
 
@@ -33,13 +36,10 @@ export default function Footer() {
           <ul className="space-y-2 text-sm">
             {[
               { name: "Home", link: "#" },
-              { name: "Find Instructors", link: "#" },
-              { name: "Courses", link: "#" },
-              { name: "Blog", link: "#" },
-              { name: "Shop", link: "#" },
-              { name: "FAQs", link: "#" },
-              { name: "Testimonials", link: "#" },
-              { name: "Contact", link: "#" },
+              { name: "Find Instructors", link: "instructors" },
+              { name: "Courses", link: "classes" },
+              { name: "Blog", link: "blog" },
+              { name: "Shop", link: "shop" },
             ].map((item, index) => (
               <li key={index}>
                 <a
@@ -110,7 +110,7 @@ export default function Footer() {
 
       {/* Copyright */}
       <div className="text-center text-sm text-gray-500 mt-10 border-t border-gray-700 pt-6">
-        © {new Date().getFullYear()} YOGIGURU. All rights reserved.
+        © {new Date().getFullYear()} YOG-GURU. All rights reserved.
       </div>
     </footer>
   );

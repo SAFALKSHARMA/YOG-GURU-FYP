@@ -7,6 +7,7 @@ import {
   Users,
   X,
   ChevronLeft,
+  ArrowLeft,
   ChevronRight,
 } from "lucide-react";
 
@@ -67,7 +68,7 @@ const Sidebar = () => {
       {/* Mobile Toggle Button - Fixed position */}
       <button
         onClick={toggleSidebar}
-        className="lg:hidden fixed top-20 left-4 z-30 bg-purple-600 text-white p-2 rounded-md" // Increased top to 20
+        className="lg:hidden fixed top-20 left-4 z-30 bg-purple-600 text-white p-2 rounded-md"
         aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
       >
         {isOpen ? <X size={20} /> : <ChevronRight size={20} />}
@@ -76,7 +77,7 @@ const Sidebar = () => {
       {/* Overlay for mobile when sidebar is open */}
       {isMobile && isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 mt-20" // Increased mt to 20
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 mt-20"
           onClick={toggleSidebar}
         />
       )}
@@ -86,24 +87,38 @@ const Sidebar = () => {
         className={`
           h-[calc(100vh-5rem)] bg-white border-r border-gray-200 overflow-y-auto z-20
           transition-all duration-300 ease-in-out
-          ${
-            isMobile ? "fixed top-20 left-0" : "sticky top-20"
-          } // Increased top to 20
+          ${isMobile ? "fixed top-20 left-0" : "sticky top-20"}
           ${isOpen ? (isMobile ? "w-64" : "w-64") : "w-16"}
           ${isMobile && !isOpen ? "-translate-x-full" : "translate-x-0"}
         `}
       >
         {/* Header Section */}
         <div
-          className={`p-4 flex ${
+          className={`p-4 flex items-center border-b border-gray-200 ${
             isOpen ? "justify-between" : "justify-center"
-          } items-center border-b border-gray-200`}
+          }`}
         >
-          {isOpen && (
-            <div>
-              <h2 className="text-xl font-bold text-purple-800">Yoga Tutor</h2>
-              <p className="text-xs text-gray-600">Instructor Panel</p>
+          {isOpen ? (
+            <div className="flex items-center">
+              <Link
+                to="/profile"
+                className="flex items-center mr-2 text-gray-700 hover:text-indigo-600"
+                title="Back to Profile"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+              <h2 className="text-xl font-bold text-purple-800">
+                Instructor Panel
+              </h2>
             </div>
+          ) : (
+            <Link
+              to="/profile"
+              className="flex items-center text-gray-700 hover:text-indigo-600"
+              title="Back to Profile"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
           )}
 
           {!isMobile && (

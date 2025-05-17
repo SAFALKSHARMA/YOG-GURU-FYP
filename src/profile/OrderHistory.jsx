@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Search,
   Filter,
+  Loader2,
 } from "lucide-react";
 import { AppContent } from "../context/AppContext";
 import axios from "axios";
@@ -92,57 +93,61 @@ const OrderHistory = ({ setActiveTab }) => {
 
   if (loading) {
     return (
-      <div className="pt-24 pb-16 px-4 md:px-8 lg:px-12 max-w-7xl mx-auto">
+      <section className="max-w-6xl mx-auto py-12">
         <div className="flex flex-col items-center justify-center py-16">
-          <RefreshCw className="h-12 w-12 text-purple-500 animate-spin mb-4" />
+          <div className="p-4 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full mb-6">
+            <Loader2 className="h-12 w-12 text-indigo-600 animate-spin" />
+          </div>
           <h2 className="text-xl font-semibold text-gray-800">
-            Loading your orders
+            Loading Your Orders
           </h2>
           <p className="text-gray-500 mt-2">
             Please wait while we fetch your order history...
           </p>
         </div>
-      </div>
+      </section>
     );
   }
 
   if (error === "Please login to view your order history") {
     return (
-      <div className="pt-24 pb-16 px-4 md:px-8 lg:px-12 max-w-7xl mx-auto">
-        <div className="bg-white rounded-xl shadow p-8 text-center max-w-lg mx-auto">
-          <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+      <section className="max-w-6xl mx-auto py-12">
+        <div className="bg-white rounded-xl shadow-sm p-8 text-center max-w-lg mx-auto border border-gray-100">
+          <div className="p-4 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-full inline-flex mx-auto mb-6">
+            <ShoppingBag className="h-10 w-10 text-indigo-600" />
+          </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Sign in to view orders
+            Sign in to View Orders
           </h2>
           <p className="text-gray-600 mb-6">
             Please login to view your order history and track your purchases.
           </p>
           <button
             onClick={() => navigate("/login")}
-            className="w-full md:w-auto px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-300 font-medium"
+            className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all shadow-sm font-medium"
           >
             Sign In
           </button>
           <Link
             to="/shop"
-            className="block mt-4 text-purple-600 hover:text-purple-800"
+            className="block mt-4 text-indigo-600 hover:text-indigo-800"
           >
             Continue shopping instead
           </Link>
         </div>
-      </div>
+      </section>
     );
   }
 
   if (error) {
     return (
-      <div className="pt-24 pb-16 px-4 md:px-8 lg:px-12 max-w-7xl mx-auto">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center max-w-lg mx-auto">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-4">
-            <Package className="h-8 w-8 text-red-500" />
+      <section className="max-w-6xl mx-auto py-12">
+        <div className="bg-white border border-gray-100 rounded-xl p-8 text-center max-w-lg mx-auto shadow-sm">
+          <div className="p-4 bg-red-50 rounded-full inline-flex mx-auto mb-6">
+            <Package className="h-10 w-10 text-red-500" />
           </div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            Unable to load orders
+            Unable to Load Orders
           </h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -151,75 +156,46 @@ const OrderHistory = ({ setActiveTab }) => {
                 setLoading(true);
                 window.location.reload();
               }}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300 flex items-center justify-center gap-2"
+              className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all flex items-center justify-center gap-2 shadow-sm"
             >
               <RefreshCw className="h-5 w-5" />
               Try Again
             </button>
             <Link to="/shop">
-              <button className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-300 flex items-center justify-center gap-2">
+              <button className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-sm">
                 Continue Shopping
                 <ChevronLeft className="h-5 w-5 transform rotate-180" />
               </button>
             </Link>
           </div>
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="pt-24 pb-16 px-4 md:px-8 lg:px-12 max-w-7xl mx-auto">
+    <section className="max-w-6xl mx-auto py-12">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg">
+            <ShoppingBag className="h-6 w-6 text-white" />
+          </div>
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <ShoppingBag className="h-8 w-8 text-purple-600" />
-              Order History
-            </h1>
-            <p className="text-gray-600 mt-2">
-              View and manage your past purchases of yoga accessories.
+            <h2 className="text-2xl font-bold text-gray-800">Order History</h2>
+            <p className="text-sm text-gray-500">
+              View and manage your past purchases of yoga accessories
             </p>
           </div>
-          <Link to="/shop" className="mt-4 md:mt-0">
-            <button className="flex items-center gap-2 px-4 py-2 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50 transition duration-300">
-              <ChevronLeft className="h-5 w-5" />
-              Continue Shopping
-            </button>
-          </Link>
         </div>
-        <div className="h-1 w-full bg-gradient-to-r from-purple-600 to-blue-400 rounded-full"></div>
-      </div>
 
-      {/* Search and filters */}
-      {orders.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
-            <div className="relative flex-grow">
-              <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search by order ID or product name"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-gray-500" />
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-              >
-                <option value="all">All Orders</option>
-                {/* Add more status options if you have them */}
-              </select>
-            </div>
-          </div>
-        </div>
-      )}
+        <Link to="/shop">
+          <button className="flex items-center gap-2 px-4 py-2 border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all">
+            <ChevronLeft className="h-5 w-5" />
+            Continue Shopping
+          </button>
+        </Link>
+      </div>
 
       {/* Order count */}
       {orders.length > 0 && (
@@ -232,20 +208,22 @@ const OrderHistory = ({ setActiveTab }) => {
 
       {/* No orders state */}
       {orders.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+        <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
           <div className="flex flex-col items-center max-w-md mx-auto">
-            <div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center mb-6">
-              <ShoppingBag className="h-12 w-12 text-purple-600" />
+            <div className="p-4 bg-indigo-50 rounded-full inline-flex mx-auto mb-6">
+              <ShoppingBag className="h-12 w-12 text-indigo-500" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">No orders yet</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              No Orders Yet
+            </h2>
             <p className="text-gray-600 mb-6">
               You haven't made any purchases yet. Explore our collection of
               premium yoga accessories and start your wellness journey today!
             </p>
             <Link to="/shop">
-              <button className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-300 flex items-center gap-2">
+              <button className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all shadow-sm">
                 Browse Our Shop
-                <ChevronLeft className="h-5 w-5 transform rotate-180" />
+                <ChevronLeft className="h-5 w-5 transform rotate-180 ml-2" />
               </button>
             </Link>
           </div>
@@ -253,9 +231,11 @@ const OrderHistory = ({ setActiveTab }) => {
       ) : (
         <div className="space-y-6">
           {filteredOrders.length === 0 ? (
-            <div className="bg-gray-50 rounded-xl p-8 text-center">
-              <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No matching orders</h2>
+            <div className="bg-white rounded-xl p-8 text-center border border-gray-100 shadow-sm">
+              <div className="p-4 bg-gray-50 rounded-full inline-flex mx-auto mb-4">
+                <Search className="h-8 w-8 text-gray-400" />
+              </div>
+              <h2 className="text-xl font-semibold mb-2">No Matching Orders</h2>
               <p className="text-gray-600 mb-4">
                 We couldn't find any orders matching your search criteria
               </p>
@@ -264,42 +244,38 @@ const OrderHistory = ({ setActiveTab }) => {
                   setSearchTerm("");
                   setSelectedStatus("all");
                 }}
-                className="text-purple-600 hover:text-purple-800"
+                className="text-indigo-600 hover:text-indigo-800 font-medium"
               >
-                Clear filters
+                Clear Filters
               </button>
             </div>
           ) : (
             filteredOrders.map((order) => (
               <div
                 key={order._id}
-                className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition duration-300"
+                className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-all"
               >
                 {/* Order header */}
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-100">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div>
-                      <h2 className="font-semibold text-lg flex items-center gap-2">
-                        <span className="text-purple-600">
+                      <h3 className="font-semibold text-lg flex items-center gap-2">
+                        <span className="text-indigo-600">
                           Order #{order._id.slice(-6)}
                         </span>
                         <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
                           Completed
                         </span>
-                      </h2>
+                      </h3>
                       <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
                         <Calendar className="h-4 w-4" />
                         {formatDate(order.paymentDate)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">
+                      <span className="font-medium text-gray-800">
                         Total: ${order.totalPrice.toFixed(2)}
                       </span>
-
-                      {/* <button className="text-gray-500 hover:text-purple-600 flex items-center gap-1 text-sm">
-                        View Details <ExternalLink className="h-4 w-4" />
-                      </button> */}
                     </div>
                   </div>
                 </div>
@@ -309,14 +285,14 @@ const OrderHistory = ({ setActiveTab }) => {
                   {order.cartItems.map((item) => (
                     <div
                       key={item.cartItemId}
-                      className="p-4 hover:bg-gray-50 transition duration-200"
+                      className="p-5 hover:bg-gray-50 transition-all"
                     >
                       <div className="flex flex-col sm:flex-row gap-4">
                         <div className="w-full sm:w-24 h-24 flex-shrink-0">
                           <img
                             src={item.productId.images[0]}
                             alt={item.productId.name}
-                            className="w-full h-full object-cover rounded-lg"
+                            className="w-full h-full object-cover rounded-lg shadow-sm"
                           />
                         </div>
                         <div className="flex-grow flex flex-col sm:flex-row justify-between gap-4">
@@ -343,14 +319,7 @@ const OrderHistory = ({ setActiveTab }) => {
                           </div>
                         </div>
                       </div>
-                      <div className="mt-4 flex justify-end">
-                        <Link
-                          to={`/shop/product/${item.productId._id}`}
-                          className="text-purple-600 hover:text-purple-800 text-sm"
-                        >
-                          Buy Again
-                        </Link>
-                      </div>
+                      <div className="mt-4 flex justify-end"></div>
                     </div>
                   ))}
                 </div>
@@ -360,26 +329,26 @@ const OrderHistory = ({ setActiveTab }) => {
         </div>
       )}
 
-      {/* Pagination could be added here */}
+      {/* Pagination */}
       {filteredOrders.length > 5 && (
         <div className="mt-8 flex justify-center">
-          <div className="inline-flex shadow-sm rounded-md">
-            <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50">
+          <div className="inline-flex shadow-sm rounded-lg overflow-hidden">
+            <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-l-lg hover:bg-gray-50 transition-all">
               Previous
             </button>
-            <button className="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-purple-600">
+            <button className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 border border-indigo-600">
               1
             </button>
-            <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
+            <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-all">
               2
             </button>
-            <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50">
+            <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-r-lg hover:bg-gray-50 transition-all">
               Next
             </button>
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

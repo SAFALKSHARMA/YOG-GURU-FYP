@@ -135,9 +135,9 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden h-full border border-gray-100 sticky top-4">
+    <div className="flex flex-col bg-white border-r border-gray-200 w-[111%]">
       {/* Profile Section */}
-      <div className="bg-indigo-500 px-4 py-5 flex items-center">
+      <div className="bg-white px-4 py-5 flex items-center">
         <div className="relative">
           <div className="w-14 h-14 rounded-full bg-white shadow-sm">
             <img
@@ -168,10 +168,10 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         </div>
 
         <div className="ml-3 overflow-hidden">
-          <h2 className="text-base font-medium text-white truncate">
+          <h2 className="text-base font-medium text-black">
             {userData?.name || "User"}
           </h2>
-          <p className="text-xs text-indigo-100">
+          <p className="text-xs text-black">
             Member since{" "}
             {userData?.createdAt
               ? new Date(userData.createdAt).toLocaleDateString("en-US", {

@@ -9,6 +9,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import Sidebar from "./Sidebar"; // Import your existing Sidebar component
 
 const TextInput = ({
   label,
@@ -352,13 +353,11 @@ const AdminShop = () => {
     setIsSubmitting(true);
 
     try {
-      // Upload all images to Cloudinary first
       const imageUploadPromises = formData.imageFiles.map((file) =>
         uploadImageToCloudinary(file)
       );
       const imageUrls = await Promise.all(imageUploadPromises);
 
-      // Prepare the data to send to your backend
       const productData = {
         name: formData.name,
         description: formData.description,
@@ -371,7 +370,6 @@ const AdminShop = () => {
         images: imageUrls,
       };
 
-      // Send data to your backend API
       const response = await fetch("http://localhost:3000/api/shop/add-items", {
         method: "POST",
         headers: {
@@ -387,7 +385,6 @@ const AdminShop = () => {
 
       const responseData = await response.json();
 
-      // Reset form on success
       setFormData({
         name: "",
         description: "",
@@ -424,194 +421,202 @@ const AdminShop = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto py-8 px-4">
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">Add New Product</h1>
-          <p className="text-gray-500">
-            Create a new yoga accessory in your inventory
-          </p>
-        </header>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Your existing Sidebar component */}
+      <Sidebar />
 
-        {successMessage && (
-          <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded">
-            {successMessage}
-          </div>
-        )}
+      {/* Main content area */}
+      <div className="flex-1 overflow-auto">
+        <div className="max-w-5xl mx-auto py-8 px-4">
+          <header className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-800">
+              Add New Product
+            </h1>
+            <p className="text-gray-500">
+              Create a new yoga accessory in your inventory
+            </p>
+          </header>
 
-        {errors.submit && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
-            {errors.submit}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
-            <div className="p-6">
-              <h2 className="text-lg font-medium text-gray-800 mb-4">
-                Basic Information
-              </h2>
-              <div className="space-y-4">
-                <TextInput
-                  label="Product Name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Yoga Mat Premium"
-                  error={errors.name}
-                  required
-                  icon={Tag}
-                />
-
-                <TextInput
-                  label="Description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="A premium quality yoga mat with extra cushioning..."
-                  error={errors.description}
-                  required
-                  textarea
-                  icon={FileText}
-                />
-
-                <SelectInput
-                  label="Category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  options={categoryOptions}
-                  error={errors.category}
-                  required
-                />
-              </div>
+          {successMessage && (
+            <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded">
+              {successMessage}
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          {errors.submit && (
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
+              {errors.submit}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
               <div className="p-6">
                 <h2 className="text-lg font-medium text-gray-800 mb-4">
-                  Pricing & Inventory
+                  Basic Information
                 </h2>
                 <div className="space-y-4">
-                  <NumberInput
-                    label="Price ($)"
-                    name="price"
-                    value={formData.price}
+                  <TextInput
+                    label="Product Name"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
-                    placeholder="29.99"
-                    error={errors.price}
+                    placeholder="Yoga Mat Premium"
+                    error={errors.name}
                     required
-                    step="0.01"
+                    icon={Tag}
                   />
 
-                  <NumberInput
-                    label="Stock Quantity"
-                    name="stock"
-                    value={formData.stock}
+                  <TextInput
+                    label="Description"
+                    name="description"
+                    value={formData.description}
                     onChange={handleChange}
-                    placeholder="100"
-                    error={errors.stock}
+                    placeholder="A premium quality yoga mat with extra cushioning..."
+                    error={errors.description}
+                    required
+                    textarea
+                    icon={FileText}
+                  />
+
+                  <SelectInput
+                    label="Category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    options={categoryOptions}
+                    error={errors.category}
                     required
                   />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4">
-                  Product Details
-                </h2>
-                <div className="space-y-4">
-                  <TextInput
-                    label="Brand"
-                    name="brand"
-                    value={formData.brand}
-                    onChange={handleChange}
-                    placeholder="YogaEssentials"
-                  />
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <TextInput
-                      label="Color"
-                      name="color"
-                      value={formData.color}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="p-6">
+                  <h2 className="text-lg font-medium text-gray-800 mb-4">
+                    Pricing & Inventory
+                  </h2>
+                  <div className="space-y-4">
+                    <NumberInput
+                      label="Price ($)"
+                      name="price"
+                      value={formData.price}
                       onChange={handleChange}
-                      placeholder="Purple"
+                      placeholder="29.99"
+                      error={errors.price}
+                      required
+                      step="0.01"
                     />
 
-                    <TextInput
-                      label="Material"
-                      name="material"
-                      value={formData.material}
+                    <NumberInput
+                      label="Stock Quantity"
+                      name="stock"
+                      value={formData.stock}
                       onChange={handleChange}
-                      placeholder="TPE Foam"
+                      placeholder="100"
+                      error={errors.stock}
+                      required
                     />
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
-            <div className="p-6">
-              <h2 className="text-lg font-medium text-gray-800 mb-4">
-                Product Images
-              </h2>
-              <FileUploadInput
-                images={formData.imageFiles}
-                handleFileChange={handleFileChange}
-                addImageField={addImageField}
-                removeImageField={removeImageField}
-                error={errors.images}
-              />
-            </div>
-          </div>
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="p-6">
+                  <h2 className="text-lg font-medium text-gray-800 mb-4">
+                    Product Details
+                  </h2>
+                  <div className="space-y-4">
+                    <TextInput
+                      label="Brand"
+                      name="brand"
+                      value={formData.brand}
+                      onChange={handleChange}
+                      placeholder="YogaEssentials"
+                    />
 
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`px-6 py-2 rounded-lg font-medium flex items-center ${
-                isSubmitting
-                  ? "bg-gray-300 text-gray-700 cursor-not-allowed"
-                  : "bg-blue-600 text-white hover:bg-blue-700"
-              } transition-colors`}
-            >
-              {isSubmitting ? (
-                <>
-                  <svg
-                    className="animate-spin mr-2 h-4 w-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2" size={16} /> Save Product
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+                    <div className="grid grid-cols-2 gap-4">
+                      <TextInput
+                        label="Color"
+                        name="color"
+                        value={formData.color}
+                        onChange={handleChange}
+                        placeholder="Purple"
+                      />
+
+                      <TextInput
+                        label="Material"
+                        name="material"
+                        value={formData.material}
+                        onChange={handleChange}
+                        placeholder="TPE Foam"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+              <div className="p-6">
+                <h2 className="text-lg font-medium text-gray-800 mb-4">
+                  Product Images
+                </h2>
+                <FileUploadInput
+                  images={formData.imageFiles}
+                  handleFileChange={handleFileChange}
+                  addImageField={addImageField}
+                  removeImageField={removeImageField}
+                  error={errors.images}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`px-6 py-2 rounded-lg font-medium flex items-center ${
+                  isSubmitting
+                    ? "bg-gray-300 text-gray-700 cursor-not-allowed"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
+                } transition-colors`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <svg
+                      className="animate-spin mr-2 h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2" size={16} /> Save Product
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

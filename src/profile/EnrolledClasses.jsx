@@ -1,8 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
-import { BookOpen, Smile, Loader2, AlertCircle } from "lucide-react";
-import { AppContent } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import { Button, Empty, Spin, Alert, Typography, Space, Row, Col } from "antd";
+import { BookOutlined, SmileOutlined, ReloadOutlined } from "@ant-design/icons";
+import { AppContent } from "../context/AppContext";
 import ClassCard from "../ui/ClassCard";
+
+const { Title, Text } = Typography;
 
 const EnrolledClasses = () => {
   const { userData, backendUrl } = useContext(AppContent);
@@ -23,7 +26,6 @@ const EnrolledClasses = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch enrolled classes directly from the API endpoint
         const response = await fetch(
           `${backendUrl}/api/classes/${userData.userId}/enrolled-classes`
         );
@@ -42,7 +44,6 @@ const EnrolledClasses = () => {
           throw new Error(data.message || "Error fetching enrolled classes");
         }
 
-        // Assuming the API returns an array of class objects directly
         setEnrolledClasses(data.enrolledClasses || []);
       } catch (err) {
         console.error("Error fetching enrolled classes:", err);
@@ -62,96 +63,86 @@ const EnrolledClasses = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 className="animate-spin h-12 w-12 text-indigo-600" />
-        <span className="ml-3 text-gray-600">Loading your classes...</span>
+        <Spin size="large" tip="Loading your classes..." />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white shadow-md rounded-lg overflow-hidden p-6 text-center max-w-md mx-auto border border-gray-100">
-        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <div className="text-gray-700 mb-4">{error}</div>
+      <div className="max-w-md mx-auto">
+        <Alert
+          message="Error"
+          description={error}
+          type="error"
+          showIcon
+          className="mb-4"
+        />
         {error === "Please login to view enrolled classes" ? (
-          <button
-            onClick={() => navigate("/login")}
-            className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-all"
-          >
+          <Button type="primary" onClick={() => navigate("/login")}>
             Login
-          </button>
+          </Button>
         ) : (
-          <div className="space-x-3">
-            <button
+          <Space>
+            <Button
+              type="primary"
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-all"
+              icon={<ReloadOutlined />}
             >
               Try Again
-            </button>
-            <button
-              onClick={handleBrowseClasses}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-all"
-            >
-              Browse Classes
-            </button>
-          </div>
+            </Button>
+            <Button onClick={handleBrowseClasses}>Browse Classes</Button>
+          </Space>
         )}
       </div>
     );
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-100">
-      <div className="px-6 py-5 bg-indigo-500">
-        <div className="flex items-center">
-          <div className="p-2 mr-4 bg-white bg-opacity-20 rounded-lg">
-            <BookOpen className="h-5 w-5 text-white" />
-          </div>
+    <div>
+      <div className="mb-6">
+        <Space>
+          <BookOutlined style={{ fontSize: 24 }} />
           <div>
-            <h3 className="text-xl font-semibold text-white">
+            <Title level={4} className="m-0">
               My Enrolled Yoga Classes
-            </h3>
-            <p className="text-sm text-indigo-100 mt-1">
-              Your journey to mindfulness and well-being
-            </p>
+            </Title>
           </div>
-        </div>
+        </Space>
       </div>
 
-      <div className="px-6 py-5">
-        {enrolledClasses.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {enrolledClasses.map((yogaClass) => (
+      {enrolledClasses.length > 0 ? (
+        <Row gutter={[16, 16]}>
+          {enrolledClasses.map((yogaClass) => (
+            <Col xs={24} sm={12} lg={8} key={yogaClass._id}>
               <ClassCard
-                key={yogaClass._id}
                 yogaClass={yogaClass}
                 isFavorite={false}
                 toggleFavorite={null}
                 userId={userData?.userId}
                 showEnrolledStatus={true}
               />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <Smile className="mx-auto h-16 w-16 text-gray-300" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">
-              No enrolled classes yet
-            </h3>
-            <p className="mt-2 text-sm text-gray-500">
-              Find the perfect yoga class and begin your journey today
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={handleBrowseClasses}
-                className="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 transition-all"
-              >
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <Empty
+          image={<SmileOutlined style={{ fontSize: 64 }} />}
+          description={
+            <Space direction="vertical" size="small" align="center">
+              <Text strong style={{ fontSize: 16 }}>
+                No enrolled classes yet
+              </Text>
+              <Text type="secondary">
+                Find the perfect yoga class and begin your journey today
+              </Text>
+              <Button type="primary" onClick={handleBrowseClasses}>
                 Browse Available Classes
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+              </Button>
+            </Space>
+          }
+        />
+      )}
     </div>
   );
 };

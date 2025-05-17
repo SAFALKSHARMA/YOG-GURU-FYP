@@ -1,40 +1,45 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import bgImg from "/images/banner2.jpg";
-import { ArrowRight, ShoppingBasket } from "lucide-react";
+import bgImg from "/images/banner1.jpg";
+import { ArrowRight, PenBox } from "lucide-react";
 
-const Hero2 = () => {
+const Hero1 = () => {
   const navigate = useNavigate();
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   return (
     <div
       className="min-h-screen bg-cover bg-center bg-fixed"
       style={{ backgroundImage: `url(${bgImg})` }}
     >
-      <div className="min-h-screen flex justify-start items-center text-white bg-gradient-to-r from-black/70 via-black/60 to-transparent">
+      <div className="min-h-screen flex justify-start items-center text-white bg-gradient-to-r from-black/80 to-black/40 backdrop-blur-sm">
         <div className="container mx-auto px-6 md:px-12">
           <div className="hero-content max-w-3xl">
             <div
               className="inline-block py-1 px-3 bg-white/20 backdrop-blur-md rounded-full mb-4 text-sm font-medium"
               style={{ "--delay": 1 }}
             >
-              Transform Your Practice
+              Welcome to YOG-GURU
             </div>
 
             <h2
               className="text-2xl md:text-4xl lg:text-5xl font-light mb-2"
               style={{ "--delay": 2 }}
             >
-              Discover Inner Peace
+              We Provide
             </h2>
 
             <h1
               className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
               style={{ "--delay": 3 }}
             >
-              Expert-Led
+              Best Yoga Courses
               <br />
-              <span className="text-amber-300">Yoga Sessions</span>
+              <span className="text-indigo-300">Online</span>
             </h1>
 
             <div
@@ -42,9 +47,9 @@ const Hero2 = () => {
               style={{ "--delay": 4 }}
             >
               <p>
-                Connect with certified instructors for personalized yoga
-                experiences through online sessions, home visits, or in-person
-                classes to honor the roots of yoga while making it accessible.
+                Born in Nepal, YOG-GURU is the first platform of its kind to
+                offer flexible, personalized yoga experiences—connecting
+                learners with certified instructors for transformative sessions.
               </p>
             </div>
 
@@ -54,20 +59,18 @@ const Hero2 = () => {
             >
               <button
                 onClick={() => navigate("/classes")}
-                className="hero-btn group flex items-center gap-2 px-8 py-4 rounded-full bg-amber-600 hover:bg-amber-700 font-medium transition-all duration-300"
+                className="hero-btn group flex items-center gap-2 px-8 py-4 rounded-full bg-indigo-600 hover:bg-indigo-700 font-medium transition-all duration-300"
               >
                 Join Today
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
 
               <button
-                onClick={() => navigate("/shop")}
-                className="hero-btn flex items-center gap-2 px-5 py-4 rounded-full border-2 border-white hover:border-amber-400 font-medium transition-all duration-300"
+                onClick={() => navigate("/instructors")}
+                className="hero-btn flex items-center gap-2 px-8 py-4 rounded-full border-2 border-white hover:border-indigo-400 font-medium transition-all duration-300"
               >
-                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-                  <ShoppingBasket className="w-4 h-4 ml-1" />
-                </div>
-                View Shop
+                <PenBox className="w-4 h-4 ml-1" />
+                Book An Appointment
               </button>
             </div>
           </div>
@@ -77,4 +80,4 @@ const Hero2 = () => {
   );
 };
 
-export default Hero2;
+export default Hero1;

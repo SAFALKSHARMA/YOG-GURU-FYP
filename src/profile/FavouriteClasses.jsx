@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Heart, Loader2, AlertCircle } from "lucide-react";
+import { Heart, Loader2, AlertCircle, Search } from "lucide-react";
 import { AppContent } from "../context/AppContext";
 import ClassCard from "../ui/ClassCard";
 import { useNavigate } from "react-router-dom";
@@ -84,96 +84,117 @@ const FavoriteClasses = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 className="animate-spin h-12 w-12 text-indigo-600" />
-        <span className="ml-3 text-gray-600">Loading your favorites...</span>
+        <div className="flex flex-col items-center">
+          <Loader2 className="animate-spin h-12 w-12 text-indigo-600" />
+          <span className="mt-4 text-gray-600 font-medium">
+            Loading your favorites...
+          </span>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white shadow-md rounded-lg overflow-hidden p-6 text-center max-w-md mx-auto border border-gray-100">
-        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <div className="text-gray-700 mb-4">{error}</div>
-        {error === "Please login to view your favorite classes" ? (
-          <button
-            onClick={() => navigate("/login")}
-            className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-all"
-          >
-            Login
-          </button>
-        ) : (
-          <div className="space-x-3">
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-all"
-            >
-              Try Again
-            </button>
-            <button
-              onClick={handleBrowseClasses}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-all"
-            >
-              Browse Classes
-            </button>
+      <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex flex-col items-center">
+          <div className="p-3 bg-red-50 rounded-full mb-4">
+            <AlertCircle className="h-10 w-10 text-red-500" />
           </div>
-        )}
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            Unable to Load Favorites
+          </h3>
+          <p className="text-gray-600 mb-6 text-center">{error}</p>
+
+          {error === "Please login to view your favorite classes" ? (
+            <button
+              onClick={() => navigate("/login")}
+              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all shadow-sm w-full font-medium"
+            >
+              Login to Your Account
+            </button>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-3 w-full">
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all shadow-sm font-medium flex-1"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={handleBrowseClasses}
+                className="px-6 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all font-medium flex-1"
+              >
+                Browse Classes
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-100">
-      <div className="px-6 py-5 bg-indigo-500">
-        <div className="flex items-center">
-          <div className="p-2 mr-4 bg-white bg-opacity-20 rounded-lg">
-            <Heart className="h-5 w-5 text-white" />
+    <section className="max-w-6xl mx-auto">
+      {/* Modern header with action */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg">
+            <Heart className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-white">
-              Your Favorite Yoga Classes
-            </h3>
-            <p className="text-sm text-indigo-100 mt-1">
-              Classes you've saved to join later
+            <h2 className="text-2xl font-bold text-gray-800">
+              Your Favorite Classes
+            </h2>
+            <p className="text-sm text-gray-500">
+              Yoga sessions you've saved to join later
             </p>
           </div>
         </div>
+
+        <button
+          onClick={handleBrowseClasses}
+          className="flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90 transition-all shadow-sm"
+        >
+          <Search className="mr-2 h-4 w-4" />
+          Discover More
+        </button>
       </div>
 
-      <div className="px-6 py-5">
-        {favoriteClasses.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {favoriteClasses.map((yogaClass) => (
-              <ClassCard
-                key={yogaClass._id}
-                yogaClass={yogaClass}
-                isFavorite={true}
-                toggleFavorite={() => handleRemoveFavorite(yogaClass._id)}
-                userId={userData?.userId}
-              />
-            ))}
+      {/* Content area */}
+      {favoriteClasses.length > 0 ? (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {favoriteClasses.map((yogaClass) => (
+            <ClassCard
+              key={yogaClass._id}
+              yogaClass={yogaClass}
+              isFavorite={true}
+              toggleFavorite={() => handleRemoveFavorite(yogaClass._id)}
+              userId={userData?.userId}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white p-10 rounded-xl shadow-sm border border-gray-100 text-center">
+          <div className="p-4 bg-indigo-50 rounded-full inline-flex mx-auto mb-4">
+            <Heart className="h-12 w-12 text-indigo-400" />
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <Heart className="mx-auto h-16 w-16 text-gray-300" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900">
-              No favorite classes yet
-            </h3>
-            <p className="mt-2 text-sm text-gray-500">
-              Save classes you're interested in by clicking the heart icon
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={handleBrowseClasses}
-                className="inline-flex items-center px-4 py-2 rounded-md shadow-sm text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 transition-all"
-              >
-                Browse Available Classes
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            No Favorite Classes Yet
+          </h3>
+          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            Save yoga classes you're interested in by clicking the heart icon.
+            Your favorites will appear here for easy access.
+          </p>
+          <button
+            onClick={handleBrowseClasses}
+            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-all shadow-sm font-medium"
+          >
+            Browse Available Classes
+          </button>
+        </div>
+      )}
+    </section>
   );
 };
 

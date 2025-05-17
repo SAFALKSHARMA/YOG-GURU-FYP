@@ -39,15 +39,15 @@ const Profile = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-1xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-3">
+          {/* Sidebar - now takes 2 columns */}
+          <div className="lg:col-span-2">
             <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
           </div>
 
-          {/* Main Content */}
-          <div className="mt-6 lg:mt-0 lg:col-span-9">
+          {/* Main Content - now takes 8 columns (with 2 columns for sidebar, total 10) */}
+          <div className="mt-6 lg:mt-0 lg:col-span-10">
             <div className="bg-white shadow-md rounded-lg p-6">
               {renderContent()}
             </div>
