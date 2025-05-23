@@ -120,7 +120,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     },
     {
       id: "applications",
-      label: "Applications",
+      label: "My Booking",
       icon: Calendar,
       count: userData?.applications?.length || 0,
     },

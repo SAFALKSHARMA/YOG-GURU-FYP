@@ -36,6 +36,8 @@ import ProtectedRoute from "./ProtectedRoute";
 import InstructorRoute from "./InstructorRoute";
 import AdminRoute from "./AdminRoute";
 import PageNotFound from "./PageNotFound";
+import AdminBlogs from "../Admin/AddBlog";
+import YogaBlogPage from "../pages/Blog/Blog";
 
 function AppRouter() {
   return (
@@ -47,7 +49,7 @@ function AppRouter() {
           <Route path="/" element={<Home />} />
           <Route path="/classes" element={<Classes />} />
           <Route path="/class-details/:classId" element={<ClassDetails />} />
-          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog" element={<YogaBlogPage />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/shop/:id" element={<ProductDetail />} />
           <Route path="/login" element={<Login />} />
@@ -101,7 +103,7 @@ function AppRouter() {
             <Route path="/admin/all-admins" element={<AllAdmins />} />
             <Route path="/admin/manage-shop" element={<AdminShop />} />
             <Route path="/admin/shopList" element={<AdminShopList />} />
-            <Route path="/admin/addblog" element={<AddBlog />} />
+            <Route path="/admin/blogs" element={<AdminBlogs />} />
           </Route>
         </Route>
         <Route path="*" element={<PageNotFound />} />

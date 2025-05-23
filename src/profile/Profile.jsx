@@ -10,10 +10,14 @@ import TrackProgress from "./TrackProgress";
 import { AppContent } from "../context/AppContext";
 import OrderHistory from "./OrderHistory";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 
 const Profile = () => {
-  const [activeTab, setActiveTab] = useState("profile");
   const { userData, backendUrl } = useContext(AppContent);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const defaultTab = queryParams.get("tab") || "profile";
+  const [activeTab, setActiveTab] = useState(defaultTab);
 
   // Determine which component to render based on active tab
   const renderContent = () => {

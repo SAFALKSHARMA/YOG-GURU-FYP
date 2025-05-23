@@ -7,6 +7,7 @@ import {
   BarChart2,
   ArrowLeft,
   Shield,
+  NewspaperIcon,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -73,6 +74,7 @@ const Sidebar = () => {
             text="Add Products"
           />
           <NavLink to="/admin/all-admins" icon={Shield} text="Admins" />
+          <NavLink to="/admin/blogs" icon={NewspaperIcon} text="Add Blog" />
         </ul>
       </nav>
 

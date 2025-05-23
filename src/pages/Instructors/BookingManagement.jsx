@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { Eye, Filter, Calendar, Clock, X } from "lucide-react";
+import {
+  Eye,
+  Filter,
+  Calendar,
+  Clock,
+  X,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  MessageSquare,
+} from "lucide-react";
 import Table from "../../ui/Table";
 import { AppContent } from "../../context/AppContext";
 import Sidebar from "./Sidebar";
@@ -56,16 +67,13 @@ const BookingManagement = () => {
   const updateBookingStatus = async (id, status) => {
     try {
       setLoading(true);
-      setError(null); // Clear any previous errors
+      setError(null);
 
-      // Request payload
       const payload = {
         bookingId: id,
         status,
         instructorId: instructorData?._id,
       };
-
-      console.log(payload);
 
       const response = await axios.patch(
         `http://localhost:3000/api/bookings/update-status`,
@@ -76,7 +84,6 @@ const BookingManagement = () => {
         throw new Error(response.data.message || "Update was not successful");
       }
 
-      // Optimistic UI update
       const updatedBookings = bookings.map((booking) =>
         booking._id === id ? { ...booking, status } : booking
       );
@@ -87,7 +94,6 @@ const BookingManagement = () => {
         setViewBooking((prev) => ({ ...prev, status }));
       }
 
-      // Optional: Return the updated booking for further processing
       return updatedBookings.find((b) => b._id === id);
     } catch (error) {
       const errorMessage =
@@ -96,8 +102,6 @@ const BookingManagement = () => {
         `Failed to ${status.toLowerCase()} booking`;
 
       setError(errorMessage);
-
-      // Re-throw the error for the calling code to handle if needed
       throw error;
     } finally {
       setLoading(false);
@@ -278,6 +282,7 @@ const BookingManagement = () => {
               message: "When you get bookings, they'll appear here",
               icon: <Calendar size={32} className="mx-auto text-gray-400" />,
             }}
+            rowKey="_id"
           />
 
           {totalPages > 1 && (
@@ -292,7 +297,7 @@ const BookingManagement = () => {
 
               {Array.from({ length: totalPages }, (_, i) => (
                 <button
-                  key={i}
+                  key={i + 1}
                   onClick={() => setCurrentPage(i + 1)}
                   className={`px-3 py-1 border rounded-md ${
                     currentPage === i + 1
@@ -319,138 +324,184 @@ const BookingManagement = () => {
       </div>
 
       {viewBooking && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Booking Details</h2>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-30 flex items-center justify-center">
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 flex justify-between items-center border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Booking Details
+              </h3>
               <button
                 onClick={() => setViewBooking(null)}
-                className="text-gray-500"
+                className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors"
               >
-                <X size={24} />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                {viewBooking.userId?.image && (
+            <div className="px-6 py-5">
+              <div className="flex items-center mb-6">
+                {viewBooking.userId?.image ? (
                   <img
                     src={viewBooking.userId.image}
-                    alt="User"
-                    className="w-16 h-16 rounded-full"
+                    alt={`Customer: ${viewBooking.fullName}`}
+                    className="h-16 w-16 rounded-full object-cover mr-4"
                   />
+                ) : (
+                  <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 mr-4">
+                    <User className="h-8 w-8" />
+                  </div>
                 )}
                 <div>
-                  <h3 className="text-lg font-semibold">
+                  <p className="text-lg font-medium text-gray-900">
                     {viewBooking.fullName}
-                  </h3>
-                  <p className="text-gray-600">{viewBooking.email}</p>
-                  <p className="text-gray-600">{viewBooking.phoneNumber}</p>
+                  </p>
+                  <div className="flex items-center text-gray-500 mt-1">
+                    <p className="text-sm">
+                      <span
+                        className={`inline-flex items-center mr-3 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          viewBooking.status === "Approved"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : viewBooking.status === "Rejected"
+                            ? "bg-rose-50 text-rose-700 border border-rose-200"
+                            : "bg-amber-50 text-amber-700 border border-amber-200"
+                        }`}
+                      >
+                        {viewBooking.status || "Pending"}
+                      </span>
+                      Customer
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">
-                    SESSION DETAILS
+                  <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                    <User className="h-4 w-4 mr-2 text-gray-500" />
+                    Contact Information
                   </h4>
-                  <p>
-                    <span className="text-gray-600">Date:</span>{" "}
-                    {new Date(viewBooking.preferredDate).toLocaleDateString()}
-                  </p>
-                  <p>
-                    <span className="text-gray-600">Time:</span>{" "}
-                    {viewBooking.preferredTime}
-                  </p>
-                  <p>
-                    <span className="text-gray-600">Duration:</span>{" "}
-                    {viewBooking.sessionDuration} minutes
-                  </p>
-                  <p>
-                    <span className="text-gray-600">Yoga Type:</span>{" "}
-                    {viewBooking.yogaType}
-                  </p>
+                  <div className="bg-gray-50 rounded border border-gray-200 p-3 space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <Mail className="h-4 w-4 text-gray-400 mr-2" />
+                      <span>{viewBooking.email}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Phone className="h-4 w-4 text-gray-400 mr-2" />
+                      <span>{viewBooking.phoneNumber}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">
-                    LOCATION
+                  <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                    <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                    Session Details
                   </h4>
-                  <p>
-                    <span className="text-gray-600">Type:</span>{" "}
-                    {viewBooking.sessionLocation === "instructor"
-                      ? "Instructor's Place"
-                      : "Customer's Place"}
-                  </p>
-                  {viewBooking.sessionLocation === "customer" && (
-                    <>
-                      <p>
-                        <span className="text-gray-600">Address:</span>{" "}
-                        {viewBooking.streetAddress}
-                      </p>
-                      <p>
-                        <span className="text-gray-600">City:</span>{" "}
-                        {viewBooking.city}
-                      </p>
-                      <p>
-                        <span className="text-gray-600">Zip Code:</span>{" "}
-                        {viewBooking.zipCode}
-                      </p>
-                    </>
-                  )}
+                  <div className="bg-gray-50 rounded border border-gray-200 p-3 space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <span className="text-gray-500 w-16">Date:</span>
+                      <span>
+                        {new Date(
+                          viewBooking.preferredDate
+                        ).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-gray-500 w-16">Time:</span>
+                      <span>{viewBooking.preferredTime}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-gray-500 w-16">Duration:</span>
+                      <span>{viewBooking.sessionDuration} minutes</span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-gray-500 w-16">Yoga Type:</span>
+                      <span>{viewBooking.yogaType || "Not specified"}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <h4 className="text-sm font-medium text-gray-500 mb-2">
-                  STATUS
-                </h4>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    viewBooking.status === "Approved"
-                      ? "bg-green-100 text-green-800"
-                      : viewBooking.status === "Rejected"
-                      ? "bg-red-100 text-red-800"
-                      : "bg-yellow-100 text-yellow-800"
-                  }`}
-                >
-                  {viewBooking.status}
-                </span>
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                    <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                    Location
+                  </h4>
+                  <div className="bg-gray-50 rounded border border-gray-200 p-3 space-y-2 text-sm">
+                    <div>
+                      <span className="text-gray-500">Location Type:</span>
+                      <span className="block mt-1">
+                        {viewBooking.sessionLocation === "instructor"
+                          ? "At Instructor's Location"
+                          : "At Customer's Location"}
+                      </span>
+                    </div>
+                    {viewBooking.sessionLocation !== "instructor" && (
+                      <>
+                        <div className="pt-2">
+                          <span className="text-gray-500">Address:</span>
+                          <div className="mt-1">
+                            <p>{viewBooking.streetAddress}</p>
+                            <p>
+                              {viewBooking.city}, {viewBooking.zipCode}
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                    <Clock className="h-4 w-4 mr-2 text-gray-500" />
+                    Additional Information
+                  </h4>
+                  <div className="bg-gray-50 rounded border border-gray-200 p-3 space-y-2 text-sm">
+                    <div>
+                      <span className="text-gray-500">Created:</span>
+                      <span className="block mt-1">
+                        {new Date(viewBooking.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {viewBooking.remarks && (
-                <div>
-                  <h4 className="text-sm font-medium text-gray-500 mb-2">
-                    REMARKS
+                <div className="mt-6">
+                  <h4 className="font-medium text-gray-700 mb-2 flex items-center">
+                    <MessageSquare className="h-4 w-4 mr-2 text-gray-500" />
+                    Remarks
                   </h4>
-                  <p className="bg-gray-50 p-3 rounded">
+                  <div className="bg-gray-50 rounded border border-gray-200 p-3 text-sm">
                     {viewBooking.remarks}
-                  </p>
+                  </div>
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-4">
-                {viewBooking.status === "Pending" && (
-                  <>
-                    <button
-                      onClick={() =>
-                        updateBookingStatus(viewBooking._id, "Rejected")
-                      }
-                      className="px-4 py-2 border border-red-500 text-red-500 rounded-md"
-                    >
-                      Reject
-                    </button>
-                    <button
-                      onClick={() =>
-                        updateBookingStatus(viewBooking._id, "Approved")
-                      }
-                      className="px-4 py-2 bg-green-600 text-white rounded-md"
-                    >
-                      Approve
-                    </button>
-                  </>
-                )}
-              </div>
+              {viewBooking.status === "Pending" && (
+                <div className="mt-6 flex justify-end space-x-3">
+                  <button
+                    onClick={() =>
+                      updateBookingStatus(viewBooking._id, "Rejected")
+                    }
+                    className="px-4 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50 transition-colors"
+                  >
+                    Reject
+                  </button>
+                  <button
+                    onClick={() =>
+                      updateBookingStatus(viewBooking._id, "Approved")
+                    }
+                    className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                  >
+                    Approve
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

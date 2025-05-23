@@ -177,7 +177,7 @@ const MyClasses = () => {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:3000蕴/api/classes/delete-class`,
+        `http://localhost:3000/api/classes/delete-class`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },

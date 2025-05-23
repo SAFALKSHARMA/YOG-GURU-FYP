@@ -244,9 +244,7 @@ const Applications = () => {
                   </div>
                 )}
                 <div>
-                  <p className="text-lg font-medium text-gray-900">
-                    {selectedApplication.fullName}
-                  </p>
+                  <p className="text-lg font-medium text-gray-900">{`${selectedApplication.instructorId.fullName}`}</p>
                   <div className="flex items-center text-gray-500 mt-1">
                     <p className="text-sm">
                       <span

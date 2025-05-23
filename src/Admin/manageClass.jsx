@@ -13,6 +13,7 @@ import {
   UserOutlined,
   TeamOutlined,
   CloseCircleOutlined,
+  FileSearchOutlined,
 } from "@ant-design/icons";
 import {
   Table,
@@ -56,6 +57,7 @@ const ManageClass = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch classes data");
       }
+
       const data = await response.json();
       setClasses(data.classes || []);
     } catch (err) {
@@ -242,6 +244,52 @@ const ManageClass = () => {
     },
   ];
 
+  const renderEmptyState = () => {
+    if (classes.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <FileSearchOutlined className="text-5xl text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-700">
+            No Class Applications Yet
+          </h3>
+          <p className="text-gray-500 mb-4">
+            There are currently no class applications to display.
+          </p>
+          <Button
+            type="primary"
+            icon={<ReloadOutlined />}
+            onClick={fetchClasses}
+          >
+            Refresh
+          </Button>
+        </div>
+      );
+    } else if (filteredClasses.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <FileSearchOutlined className="text-5xl text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium text-gray-700">
+            No Matching Classes Found
+          </h3>
+          <p className="text-gray-500 mb-4">
+            Try adjusting your search or filter criteria.
+          </p>
+          <Button
+            type="text"
+            icon={<CloseOutlined />}
+            onClick={() => {
+              setSearchTerm("");
+              setStatusFilter("All");
+            }}
+          >
+            Clear Filters
+          </Button>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       <div className="w-1/5">
@@ -304,22 +352,18 @@ const ManageClass = () => {
             </div>
           )}
 
-          {!loading && !error && filteredClasses.length === 0 && (
-            <Empty
-              image={<ReadOutlined className="text-4xl text-gray-400" />}
-              description="No classes found"
-              className="py-12"
-            />
-          )}
-
-          {!loading && !error && filteredClasses.length > 0 && (
-            <Table
-              columns={columns}
-              dataSource={filteredClasses}
-              rowKey="_id"
-              pagination={{ pageSize: 10 }}
-              scroll={{ x: true }}
-            />
+          {!loading && !error && (
+            <>
+              {renderEmptyState() || (
+                <Table
+                  columns={columns}
+                  dataSource={filteredClasses}
+                  rowKey="_id"
+                  pagination={{ pageSize: 10 }}
+                  scroll={{ x: true }}
+                />
+              )}
+            </>
           )}
         </Card>
       </div>

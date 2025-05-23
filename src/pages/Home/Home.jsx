@@ -18,4 +18,3 @@ function Home() {
 }
 
 export default Home;
-// PopularTeacher;

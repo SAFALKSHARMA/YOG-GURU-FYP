@@ -43,7 +43,7 @@ const PaymentSuccess = () => {
           );
           setStatusType("success");
           setTimeout(() => {
-            navigate("/my-bookings", { replace: true });
+            navigate("/profile?tab=enrolled", { replace: true });
           }, 3000);
         } else {
           // Cart payment
@@ -144,7 +144,7 @@ const PaymentSuccess = () => {
                 onClick={() =>
                   navigate(
                     statusMessage.includes("enrolled")
-                      ? "/my-bookings"
+                      ? "/profile?tab=enrolled"
                       : "/orders"
                   )
                 }

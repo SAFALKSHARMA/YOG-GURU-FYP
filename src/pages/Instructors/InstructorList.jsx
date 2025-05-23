@@ -144,10 +144,11 @@ const InstructorsList = () => {
       <div className="max-w-7xl mx-auto px-4 py-12 relative">
         <header className="text-center mb-12">
           <h1 className="text-4xl font-bold text-white mb-4">
-            Our Expert Instructors
+            Yoga Instructors
           </h1>
           <p className="text-purple-200">
-            Find the perfect instructor for your yoga journey
+            Handpick your perfect instructor and enjoy a truly personalized
+            learning experience designed just for you.
           </p>
         </header>
 
@@ -252,11 +253,16 @@ const InstructorsList = () => {
                       alt={instructor.fullName}
                       className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
                     />
-                    <div className="absolute -bottom-2 -right-2 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
-                      <Star className="w-3 h-3 mr-1" fill="currentColor" />
-                      {instructor.rating || "N/A"}
-                    </div>
                   </div>
+                  <br></br>
+                  <Link
+                    to={`/instructor-details/${instructor._id}`}
+                    onClick={() =>
+                      console.log("Instructor Details:", instructor)
+                    }
+                  >
+                    <Button text="Book Session" />
+                  </Link>
                 </div>
 
                 <div className="flex-grow">
@@ -279,17 +285,9 @@ const InstructorsList = () => {
                             ))}
                       </div>
                     </div>
-                    <Link
-                      to={`/instructor-details/${instructor._id}`}
-                      onClick={() =>
-                        console.log("Instructor Details:", instructor)
-                      }
-                    >
-                      <Button text="Book Session" />
-                    </Link>
                   </div>
 
-                  <p className="text-sm text-gray-600 mb-3">{instructor.bio}</p>
+                  {/* <p className="text-sm text-gray-600 mb-3">{instructor.bio}</p> */}
 
                   <div className="grid grid-cols-2 gap-4 mb-3">
                     <div className="flex items-center text-sm text-gray-600">

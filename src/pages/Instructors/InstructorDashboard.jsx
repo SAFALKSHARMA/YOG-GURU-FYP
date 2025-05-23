@@ -40,6 +40,7 @@ const InstructorDashboard = () => {
   const { instructorData } = useContext(AppContent);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
@@ -50,11 +51,15 @@ const InstructorDashboard = () => {
         const response = await fetch(
           `http://localhost:3000/api/stats/${instructorData._id}`
         );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         setDashboardData(data);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching instructor stats:", error);
+        setError(error.message);
+      } finally {
         setLoading(false);
       }
     };
@@ -72,10 +77,18 @@ const InstructorDashboard = () => {
     );
   }
 
-  if (!dashboardData) {
+  if (error) {
     return (
       <div className="flex items-center justify-center h-screen text-lg text-red-500">
-        Failed to load dashboard data
+        Error: {error}
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="flex items-center justify-center h-screen text-lg text-gray-500">
+        No dashboard data available
       </div>
     );
   }
@@ -86,12 +99,12 @@ const InstructorDashboard = () => {
     datasets: [
       {
         data: [
-          dashboardData.recentBookings.filter((b) => b.status === "Approved")
-            .length,
-          dashboardData.recentBookings.filter((b) => b.status === "Pending")
-            .length,
-          dashboardData.recentBookings.filter((b) => b.status === "Cancelled")
-            .length,
+          dashboardData.recentBookings?.filter((b) => b?.status === "Approved")
+            ?.length || 0,
+          dashboardData.recentBookings?.filter((b) => b?.status === "Pending")
+            ?.length || 0,
+          dashboardData.recentBookings?.filter((b) => b?.status === "Cancelled")
+            ?.length || 0,
         ],
         backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
         borderWidth: 0,
@@ -100,16 +113,16 @@ const InstructorDashboard = () => {
   };
 
   const classCapacityData = {
-    labels: dashboardData.classes.map((cls) => cls.name),
+    labels: dashboardData.classes?.map((cls) => cls?.name) || [],
     datasets: [
       {
         label: "Enrolled",
-        data: dashboardData.classes.map((cls) => cls.studentCount),
+        data: dashboardData.classes?.map((cls) => cls?.studentCount) || [],
         backgroundColor: "rgba(54, 162, 235, 0.6)",
       },
       {
         label: "Capacity",
-        data: dashboardData.classes.map((cls) => cls.capacity),
+        data: dashboardData.classes?.map((cls) => cls?.capacity) || [],
         backgroundColor: "rgba(255, 99, 132, 0.6)",
       },
     ],
@@ -160,16 +173,16 @@ const InstructorDashboard = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {data.map((item) => (
-              <tr key={item._id}>
+            {data?.map((item, index) => (
+              <tr key={item?._id || index}>
                 {columns.map((column) => (
                   <td
                     key={column.key}
                     className="px-3 py-2 whitespace-nowrap text-sm text-gray-700"
                   >
                     {column.render
-                      ? column.render(item[column.dataIndex], item)
-                      : item[column.dataIndex]}
+                      ? column.render(item?.[column.dataIndex], item)
+                      : item?.[column.dataIndex] || "-"}
                   </td>
                 ))}
               </tr>
@@ -196,17 +209,15 @@ const InstructorDashboard = () => {
           {/* Profile Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
             <img
-              src={dashboardData.instructor.image}
-              alt={dashboardData.instructor.fullName}
+              src={dashboardData.instructor?.image || "/default-avatar.png"}
+              alt={dashboardData.instructor?.fullName || "Instructor"}
               className="w-16 h-16 rounded-full object-cover border-2 border-white shadow"
             />
             <div>
               <h1 className="text-xl font-bold text-gray-800">
-                Welcome back, {dashboardData.instructor.fullName}
+                Welcome back,{" "}
+                {dashboardData.instructor?.fullName || "Instructor"}
               </h1>
-              <p className="text-gray-500 text-sm">
-                Here's your teaching dashboard overview
-              </p>
             </div>
           </div>
 
@@ -215,25 +226,25 @@ const InstructorDashboard = () => {
             <StatCard
               icon={BookOpen}
               title="Total Classes"
-              value={dashboardData.stats.totalClasses}
+              value={dashboardData.stats?.totalClasses || 0}
               color="blue"
             />
             <StatCard
               icon={Users}
               title="Total Students"
-              value={dashboardData.stats.totalStudents}
+              value={dashboardData.stats?.totalStudents || 0}
               color="green"
             />
             <StatCard
               icon={Calendar}
               title="Total Bookings"
-              value={dashboardData.stats.totalBookings}
+              value={dashboardData.stats?.totalBookings || 0}
               color="purple"
             />
             <StatCard
               icon={CheckCircle}
               title="Upcoming Classes"
-              value={dashboardData.stats.upcomingClasses}
+              value={dashboardData.stats?.upcomingClasses || 0}
               color="orange"
             />
           </div>
@@ -280,12 +291,13 @@ const InstructorDashboard = () => {
             <Table
               title="Recent Bookings"
               icon={Calendar}
-              data={dashboardData.recentBookings}
+              data={dashboardData.recentBookings || []}
               columns={[
                 {
                   title: "Student",
                   dataIndex: "fullName",
                   key: "name",
+                  render: (name) => name || "Unknown Student",
                 },
                 {
                   title: "Date & Time",
@@ -294,11 +306,13 @@ const InstructorDashboard = () => {
                     <div>
                       <div className="flex items-center">
                         <Calendar className="w-3 h-3 mr-1 text-gray-500" />
-                        {new Date(record.preferredDate).toLocaleDateString()}
+                        {record.preferredDate
+                          ? new Date(record.preferredDate).toLocaleDateString()
+                          : "No date"}
                       </div>
                       <div className="flex items-center text-xs text-gray-500">
                         <Clock className="w-3 h-3 mr-1" />
-                        {record.preferredTime}
+                        {record.preferredTime || "No time"}
                       </div>
                     </div>
                   ),
@@ -317,7 +331,7 @@ const InstructorDashboard = () => {
                           : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {status}
+                      {status || "Unknown"}
                     </span>
                   ),
                 },
@@ -327,7 +341,7 @@ const InstructorDashboard = () => {
             <Table
               title="Recent Students"
               icon={Users}
-              data={dashboardData.recentStudents}
+              data={dashboardData.recentStudents || []}
               columns={[
                 {
                   title: "Student",
@@ -335,14 +349,16 @@ const InstructorDashboard = () => {
                   render: (_, record) => (
                     <div className="flex items-center">
                       <img
-                        src={record.user.image}
-                        alt={record.user.name}
+                        src={record.user?.image || "/default-avatar.png"}
+                        alt={record.user?.name || "Student"}
                         className="w-8 h-8 rounded-full mr-2"
                       />
                       <div>
-                        <div className="font-medium">{record.user.name}</div>
+                        <div className="font-medium">
+                          {record.user?.name || "Unknown Student"}
+                        </div>
                         <div className="text-xs text-gray-500">
-                          {record.user.email}
+                          {record.user?.email || "No email"}
                         </div>
                       </div>
                     </div>
@@ -353,10 +369,12 @@ const InstructorDashboard = () => {
                   key: "class",
                   render: (_, record) => (
                     <div>
-                      <div>{record.class.name}</div>
+                      <div>{record.class?.name || "No class"}</div>
                       <div className="text-xs text-gray-500">
-                        {new Date(record.class.date).toLocaleDateString()} at{" "}
-                        {record.class.time}
+                        {record.class?.date
+                          ? new Date(record.class.date).toLocaleDateString()
+                          : "No date"}{" "}
+                        at {record.class?.time || "No time"}
                       </div>
                     </div>
                   ),
@@ -366,7 +384,9 @@ const InstructorDashboard = () => {
                   key: "enrolledAt",
                   render: (_, record) => (
                     <div className="text-sm text-gray-500">
-                      {new Date(record.enrolledAt).toLocaleDateString()}
+                      {record.enrolledAt
+                        ? new Date(record.enrolledAt).toLocaleDateString()
+                        : "Unknown"}
                     </div>
                   ),
                 },

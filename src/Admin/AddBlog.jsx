@@ -1,90 +1,186 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import {
+  Table,
+  Typography,
+  Image,
+  Spin,
+  message,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Layout,
+} from "antd";
+import axios from "axios";
+import Sidebar from "./Sidebar"; // Import your sidebar component
 
-const AddBlog = () => {
-  const [items, setItems] = useState([]); // Empty array to start
+const { Title } = Typography;
+const { TextArea } = Input;
+const { Content, Sider } = Layout;
 
-  const [newItem, setNewItem] = useState({
-    name: "",
-    description: "",
-  });
+const AdminBlogs = () => {
+  const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
 
-  const handleAddItem = () => {
-    if (newItem.name.trim() === "" || newItem.description.trim() === "") return;
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
 
-    setItems([
-      ...items,
-      {
-        id: Date.now(), // Using timestamp for unique ID
-        name: newItem.name,
-        description: newItem.description,
-      },
-    ]);
-
-    setNewItem({ name: "", description: "" });
+  const fetchBlogs = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("http://localhost:3000/api/blogs");
+      const formattedData = response.data.map((blog) => ({
+        key: blog._id,
+        image: blog.image,
+        title: blog.title,
+        content: blog.content,
+        createdAt: new Date(blog.createdAt).toLocaleString(),
+      }));
+      setBlogs(formattedData);
+    } catch (err) {
+      message.error("Failed to fetch blogs.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <div className="font-sans max-w-2xl mx-auto my-8 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Item List</h2>
+  const handleAddBlog = async (values) => {
+    try {
+      await axios.post("http://localhost:3000/api/blogs/create", values);
+      message.success("Blog added successfully!");
+      setIsModalVisible(false);
+      form.resetFields();
+      fetchBlogs();
+    } catch (err) {
+      message.error("Failed to add blog.");
+    }
+  };
 
-      {/* Add Item Form */}
-      <div className="grid grid-cols-1 gap-4 mb-6">
-        <input
-          type="text"
-          value={newItem.name}
-          onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-          placeholder="Item name"
-          className="p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <textarea
-          value={newItem.description}
-          onChange={(e) =>
-            setNewItem({ ...newItem, description: e.target.value })
-          }
-          placeholder="Item description"
-          className="p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          rows={3}
-        />
-        <button
-          onClick={handleAddItem}
-          className="px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  const columns = [
+    {
+      title: "Image",
+      dataIndex: "image",
+      key: "image",
+      render: (img) => <Image src={img} width={50} height={50} />,
+    },
+    {
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
+    },
+    {
+      title: "Content",
+      dataIndex: "content",
+      key: "content",
+      render: (text) => (
+        <Typography.Paragraph
+          ellipsis={{ rows: 2, expandable: true, symbol: "more" }}
+          style={{ fontSize: "12px" }}
         >
-          Add Item
-        </button>
-      </div>
+          {text}
+        </Typography.Paragraph>
+      ),
+    },
+    {
+      title: "Created At",
+      dataIndex: "createdAt",
+      key: "createdAt",
+    },
+  ];
 
-      {/* Items Table - Only shows if there are items */}
-      {items.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="p-4 text-left border-b border-gray-200">Name</th>
-                <th className="p-4 text-left border-b border-gray-200">
-                  Description
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr
-                  key={item.id}
-                  className="border-b border-gray-200 hover:bg-gray-50"
-                >
-                  <td className="p-4 font-medium">{item.name}</td>
-                  <td className="p-4 text-gray-600">{item.description}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p className="text-gray-500 text-center py-8">
-          No items yet. Add your first item above.
-        </p>
-      )}
-    </div>
+  return (
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Sidebar */}
+      <Sider
+        width={256}
+        style={{ background: "#fff" }}
+        breakpoint="lg"
+        collapsedWidth="0"
+      >
+        <Sidebar />
+      </Sider>
+
+      {/* Main Content */}
+      <Layout style={{ padding: "24px 24px 24px 48px" }}>
+        <Content>
+          <Title level={2}>All Blog Posts</Title>
+          <Button
+            type="primary"
+            style={{ marginBottom: 16 }}
+            onClick={() => setIsModalVisible(true)}
+          >
+            Add Blog
+          </Button>
+
+          {loading ? (
+            <Spin size="large" />
+          ) : (
+            <Table
+              dataSource={blogs}
+              columns={columns}
+              bordered
+              pagination={{ pageSize: 5 }}
+              size="small"
+              style={{ maxWidth: "1200px" }}
+              scroll={{ x: "max-content" }}
+            />
+          )}
+
+          <Modal
+            title="Add New Blog"
+            open={isModalVisible}
+            onCancel={() => setIsModalVisible(false)}
+            onOk={() => form.submit()}
+            okText="Submit"
+          >
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleAddBlog}
+              initialValues={{
+                title: "",
+                content: "",
+                image: "",
+              }}
+            >
+              <Form.Item
+                label="Title"
+                name="title"
+                rules={[
+                  { required: true, message: "Please input the blog title!" },
+                ]}
+              >
+                <Input placeholder="Enter blog title" />
+              </Form.Item>
+
+              <Form.Item
+                label="Content"
+                name="content"
+                rules={[
+                  { required: true, message: "Please input the blog content!" },
+                ]}
+              >
+                <TextArea rows={4} placeholder="Enter blog content" />
+              </Form.Item>
+
+              <Form.Item
+                label="Image URL"
+                name="image"
+                rules={[
+                  { required: true, message: "Please provide an image URL!" },
+                ]}
+              >
+                <Input placeholder="Enter image URL" />
+              </Form.Item>
+            </Form>
+          </Modal>
+        </Content>
+      </Layout>
+    </Layout>
   );
 };
 
-export default AddBlog;
+export default AdminBlogs;

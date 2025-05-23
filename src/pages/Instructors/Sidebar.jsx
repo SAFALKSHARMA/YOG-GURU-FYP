@@ -55,7 +55,7 @@ const Sidebar = () => {
     {
       path: "/instructor/bookings",
       icon: <Users size={20} />,
-      label: "Booking",
+      label: "Booking Application",
     },
   ];
 

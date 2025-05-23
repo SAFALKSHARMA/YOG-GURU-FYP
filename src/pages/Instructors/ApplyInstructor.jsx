@@ -1,6 +1,9 @@
 import { useContext, useState, useEffect } from "react";
 import { AppContent } from "../../context/AppContext";
 import { toast } from "react-toastify";
+import { message } from "antd";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function InstructorApplicationForm() {
   const { userData, backendUrl } = useContext(AppContent);
@@ -13,7 +16,7 @@ export default function InstructorApplicationForm() {
     qualifications: "",
     bio: "",
     serviceType: [],
-    userId: userData?.userId || "", // Add userId to formData
+    userId: userData?.userId || "",
   });
 
   const [image, setImage] = useState(null);
@@ -41,11 +44,20 @@ export default function InstructorApplicationForm() {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+    if (file && allowedTypes.includes(file.type)) {
       setImage(file);
       const reader = new FileReader();
       reader.onload = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
+      setErrors((prev) => ({ ...prev, image: "" }));
+    } else {
+      setErrors((prev) => ({
+        ...prev,
+        image: "Only JPG, JPEG, or PNG files are allowed",
+      }));
+      setImage(null);
+      setImagePreview(null);
     }
   };
 
@@ -55,16 +67,30 @@ export default function InstructorApplicationForm() {
   };
 
   const handleFilesChange = (e, setFiles, files) => {
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
     const newFiles = Array.from(e.target.files).filter(
-      (file) => !files.some((f) => f.name === file.name)
+      (file) =>
+        allowedTypes.includes(file.type) &&
+        !files.some((f) => f.name === file.name)
     );
+
+    if (newFiles.length < e.target.files.length) {
+      setErrors((prev) => ({
+        ...prev,
+        [setFiles === setDocuments ? "documents" : "certificates"]:
+          "Only JPG, JPEG, or PNG files are allowed",
+      }));
+    } else {
+      setErrors((prev) => ({
+        ...prev,
+        [setFiles === setDocuments ? "documents" : "certificates"]: "",
+      }));
+    }
+
     const fileObjects = newFiles.map((file) => ({
       file,
       name: file.name,
-      preview: file.type.startsWith("image/")
-        ? URL.createObjectURL(file)
-        : null,
-      type: file.type,
+      preview: URL.createObjectURL(file),
     }));
     setFiles([...files, ...fileObjects]);
   };
@@ -139,7 +165,6 @@ export default function InstructorApplicationForm() {
     try {
       const formDataToSend = new FormData();
 
-      // Append all form data
       Object.entries(formData).forEach(([key, value]) => {
         if (key === "serviceType") {
           value.forEach((v) => formDataToSend.append("serviceType", v));
@@ -148,7 +173,6 @@ export default function InstructorApplicationForm() {
         }
       });
 
-      // Append files
       if (image) formDataToSend.append("image", image);
       documents.forEach((doc) => formDataToSend.append("documents", doc.file));
       certificates.forEach((cert) =>
@@ -158,11 +182,9 @@ export default function InstructorApplicationForm() {
       const response = await fetch(`${backendUrl}/api/instructors/apply`, {
         method: "POST",
         body: formDataToSend,
-        // Don't set Content-Type header - let the browser set it with boundary
       });
 
       if (!response.ok) {
-        // Handle non-JSON responses
         if (
           !response.headers.get("content-type")?.includes("application/json")
         ) {
@@ -170,13 +192,12 @@ export default function InstructorApplicationForm() {
           throw new Error(`Server responded with: ${text}`);
         }
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to submit application");
+        message.error(errorData.message || "Failed to submit application");
       }
 
       const data = await response.json();
-      toast.success(data.message || "Application submitted successfully!");
+      message.success(data.message || "Application submitted successfully!");
 
-      // Reset form
       setFormData({
         fullName: "",
         email: userData?.email || "",
@@ -200,7 +221,6 @@ export default function InstructorApplicationForm() {
     }
   };
 
-  // Clean up object URLs
   useEffect(() => {
     return () => {
       documents.forEach(
@@ -214,36 +234,26 @@ export default function InstructorApplicationForm() {
   }, [documents, certificates, imagePreview]);
 
   const getFileTypeIndicator = (preview, name) => {
-    const ext = name.split(".").pop().toLowerCase();
-    const imageExt = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"];
-
-    return imageExt.includes(ext) && preview ? (
+    return (
       <img
         src={preview}
         alt="Preview"
         className="h-20 w-20 object-cover rounded border"
       />
-    ) : (
-      <div className="h-20 w-20 flex items-center justify-center bg-gray-100 rounded border">
-        <svg
-          className="w-10 h-10 text-gray-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      </div>
     );
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+      <div className="mb-6">
+        <Link
+          to="/profile"
+          className="inline-flex items-center bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 ease-in-out text-sm font-medium px-4 py-2 rounded-lg shadow-md hover:shadow-lg"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Link>
+      </div>
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-bold mb-6">Apply to be an Instructor</h2>
 
@@ -258,6 +268,9 @@ export default function InstructorApplicationForm() {
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
+                placeholder="Enter your full name"
+                pattern="^[A-Za-z]+(?: [A-Za-z]+)*$"
+                title="Please enter a valid full name (letters and spaces only, no numbers or special characters)"
                 className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
@@ -290,6 +303,9 @@ export default function InstructorApplicationForm() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
+                placeholder="Enter your phone number"
+                pattern="^(97|98)\d{8}$"
+                title="Phone number must start with 97 or 98 and be 10 digits total"
                 className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
@@ -307,6 +323,7 @@ export default function InstructorApplicationForm() {
                 name="experience"
                 value={formData.experience}
                 onChange={handleChange}
+                placeholder="Enter your years of experience"
                 className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 required
               />
@@ -325,6 +342,7 @@ export default function InstructorApplicationForm() {
               name="qualifications"
               value={formData.qualifications}
               onChange={handleChange}
+              placeholder="Enter your qualifications"
               className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
             />
@@ -343,6 +361,7 @@ export default function InstructorApplicationForm() {
               name="bio"
               value={formData.bio}
               onChange={handleChange}
+              placeholder="Enter a short bio that describes you and your yoga journey"
               className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-32"
               required
             />
@@ -382,13 +401,15 @@ export default function InstructorApplicationForm() {
             )}
           </div>
 
+          <br></br>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Profile Image
+              Profile Image (Should be a clear headshot)
             </label>
             <input
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/jpg,image/png"
               onChange={handleImageChange}
               className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               required
@@ -416,10 +437,11 @@ export default function InstructorApplicationForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Documents (ID Proof, etc.)
+              KYC Document (Clear Photo of Citizenship, Passport, Licence, etc.)
             </label>
             <input
               type="file"
+              accept="image/jpeg,image/jpg,image/png"
               multiple
               onChange={(e) => handleFilesChange(e, setDocuments, documents)}
               className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -451,10 +473,11 @@ export default function InstructorApplicationForm() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Certificates
+              Yoga Certificate (Should be valid and up to date)
             </label>
             <input
               type="file"
+              accept="image/jpeg,image/jpg,image/png"
               multiple
               onChange={(e) =>
                 handleFilesChange(e, setCertificates, certificates)
@@ -484,6 +507,13 @@ export default function InstructorApplicationForm() {
             {errors.certificates && (
               <p className="mt-1 text-sm text-red-600">{errors.certificates}</p>
             )}
+          </div>
+
+          <div className="flex justify-center mt-2">
+            <p className="text-center text-sm text-red-600 max-w-md">
+              *Applicants who do not meet the above credentials will not be
+              accepted as a yoga instructor.
+            </p>
           </div>
 
           <div className="pt-4">

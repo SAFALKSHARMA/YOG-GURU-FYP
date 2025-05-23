@@ -390,31 +390,19 @@ const AdminDashboard = () => {
           />
           <StatCard
             icon={GraduationCap}
-            title="Enrolled Students"
+            title="Total Class Purchase"
             value={stats.totals.students}
             color="green"
           />
-          <StatCard
-            icon={BookOpen}
-            title="Approved Classes"
-            value={stats.totals.classes}
-            color="purple"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <StatCard
             icon={ShoppingCart}
             title="Products"
             value={stats.totals.products}
             color="yellow"
           />
-          <StatCard
-            icon={FileText}
-            title="Applications"
-            value={stats.totals.applications}
-            color="pink"
-          />
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <StatCard
             icon={Clock}
             title="Pending Classes"
@@ -422,10 +410,22 @@ const AdminDashboard = () => {
             color="orange"
           />
           <StatCard
+            icon={BookOpen}
+            title="Approved Classes"
+            value={stats.totals.classes}
+            color="purple"
+          />
+          <StatCard
             icon={Clock}
-            title="Pending Apps"
+            title="Pending Instructor Apps"
             value={stats.totals.pendingApplications}
             color="red"
+          />
+          <StatCard
+            icon={FileText}
+            title="Approved Instructor Apps"
+            value={stats.totals.applications}
+            color="pink"
           />
         </div>
 

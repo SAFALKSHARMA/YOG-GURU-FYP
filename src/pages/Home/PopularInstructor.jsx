@@ -67,10 +67,10 @@ const PopularInstructor = () => {
                       alt={instructor.fullName}
                       className="w-32 h-32 rounded-full object-cover border-4 border-white shadow"
                     />
-                    <div className="absolute -bottom-2 -right-2 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
-                      <Star className="w-3 h-3 mr-1" fill="currentColor" />
-                      {instructor.rating || "N/A"}
-                    </div>
+                    <br></br>
+                    <Link to={`/instructor-details/${instructor._id}`}>
+                      <Button text="Book Session" />
+                    </Link>
                   </div>
                 </div>
 
@@ -94,12 +94,7 @@ const PopularInstructor = () => {
                             ))}
                       </div>
                     </div>
-                    <Link to={`/instructor-details/${instructor._id}`}>
-                      <Button text="Book Session" />
-                    </Link>
                   </div>
-
-                  <p className="text-sm text-gray-600 mb-3">{instructor.bio}</p>
 
                   <div className="grid grid-cols-2 gap-4 mb-3">
                     <div className="flex items-center text-sm text-gray-600">
@@ -166,6 +161,26 @@ const PopularInstructor = () => {
           )}
         </>
       )}
+      <div className="text-center mt-10">
+        <Link
+          to="/instructors"
+          className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 transition-colors"
+        >
+          View All
+          <svg
+            className="ml-2 -mr-1 w-5 h-5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </Link>
+      </div>
     </div>
   );
 };

@@ -125,30 +125,13 @@ export default function AdminShopList() {
       render: (stock) => stock || "0",
     },
     {
-      title: "Actions",
+      title: "Action",
       key: "actions",
       align: "right",
       render: (_, record) => (
         <Dropdown
           overlay={
             <Menu>
-              <Menu.Item
-                key="view"
-                icon={<EyeOutlined />}
-                onClick={() => setViewItem(record)}
-              >
-                View Details
-              </Menu.Item>
-              <Menu.Item
-                key="edit"
-                icon={<EditOutlined />}
-                onClick={() => {
-                  setEditItem(record);
-                  form.setFieldsValue(record);
-                }}
-              >
-                Edit Product
-              </Menu.Item>
               <Menu.Item
                 key="delete"
                 icon={<DeleteOutlined />}
