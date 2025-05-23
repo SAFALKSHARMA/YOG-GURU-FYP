@@ -1,6 +1,8 @@
 import YogaBooking from "../models/booking.model.js";
 import { bookingStatusTemplate } from "../utils/emailTemplates.js";
 import { sendEmail } from "../utils/emailTemplates.js";
+import Instructor from "../models/Instructor.js";
+import { sendWhatsAppMessage } from "../utils/sendWhatsappMsg.js";
 
 export const createYogaBooking = async (req, res) => {
   try {
@@ -61,6 +63,18 @@ export const createYogaBooking = async (req, res) => {
     });
 
     await newBooking.save();
+
+    const instructor = await Instructor.findById(instructorId).select("phone");
+
+    if (!instructor) {
+      return res.status(404).json({
+        success: false,
+        message: "Instructor not found",
+      });
+    }
+    // Send whatsapp message to instructor
+    const message = `New Yoga Booking from ${fullName}.\n\nDetails:\n- Date: ${formattedDate}\n- Time: ${formattedTime}\n- Duration: ${sessionDuration}\n- Location: ${sessionLocation}\n- Address: ${streetAddress}, ${city}, ${zipCode}\n- Yoga Type: ${yogaType}\n- Remarks: ${remarks}`;
+    await sendWhatsAppMessage(instructor.phone, message);
 
     res.status(201).json({
       success: true,
@@ -124,7 +138,7 @@ export const updateBookingStatus = async (req, res) => {
       _id: bookingId,
       instructorId: instructorId,
     })
-      .populate("userId", "email name")
+      .populate("userId", "email name phone")
       .populate("instructorId", "fullName email");
 
     if (!booking) {
@@ -149,6 +163,16 @@ export const updateBookingStatus = async (req, res) => {
     booking.status = status;
     if (status === "Rejected") booking.rejectionReason = rejectionReason;
     await booking.save();
+
+    // Send WhatsApp message to user of booking status with instructor details
+    const userMessage = `Your booking status has been updated to ${status}.\n\nDetails:\n- Yoga Type: ${
+      booking.yogaType
+    }\n- Date: ${booking.preferredDate.toDateString()}\n- Time: ${
+      booking.preferredTime
+    }\n- Instructor: ${booking.instructorId.fullName}\n- Rejection Reason: ${
+      booking.rejectionReason || "N/A"
+    }`;
+    await sendWhatsAppMessage(booking.userId.phone, userMessage);
 
     // Send email notification
     if (["Approved", "Rejected"].includes(status)) {

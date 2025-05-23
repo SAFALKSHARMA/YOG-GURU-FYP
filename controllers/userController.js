@@ -1,6 +1,9 @@
 import userModel from "../models/userModel.js";
 import Instructor from "../models/Instructor.js";
 import bcrypt from "bcryptjs";
+import Class from "../models/class.model.js";
+import InstructorApplication from "../models/InstructorApplication.js";
+import Student from "../models/student.model.js";
 
 export const getUserData = async (req, res) => {
   try {
@@ -117,17 +120,35 @@ export const deleteUser = async (req, res) => {
   try {
     const { userId } = req.params;
 
+    // Check if user exists
     const user = await userModel.findById(userId);
-
     if (!user) {
       return res
         .status(404)
         .json({ success: false, message: "User not found." });
     }
 
+    // Check if the user is an instructor
+    const instructor = await Instructor.findOne({ user: userId });
+
+    if (instructor) {
+      // Delete all classes created by the instructor
+      await Class.deleteMany({ instructor: instructor._id });
+
+      // Delete instructor document
+      await Instructor.findByIdAndDelete(instructor._id);
+
+      // Delete instructor applications
+      await InstructorApplication.deleteMany({ user: userId });
+    }
+
+    // Delete all student records associated with the user
+    await Student.deleteMany({ user: userId });
+
+    // Delete the user
     await userModel.findByIdAndDelete(userId);
 
-    // Clear token cookie with matching options
+    // Clear token cookie
     res.clearCookie("token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -135,9 +156,11 @@ export const deleteUser = async (req, res) => {
       path: "/",
     });
 
-    return res
-      .status(200)
-      .json({ success: true, message: "User deleted successfully." });
+    return res.status(200).json({
+      success: true,
+      message:
+        "User, associated instructor, classes, and student records deleted successfully.",
+    });
   } catch (error) {
     console.error("Delete User Error:", error);
     return res.status(500).json({ success: false, message: "Server error." });
@@ -229,6 +252,18 @@ export const updateUserProfile = async (req, res) => {
     user.bio = bio || user.bio;
 
     await user.save();
+
+    // Also validate if the user is an instructor
+    const instructor = await Instructor.findOne({ user: userId });
+    if (instructor) {
+      // Update instructor details if needed
+      instructor.fullName = name || instructor.fullName;
+      instructor.phone = phone || instructor.phone;
+      instructor.address = address || instructor.address;
+      instructor.bio = bio || instructor.bio;
+
+      await instructor.save();
+    }
 
     return res.status(200).json({
       success: true,

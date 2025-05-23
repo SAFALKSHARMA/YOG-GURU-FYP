@@ -14,6 +14,8 @@ import yogaBookingRoutes from "./routes/bookingRoutes.js";
 import trackRoutes from "./routes/trackRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import blogRoutes from "./routes/blogRoutes.js";
+import whatsappRoutes from "./routes/whatsappRoute.js";
 
 const app = express();
 const PORT = 3000;
@@ -47,6 +49,8 @@ app.use("/api/bookings", yogaBookingRoutes);
 app.use("/api/track", trackRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/blogs", blogRoutes);
+app.use("/api/whatsapp", whatsappRoutes);
 
 // Start the server
 app.listen(PORT, () => {

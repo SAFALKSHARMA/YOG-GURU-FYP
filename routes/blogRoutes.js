@@ -1,20 +1,10 @@
+import { createBlog, getBlogs } from "../controllers/blogController.js";
 import express from "express";
-import {
-  createPost,
-  getPosts,
-  updatePostStatus,
-  addToReadingList,
-} from "../controllers/blogController.js";
-import { protect, checkOwnership } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
-
-router.route("/").post(protect, createPost).get(getPosts);
-
-router
-  .route("/:id/status")
-  .patch(protect, checkOwnership(BlogPost), updatePostStatus);
-
-router.route("/reading-list/:postId").post(protect, addToReadingList);
-
+// Route to create a new blog post
+router.post("/create", createBlog);
+// Route to get all blog posts
+router.get("/", getBlogs);
+// Export the router
 export default router;

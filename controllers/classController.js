@@ -4,6 +4,8 @@ import Class from "../models/class.model.js";
 import mongoose from "mongoose";
 import studentModel from "../models/student.model.js";
 import { sendEnrollmentEmail } from "../utils/emailTemplates.js";
+import Student from "../models/student.model.js";
+import { sendWhatsAppMessage } from "../utils/sendWhatsappMsg.js";
 
 export const createClass = async (req, res) => {
   try {
@@ -143,6 +145,8 @@ export const updateClassStatus = async (req, res) => {
   try {
     const { classId, newStatus } = req.body;
 
+    console.log("Received Payload:", { classId, newStatus });
+
     if (!classId || !newStatus) {
       return res.status(400).json({
         success: false,
@@ -150,11 +154,12 @@ export const updateClassStatus = async (req, res) => {
       });
     }
 
+    // First, update the class status
     const updatedClass = await Class.findByIdAndUpdate(
       classId,
       { status: newStatus },
       { new: true }
-    );
+    ).populate("instructor", "phone"); // only get the phone field
 
     if (!updatedClass) {
       return res.status(404).json({
@@ -163,10 +168,23 @@ export const updateClassStatus = async (req, res) => {
       });
     }
 
+    const instructorPhone = updatedClass.instructor?.phone;
+
+    console.log(instructorPhone);
+
+    // Send WhatsApp message to instructor
+    if (instructorPhone) {
+      const message = `Your class "${updatedClass.className}" status has been updated to "${newStatus}".`;
+      await sendWhatsAppMessage(instructorPhone, message);
+    } else {
+      console.warn("Instructor phone number not available.");
+    }
+
     res.status(200).json({
       success: true,
       message: "Class status updated successfully.",
       class: updatedClass,
+      instructorPhone: instructorPhone || "Phone not available",
     });
   } catch (error) {
     res.status(500).json({
@@ -383,6 +401,15 @@ export const enrollUserInClass = async (req, res) => {
     // Send enrollment emails
     await sendEnrollmentEmail(user, classToEnroll.instructor, classToEnroll);
 
+    // Send WhatsApp message to instructor and user
+    const messageToInstructor = `A new student has enrolled in your class "${classToEnroll.className}".`;
+    await sendWhatsAppMessage(
+      classToEnroll.instructor.phone,
+      messageToInstructor
+    );
+    const messageToUser = `You have successfully enrolled in the class "${classToEnroll.className}".`;
+    await sendWhatsAppMessage(user.phone, messageToUser);
+
     res.status(200).json({
       success: true,
       message: "Successfully enrolled in the class.",
@@ -474,8 +501,6 @@ export const deleteClass = async (req, res) => {
   try {
     const { classId, instructorId } = req.body;
 
-    console.log(classId, instructorId);
-
     if (!classId || !instructorId) {
       return res.status(400).json({
         success: false,
@@ -492,7 +517,7 @@ export const deleteClass = async (req, res) => {
     if (!classToDelete) {
       return res.status(404).json({
         success: false,
-        message: "Class not found .",
+        message: "Class not found.",
       });
     }
 
@@ -501,12 +526,15 @@ export const deleteClass = async (req, res) => {
       $pull: { classes: classId },
     });
 
+    // Delete all students enrolled in this class
+    await Student.deleteMany({ classId });
+
     // Delete the class
     await Class.findByIdAndDelete(classId);
 
     res.status(200).json({
       success: true,
-      message: "Class deleted successfully.",
+      message: "Class and associated students deleted successfully.",
     });
   } catch (error) {
     res.status(500).json({

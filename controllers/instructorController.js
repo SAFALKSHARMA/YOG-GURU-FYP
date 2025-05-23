@@ -1,6 +1,7 @@
 import InstructorApplication from "../models/InstructorApplication.js";
 import User from "../models/userModel.js";
 import Instructor from "../models/Instructor.js";
+import { sendWhatsAppMessage } from "../utils/sendWhatsappMsg.js";
 
 export const submitApplication = async (req, res) => {
   try {
@@ -192,6 +193,12 @@ export const approveInstructor = async (req, res) => {
     application.status = "Approved";
     await application.save();
 
+    // Send WhatsApp message to user
+    if (user.phone) {
+      const message = `Congratulations ${user.name}, your instructor application has been approved!`;
+      await sendWhatsAppMessage(user.phone, message);
+    }
+
     res.status(200).json({
       message: "Instructor approved successfully!",
       instructor: newInstructor,
@@ -242,6 +249,12 @@ export const rejectInstructor = async (req, res) => {
     const instructor = await Instructor.findOneAndDelete({
       user: application.user._id,
     });
+
+    // Send WhatsApp message to user
+    if (user.phone) {
+      const message = `Dear ${user.name}, your instructor application has been rejected.`;
+      await sendWhatsAppMessage(user.phone, message);
+    }
 
     res.status(200).json({
       message: "Application rejected and instructor removed successfully!",
